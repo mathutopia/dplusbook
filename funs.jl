@@ -4,3 +4,5 @@ danger(text) = Markdown.MD(Markdown.Admonition("danger", "💣 危 险", [text])
 note(text) = Markdown.MD(Markdown.Admonition("hint", "📘 笔 记", [text])) # 蓝色
 
 datapath = "data/";
+imgpath = "img/";
+videopath = "video"; 
