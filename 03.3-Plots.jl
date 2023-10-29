@@ -26,17 +26,11 @@ using FreqTables
 # ╔═╡ 1a526bdd-08e6-4850-8d20-e4174979db84
 TableOfContents(title = "目录")
 
-# ╔═╡ 8fdbc8bf-c9d9-45ee-9b0d-acfbd4b0fc07
-begin
-tip(text) = Markdown.MD(Markdown.Admonition("tip", "🍡 知识点", [text])) # 绿色
-hint(text) = Markdown.MD(Markdown.Admonition("hint", "💡 提 示", [text]))
-zhuy(text) = Markdown.MD(Markdown.Admonition("warning", "⚡ 注 意", [text])) # 黄色
-danger(text) = Markdown.MD(Markdown.Admonition("danger", "💣 危 险", [text])) # 红色
-note(text) = Markdown.MD(Markdown.Admonition("hint", "📘 笔 记", [text])) # 蓝色
-end;
+# ╔═╡ 63b2e146-89be-4137-aa37-80c3e52a3b5d
+include("funs.jl")
 
 # ╔═╡ ed0cf2ad-cd65-4126-9d79-a3a81da90cad
-train = CSV.read("../data/trainbx.csv", DataFrame)
+train = CSV.read(datapath*"trainbx.csv", DataFrame)
 
 # ╔═╡ 07ec0b05-fc38-4d39-aa64-426d04953114
 md"""
@@ -1959,7 +1953,7 @@ version = "1.4.1+1"
 # ╠═9c49e120-70d0-11ee-08d1-f10dcde223be
 # ╠═34154b91-7857-45ef-8578-652eda5c9e98
 # ╠═1a526bdd-08e6-4850-8d20-e4174979db84
-# ╠═8fdbc8bf-c9d9-45ee-9b0d-acfbd4b0fc07
+# ╠═63b2e146-89be-4137-aa37-80c3e52a3b5d
 # ╠═ed0cf2ad-cd65-4126-9d79-a3a81da90cad
 # ╟─07ec0b05-fc38-4d39-aa64-426d04953114
 # ╟─4b01f41f-f84f-4357-aa74-7df34c94c56b

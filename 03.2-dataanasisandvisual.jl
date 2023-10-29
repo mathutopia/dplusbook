@@ -10,13 +10,8 @@ using PlutoUI, CSV, DataFrames, DataFramesMeta,CairoMakie,StatsBase,CategoricalA
 # ╔═╡ 6e9ae65f-de09-4f79-a8cc-245b7f5696bf
 using MultivariateStats
 
-# ╔═╡ dd4ddb7f-c5e3-4fff-9b76-f4bf880b5a17
-begin
-hint(text) = Markdown.MD(Markdown.Admonition("tip", "💡 提 示", [text])) # 绿色
-attention(text) = Markdown.MD(Markdown.Admonition("warning", "⚡ 注 意", [text])) # 黄色
-danger(text) = Markdown.MD(Markdown.Admonition("danger", "💣 危 险", [text])) # 红色
-note(text) = Markdown.MD(Markdown.Admonition("hint", "📘 笔 记", [text])) # 蓝色
-end;
+# ╔═╡ 018c5966-8a8a-48b1-8bde-5c804d1b07ca
+include("funs.jl")
 
 # ╔═╡ d89b23a1-c58f-49bb-9cc1-4134176b7e3d
 TableOfContents(title = "目录")
@@ -28,7 +23,7 @@ md"""
 """
 
 # ╔═╡ b264515e-7230-42cc-81a0-a2be0977362b
-train = CSV.read("../data/trainbx.csv", DataFrame)
+train = CSV.read(datapath*"trainbx.csv", DataFrame)
 
 # ╔═╡ fc284c77-979c-445e-89b5-5ef58fa25bc6
 md"""
@@ -2985,8 +2980,8 @@ version = "1.4.1+1"
 
 # ╔═╡ Cell order:
 # ╠═1a10c180-c327-11ed-223b-1183f5350f3b
+# ╟─018c5966-8a8a-48b1-8bde-5c804d1b07ca
 # ╠═6e9ae65f-de09-4f79-a8cc-245b7f5696bf
-# ╟─dd4ddb7f-c5e3-4fff-9b76-f4bf880b5a17
 # ╟─d89b23a1-c58f-49bb-9cc1-4134176b7e3d
 # ╟─ed3df13a-3622-47ff-92e4-2c0a1f256c14
 # ╠═b264515e-7230-42cc-81a0-a2be0977362b

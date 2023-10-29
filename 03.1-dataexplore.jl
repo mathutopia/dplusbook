@@ -10,17 +10,11 @@ using PlutoUI, CSV, DataFrames, DataFramesMeta,CairoMakie,StatsBase
 # ╔═╡ 3e4aee85-62b4-4c36-9442-f8bf65204f44
 using FreqTables
 
+# ╔═╡ 94f1ba50-9e77-4e5e-88b7-b6ebb5af611b
+include("funs.jl")
+
 # ╔═╡ ac825a43-a897-485d-9d04-1f6d3cf5c853
 TableOfContents(title = "目录")
-
-# ╔═╡ 275fc396-58ed-4ea8-86e6-355268408db1
-begin
-tip(text) = Markdown.MD(Markdown.Admonition("tip", "🍡 建 议", [text])) # 绿色
-hint(text) = Markdown.MD(Markdown.Admonition("hint", "💡 提 示", [text]))
-attention(text) = Markdown.MD(Markdown.Admonition("warning", "⚡ 注 意", [text])) # 黄色
-danger(text) = Markdown.MD(Markdown.Admonition("danger", "💣 危 险", [text])) # 红色
-note(text) = Markdown.MD(Markdown.Admonition("hint", "📘 笔 记", [text])) # 蓝色
-end;
 
 # ╔═╡ 1d51bf81-c99a-4d3c-aff2-84fa65ca2f87
 md"""
@@ -30,6 +24,54 @@ md"""
 这份数据是简单的CSV格式数据， CSV格式数据是用逗号分隔的数据， 读取相对很简单， 使用CSV.jl这个包即可。在Pluto里面， 只需要using CSV即可。
 """
 
+
+# ╔═╡ 0b4f89dc-4d94-4639-b0e6-70472923c232
+train = CSV.read(datapath*"/trainbx.csv", DataFrame)
+
+# ╔═╡ 99bf8265-959f-4c61-af87-fda42af4b45b
+md"""
+### 数据字段描述
+字段	说明
+
+- policy_id	保险编号
+- age	年龄
+- customer\_months	成为客户的时长，以月为单位
+- policy\_bind\_date	保险绑定日期
+- policy\_state	上保险所在地区
+- policy\_csl	组合单一限制Combined Single Limit
+- policy\_deductable	保险扣除额
+- policy\_annual_premium	每年的保费
+- umbrella\_limit	保险责任上限
+- insured\_zip	被保人邮编
+- insured\_sex	被保人姓名：FEMALE或者MALE
+- insured\_education_level	被保人学历
+- insured\_occupation	被保人职业
+- insured\_hobbies	被保人兴趣爱好
+- insured\_relationship	被保人关系
+- capital\-gains	资本收益
+- capital\-loss	资本损失
+- incident\_date	出险日期
+- incident\_type	出险类型
+- collision\_type	碰撞类型
+- incident\_severity	事故严重程度
+- authorities\_contacted	联系了当地的哪个机构
+- incident\_state	出事所在的省份，已脱敏
+- incident\_city	出事所在的城市，已脱敏
+- incident\_hour_of_the_day	出事所在的小时（一天24小时的哪个时间）
+- number\_of_vehicles_involved	涉及的车辆数
+- property\_damage	是否有财产损失
+- bodily\_injuries	身体伤害
+- witnesses	目击证人
+- police\_report\_available	是否有警察记录的报告
+- total\_claim_amount	整体索赔金额
+- injury\_claim	伤害索赔金额
+- property\_claim	财产索赔金额
+- vehicle\_claim	汽车索赔金额
+- auto\_make	汽车品牌，比如Audi, BMW, Toyota, Volkswagen
+- auto\_model	汽车型号，比如A3,X5,Camry,Passat等
+- auto\_year	汽车购买的年份
+- fraud	是否欺诈，1或者0
+"""
 
 # ╔═╡ ccbd227c-9450-4527-bc67-c0678fd90620
 md"""
@@ -58,11 +100,17 @@ md"""
 """
 
 
+# ╔═╡ e3ea4d0c-e795-47e6-92a0-2d1baedda6f4
+countmap(collect(train.policy_state))
+
 # ╔═╡ cb4136f0-88d1-4e89-9871-3edebc552173
 trim
 
 # ╔═╡ c68908dc-e9d4-4cfc-bf86-5cad601300b0
 mean(collect(trim([5,2,4,3,1], prop=0.2)))
+
+# ╔═╡ f182d7cc-4080-4e15-b582-5249120d9c37
+collect(train.policy_state)
 
 # ╔═╡ 98ac2295-5903-4b1f-8365-bc3ec86862a3
 md"""
@@ -73,6 +121,9 @@ md"""
 md"""
 [FreqTables](https://github.com/nalimilan/FreqTables.jl)
 """
+
+# ╔═╡ fa1d0369-2e2e-4d59-bda5-6c709700e945
+freqtable(train.insured_sex,train.fraud )
 
 # ╔═╡ 8dbc5f84-696b-4357-a8b5-76b93718fdb9
 md"""
@@ -138,63 +189,6 @@ col的写法更多，
 - [:colname1, :colname2, ...] 选定的列， 注意中括号。 如果没有中括号，且只选一列， 返回结果会变为向量。
 - ["colname1", ":colname2", ...] 选定的列， 注意中括号。 
 - Not, Between, Cols and All 用于构造列选择器。 
-"""
-
-# ╔═╡ 0b4f89dc-4d94-4639-b0e6-70472923c232
-train = CSV.read("../data/trainbx.csv", DataFrame)
-
-# ╔═╡ e3ea4d0c-e795-47e6-92a0-2d1baedda6f4
-countmap(collect(train.policy_state))
-
-# ╔═╡ f182d7cc-4080-4e15-b582-5249120d9c37
-collect(train.policy_state)
-
-# ╔═╡ fa1d0369-2e2e-4d59-bda5-6c709700e945
-freqtable(train.insured_sex,train.fraud )
-
-# ╔═╡ 99bf8265-959f-4c61-af87-fda42af4b45b
-md"""
-### 数据字段描述
-字段	说明
-
-- policy_id	保险编号
-- age	年龄
-- customer\_months	成为客户的时长，以月为单位
-- policy\_bind\_date	保险绑定日期
-- policy\_state	上保险所在地区
-- policy\_csl	组合单一限制Combined Single Limit
-- policy\_deductable	保险扣除额
-- policy\_annual_premium	每年的保费
-- umbrella\_limit	保险责任上限
-- insured\_zip	被保人邮编
-- insured\_sex	被保人姓名：FEMALE或者MALE
-- insured\_education_level	被保人学历
-- insured\_occupation	被保人职业
-- insured\_hobbies	被保人兴趣爱好
-- insured\_relationship	被保人关系
-- capital\-gains	资本收益
-- capital\-loss	资本损失
-- incident\_date	出险日期
-- incident\_type	出险类型
-- collision\_type	碰撞类型
-- incident\_severity	事故严重程度
-- authorities\_contacted	联系了当地的哪个机构
-- incident\_state	出事所在的省份，已脱敏
-- incident\_city	出事所在的城市，已脱敏
-- incident\_hour_of_the_day	出事所在的小时（一天24小时的哪个时间）
-- number\_of_vehicles_involved	涉及的车辆数
-- property\_damage	是否有财产损失
-- bodily\_injuries	身体伤害
-- witnesses	目击证人
-- police\_report\_available	是否有警察记录的报告
-- total\_claim_amount	整体索赔金额
-- injury\_claim	伤害索赔金额
-- property\_claim	财产索赔金额
-- vehicle\_claim	汽车索赔金额
-- auto\_make	汽车品牌，比如Audi, BMW, Toyota, Volkswagen
-- auto\_model	汽车型号，比如A3,X5,Camry,Passat等
-- auto\_year	汽车购买的年份
-- fraud	是否欺诈，1或者0
 """
 
 # ╔═╡ 8236591f-069b-4d47-bdbc-58d274d37600
@@ -2229,7 +2223,7 @@ version = "3.5.0+0"
 # ╔═╡ Cell order:
 # ╠═18687dc0-c17c-11ed-25fe-d790175bd663
 # ╠═ac825a43-a897-485d-9d04-1f6d3cf5c853
-# ╟─275fc396-58ed-4ea8-86e6-355268408db1
+# ╠═94f1ba50-9e77-4e5e-88b7-b6ebb5af611b
 # ╟─1d51bf81-c99a-4d3c-aff2-84fa65ca2f87
 # ╠═0b4f89dc-4d94-4639-b0e6-70472923c232
 # ╟─99bf8265-959f-4c61-af87-fda42af4b45b
