@@ -16,7 +16,7 @@ md"""
 """
 
 # ╔═╡ af77e128-e1b5-4f36-bf05-f93d077e564c
-Resource(videopath*"实验材料视频.mp4", :width => 600)
+LocalResource(videopath*"实验材料视频.mp4", :width => 600)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -291,7 +291,7 @@ version = "17.4.0+0"
 
 # ╔═╡ Cell order:
 # ╠═bc5ec912-764a-11ee-062c-674e0f93f15b
-# ╟─45152149-9ae2-4ad5-99b7-4c31a99aacd1
+# ╠═45152149-9ae2-4ad5-99b7-4c31a99aacd1
 # ╟─0bddcee9-81ff-4530-bb3c-cd6839833990
 # ╠═af77e128-e1b5-4f36-bf05-f93d077e564c
 # ╟─00000000-0000-0000-0000-000000000001

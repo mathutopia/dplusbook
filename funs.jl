@@ -5,4 +5,4 @@ note(text) = Markdown.MD(Markdown.Admonition("hint", "📘 笔 记", [text])) # 
 
 datapath = "data/";
 imgpath = "img/";
-videopath = "video"; 
+videopath = "video/"; 
