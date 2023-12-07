@@ -11,7 +11,7 @@ using Gadfly
 using PlutoUI, CSV, DataFrames, DataFramesMeta,CategoricalArrays
 
 # ╔═╡ cb57e090-a665-4071-bf63-9fa467f3d7f2
-train = CSV.read("../data/trainbx.csv", DataFrame)
+train = CSV.read("data/trainbx.csv", DataFrame)
 
 # ╔═╡ 9fdc511f-b5ee-49c0-b695-4028f56134f1
 TableOfContents(title = "目录")
