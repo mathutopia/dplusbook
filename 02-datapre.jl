@@ -154,7 +154,7 @@ md"""
 """
 
 # ╔═╡ 1925f8df-7464-4c4c-8dad-dace0d47fffb
-train = CSV.read("data/ trainbx.csv", DataFrame)
+train = CSV.read("data/trainbx.csv", DataFrame)
 
 # ╔═╡ c0d6a811-210f-4733-b4a6-429dc5899616
 typeof(train)
