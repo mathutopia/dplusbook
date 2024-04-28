@@ -1,194 +1,549 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.41
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ dff9e5b0-959b-11ee-2223-419029c55758
-using CSV, DataFrames, MLJ,DataFramesMeta, MLJModels
+# ╔═╡ 474a99e2-9032-11ee-2d38-95a5b97c5516
+using MLJ, DataFrames, PlutoUI,CSV,DataFramesMeta
 
-# ╔═╡ 8c09a51f-e3cf-4601-a82a-b076b518551f
-using PlutoUI
+# ╔═╡ 74d6dcc1-0037-47ce-8e1d-6dc46771ff62
+using DecisionTree,MLJDecisionTreeInterface
 
-# ╔═╡ 6cdeaf76-c751-4051-93d8-741a5fa3e7a6
-TableOfContents(title ="目录")
+# ╔═╡ eaeae502-3ef6-4053-9ad5-6d7a4aafe04b
+PlutoUI.TableOfContents(title = "目录")
 
-# ╔═╡ 6ceb287c-fec1-43a3-9822-49bef5003607
+# ╔═╡ 0ee80ce8-a007-4e26-8dd4-dbf0938fd96a
 md"""
-很多时候， 我们更重要的工作是对数据做预处理， 比如做特征选择， 数据变换等等。这些操作可以看成是对数据做无监督的学习。MLJ提供了一些无监督学习的模型，可以方便的对数据做一些简单处理。
-
-在MLJ中， 提供了以下几种内置的数据变换模型：
-
-- MLJModels.Standardizer ： 数据标准化
-
-- MLJModels.OneHotEncoder ： 独热编码
-
-- MLJModels.ContinuousEncoder ： 连续编码
-
-- MLJModels.FillImputer ： 缺失值计算
-
-- MLJModels.UnivariateFillImputer ：单变量缺失值计算
-
-- MLJModels.FeatureSelector ： 特征选择
-
-- MLJModels.UnivariateBoxCoxTransformer ：BoxCox变换
-
-- MLJModels.UnivariateDiscretizer  ：单变量离散化
-
-- MLJModels.UnivariateTimeTypeToContinuous ：时间转连续变量
-
-下面对常用的无监督模型做简要介绍。 看[这里](https://alan-turing-institute.github.io/MLJ.jl/dev/transformers/#Transformers-and-Other-Unsupervised-Models)了解更多。
+下面介绍用[MLJ](https://alan-turing-institute.github.io/MLJ.jl/stable/)做数据挖掘的方法。先用 **[iris](https://www.gairuo.com/p/iris-dataset)** 数据集做一个用 [**MLJ**](https://alan-turing-institute.github.io/MLJ.jl/dev/) 建模的基本过程。
 """
 
-# ╔═╡ 0da6aa89-d6d7-47fa-9cf1-7425d806ca8d
+# ╔═╡ 8344e755-ffc6-4bb3-ac3b-e2a737033030
 md"""
-# 1 特征选择
-一个模型对输入的特征总是有要求的， 因此， 选择我们想要的特征是建模的第一步。 特征选择可以使用FeatureSelector模型。这个模型可以用于选择我们要的特征，或者不要的特征。由于这也是模型， 所以可以有类似的模型操作框架。
-1. 加载模型代码；
-2. 构建模型实例； 
-3. 构建机器； 
-4. 拟合模型；
-5. 转换数据； 
+# MLJ建模基本框架
 
-具体细节可以参考[这里](https://alan-turing-institute.github.io/MLJ.jl/dev/transformers/#MLJModels.FeatureSelector)
+## 演示数据准备
+这里只是简单的引入已有数据， 更多的数据准备工作在前面的课程， 后面会进一步总结。
 """
 
-# ╔═╡ 5bc9dbcf-841b-4bb6-b438-6dcce5d662ab
-trains = CSV.read("data/trainbx.csv", DataFrame)
+# ╔═╡ 6c5de159-e6b6-459b-96e2-3feeff8a4b70
+iris = DataFrame(load_iris())
 
-# ╔═╡ 59ddc03e-b710-4848-bf94-6fd1d93086fb
-names(trains)
-
-# ╔═╡ 54dec9c9-31a9-42ce-98c3-bdce214415ed
+# ╔═╡ 1bfc9917-68ac-415a-aea3-336728d39b37
 md"""
-## 加载模型代码
-这里要加载的模型都在MLJModels里面。
+构造预测变量X和目标变量y。 也可以使用dataframe的select去选择X和y， 不过要注意y需要转换为类别变量,例如通过下面的代码可以构造y
+```julia
+X1 = select(iris, Not(:target))
+y1 = categorical(iris.target)
+```
 """
 
-# ╔═╡ a180eec7-1da4-4900-8be2-3dd7cc2cf24e
-FeatureSelector = @load FeatureSelector pkg=MLJModels # 加载模型代码
+# ╔═╡ 2079416a-f031-4313-bb81-0b51b147904b
+y,X = unpack(iris, ==(:target))
 
-# ╔═╡ 054f9a1d-1521-4131-8ed8-2e2b2179cca0
+# ╔═╡ 85ef2d6b-db0c-49e4-857f-01622f96e7eb
+y
+
+# ╔═╡ 6bbb67b2-f25c-48ed-938c-e6479c29aff4
+X
+
+# ╔═╡ 235ca537-f55f-4842-b81e-f791d67b67b4
+md"""
+# 2. MLJ建模
+下面的@load 宏用于从一个注册的pkg中加载一个模型， 需要这个pkg事先安装好。 一个**模型**本质上是一个struct， 记录了模型的一些超参数。
+
+## 2.1 加载模型结构（struct）
+**搜索匹配数据的模型**
+"""
+
+# ╔═╡ 13bb7c17-1e87-46b1-bdd1-25441adc20b7
+# 找到所有匹配我们数据的模型
+models(matching(X, y))
+
+# ╔═╡ 4b4dadf7-fbb3-475f-902d-391c8839b78d
+md"""
+**搜索包含某种字段的模型**
+"""
+
+# ╔═╡ 13c49081-8bb4-4766-bf8b-5fc53b7246bf
+models("Bayes")
+
+# ╔═╡ 766bf320-4ae5-4124-8031-1f79810e086c
+md"""
+**列出所有的模型**
+"""
+
+# ╔═╡ fce0a140-e63b-4e17-9c20-a9fef3797319
+models()
+
+# ╔═╡ f2c65c26-f1c4-4567-b522-4669a4d096f7
+Tree = @load DecisionTreeClassifier pkg=DecisionTree
+
+# ╔═╡ c3234c05-bf00-4bca-ac9e-268698d9f029
+md"""
+## 2.2 构建模型实例
+相当于初始化模型结构。
+"""
+
+# ╔═╡ ecdebdad-1d76-4f60-80c7-926200119bec
+tree = Tree(max_depth = 3)
+
+# ╔═╡ e5404658-5aee-4dcd-822c-28a318cf0953
+Tree()
+
+# ╔═╡ b30728ba-cb35-4d3d-b7b2-e62cf90f9e10
+md"""
+当然， 可以将第一步和第二步合并到一起：
+"""
+
+# ╔═╡ a0b1219f-02a7-4a2b-9b76-d525033b2ab1
+md"""
+## 2.3 构造机器（machine）
+**机器（machine）**可以认为是绑定了数据的模型
+"""
+
+# ╔═╡ 00a7cba8-8e18-4be6-acbe-f9b089a8def6
+mach = machine(tree, X, y)
+
+# ╔═╡ b536589e-f7ad-4d81-a532-7bcd27f12984
+md"""
+## 2.4 数据集划分
+主要是划分训练集、测试集
+"""
+
+# ╔═╡ 284f5c91-c788-45f1-8792-f8d63b6aa627
+train, test = partition(eachindex(y), 0.7, shuffle = true) # 注意，默认情况下不是随机划分
+
+# ╔═╡ a159ffbf-07c1-4bb2-b45d-5a2dadeb2271
+train
+
+# ╔═╡ c4f4f032-a784-44a9-a258-1f00e682d588
+1:length(y)
+
+# ╔═╡ 3cc0b04d-6c56-4599-9680-f1b05ccf6b20
+eachindex(y)
+
+# ╔═╡ 08999fb3-e10b-4f64-b0cc-d41c21d4f3ed
+md"""
+## 2.5 拟合模型
+一般在训练集上拟合模型
+"""
+
+# ╔═╡ 9519d45b-48d9-4287-a8c8-dae8a1551b0d
+MLJ.fit!(mach, rows=train)
+
+# ╔═╡ 3dd2216b-18fe-4182-bd11-f8027ce66e1f
+mach.model
+
+# ╔═╡ 7139aa61-c887-4124-bad3-a11790a9fc85
+md"""
+查看拟合的模型参数和模型结果
+"""
+
+# ╔═╡ e060deb3-46a6-41f8-b341-0f4597a368a9
+fitted_params(mach)
+
+# ╔═╡ 6d7d7024-2fdc-4ea5-8e45-767c2a684f80
+# 
+report(mach).print_tree(4)
+
+# ╔═╡ 1bd17442-1b24-486e-b1fb-1f9c9ba1d30d
+md"""
+## 2.6 预测
+用拟合的模型去预测测试集的类别。注意， 因为预测目标是一个类别（三种之一）， 这里预测结果是一个分布：相当于属于每一种的概率。 
+"""
+
+# ╔═╡ 15919fa0-59d6-4590-9af1-8708bbb62c2e
+yhat = MLJ.predict(mach, X[test,:])
+
+# ╔═╡ 4330b6e4-1da1-4867-940b-c874255c80b9
+yhat[1:2]
+
+# ╔═╡ a2e0f1b9-2173-4dd7-be7b-78f1d3b16f28
+md"""
+如果不想获得分布预测结果，可以使用predict_mode函数。也可以在分布预测结果上去求众数(mode)及获得概率最大的预测结果。
+"""
+
+# ╔═╡ 869ad4f0-9065-4362-b86b-0d70c58a6fbe
+yhat2 = predict_mode(mach, X[test,:])
+
+# ╔═╡ 8b269dd4-5366-411b-93b8-143d98f8eb64
+md"""
+## 2.7 评估预测结果
+评估模型效果本质上是要评估预测值与实际值(ground truth)之间的差距（损失），可以使用`measure()`列出所有的损失评估函数, 参考[这里](https://alan-turing-institute.github.io/MLJ.jl/v0.3/measures/)。 MLJ中实现[LossFunctions.jl](https://github.com/JuliaML/LossFunctions.jl)包中的损失函数， 但做了一些表示上的修改。
+
+一般， 设预测值为yhat, 实际值为y， $r = yhat - y$, 损失函数是一个关于r的函数。 
+
+分类问题一个常见的损失函数时交叉熵(cross entropy). 这里有个简单的博客做关于**[熵的介绍.](https://blog.csdn.net/xg123321123/article/details/52864830)**
+"""
+
+# ╔═╡ cf091683-25d2-4249-bab8-7dd3b051b78c
+log_loss(yhat, y[test]) |> mean
+
+# ╔═╡ 16986288-495e-4204-ad39-28a2afb66ea8
+md"""
+我们可以定义自己的损失函数，比如评估预测的准确度
+"""
+
+# ╔═╡ 97248a11-ce38-490f-8fc9-a6f885297885
+function myloss(yhat, y)
+	sum(yhat .== y)/length(yhat)
+end
+
+# ╔═╡ 6c32a7b2-9209-472e-9bcb-0a3c6fe77745
+myloss(yhat, y[test])
+
+# ╔═╡ 3a45e417-649b-4bab-a121-4ede48c2fc94
+accuracy(mode.(yhat), y[test])
+
+# ╔═╡ fe35ac8f-baa5-42df-8bb4-aaab27595e46
+measures()
+
+# ╔═╡ c58e547e-9165-48d7-9942-8ec11e928939
+auc(yhat, y[test])
+
+# ╔═╡ 338197fd-4792-4ea2-b9be-124d3ee4f684
+md"""
+# 3. 处理竞赛数据
+"""
+
+# ╔═╡ ae762710-6f96-4575-a9ab-86a50e559bc6
+md"""
+## 数据准备
+在实际建模过程中， 因为数据可能具有各种不同的类型与状况， 数据准备将是一个非常耗时的工作。
+"""
+
+# ╔═╡ 05721e0d-91ba-4460-9230-a18906c17e98
+trains = CSV.read("../data/trainbx.csv", DataFrame)
+
+# ╔═╡ 9fec7844-aad4-400a-a0f6-a17d1a447b10
+md"""
+构造竞赛数据的X,y。 通常， X中不应该包含id字段和目标字段。
+"""
+
+# ╔═╡ 1bfb7cc7-a89a-4ce7-aa3e-3cab2258b0d1
+Xt = select(trains, Not([:fraud,:policy_id]))
+
+# ╔═╡ 75e4e8e3-6f26-4b7b-b87c-2fb8e0a13c4f
+yt = categorical(trains.fraud)
+
+# ╔═╡ 83d7ad6e-f7cd-4e70-8b38-0f06a6020dcb
+models(matching(Xt,yt))
+
+# ╔═╡ a02e8b6e-5fab-4b20-a3d8-6abc4e7c5d40
+md"""
+从上面可以看出， 能用的模型非常少。 原因应该不能想到：我们的Xt包含太多的数据类型。 在MLJ建模时，我们更关注数据的科学类型， 而不是存储类型。 科学类型代表的是数据的“含义”，更加接近建模中看到的数据类型， 而存储类型只是数据的存储方式。用schema函数， 可以同时看到数据的科学类型和存储类型。
+"""
+
+# ╔═╡ 6c689670-d6cb-417b-86e6-0253b3894254
+schema(trains)
+
+# ╔═╡ a5a9c896-2114-4b07-adc8-2873e6ad93c2
+unique(schema(trains).scitypes)
+
+# ╔═╡ c2d137d2-b65e-4669-a393-65887233f922
+md"""
+上面将数据的科学类型去重之后可以看到， 数据有4种类型的科学类型。一般而言：科学类型主要涉及以下几类：
+"""
+
+# ╔═╡ bd38191a-c57d-4dc4-ad71-814b782f1432
+md"""
+[科学类型]
+
+![](https://alan-turing-institute.github.io/MLJ.jl/dev/img/scitypes_small.png)
+"""
+
+# ╔═╡ 755fb8bb-7230-48d5-ae60-448fcb217c52
+md"""
+一般而言， 整型（Int）存储类型会被处理为Count， 浮点数（Float）类型会被处理为Continuous， 字符串类型（String）会被处理为textual。 直接读取数据，一般不会有有序因子（OrderedFactor）和类别变量（Multiclass）， 需要转化。可以使用scitype和elscitype分别获取数据框中字段的科学类型和字段取值的科学类型。
+"""
+
+# ╔═╡ 22edcd12-5b58-49c1-9fb5-4cc8f7b1dffb
+scitype(trains.age)
+
+# ╔═╡ 07694d8c-29f4-4651-9302-bc997cc38071
+elscitype(trains.age)
+
+# ╔═╡ ab5daca3-aabb-49b8-b863-014cab8ffca9
+md"""
+科学类型的一个重要作用用于模型选择时的数据类型指定。 比如对于上面提到的鸢尾花分类问题， 在所有的模型中， 只有一部分是适合这个问题的。 MLJ是如何判断一个模型是否适合我们的问题的呢？事实上， 一个模型包含了许多的信息， 其中的模型名字和所在包的名字是最重要的。
+
+下面， 我们看一下前面用到的DecisionTree包中，DecisionTreeClassifier的相关信息。
+"""
+
+# ╔═╡ d6300b07-45cc-4012-aa6e-fc717144d57e
+info("DecisionTreeClassifier", pkg="DecisionTree")
+
+# ╔═╡ a80849b4-e961-4613-869b-24c47d5db1c6
+md"""
+在模型返回的诸多信息中， 有两个字段input_scitype和target_scitype， 分别表示输入数据X和目标变量Y的的科学类型。比如上面的模型， 输入数据的类型是：
+Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}
+虽然这个看上去看复杂， 但仔细看还是比较容易理解的。首先， 输入数据必须是表格Table（dataframe是表格）， 表格中字段的类型都是向量Vector， 其元素可以是：Continuous， Count, OrderedFactor类型。
+对于目标变量，其类型是：AbstractVector{<:Finite}， 也就是有限类型就行。
+
+正是因为一个模型对输入变量和目标变量的数据类型是有要求的， 因此， 我们可以使用models(matching(X, y))去搜索所有能用于对X和y建模的模型。
+"""
+
+# ╔═╡ ac9ddcb0-96cd-4d73-8314-07e714a2025e
+md"""
+在实际建模中，我们的X通常会有多种数据类型， 有时候，我们需要选择某种/些类型的变量用于建模， 这时候， 需要用到类型的获取工具。 运算工具： == 可以用于比较两种类型是否相同。 type1<:type2表示判断type1类型是否是type2类型的子类型（包括type2类型）。类似的， type1>:type2表示判断type1类型是否是type2类型的父类型（包括type2类型）。
+"""
+
+# ╔═╡ abe1d9c3-6509-47a9-884d-9fbd36d13d45
+elscitype(trains.age) == Count
+
+# ╔═╡ bebc6df9-b57e-486b-ab37-4aa39fdb3a6e
+elscitype(trains.age) <: Count
+
+# ╔═╡ f08ef805-47db-4e1d-9fa4-0c604d71f8ef
+elscitype(trains.age) >: Count
+
+# ╔═╡ f696cad1-5eb2-4829-89e0-40247dcca90c
+md"""
+在DataFrames包中， 提供了一个函数[`names`](https://dataframes.juliadata.org/stable/lib/functions/#Base.names)用于获取一个数据框中满足条件的字段名。 这个函数有多种用法， 请自行参考帮助文档， 下面介绍两种常见的。
+
+```julia
+names(df, type)
+names(df, boolvec)
+```
+
+1。 选择元素是某种存储类型(type)的字段： 比如， 选出所有整型（Int）数据字段。
+"""
+
+# ╔═╡ b839ac95-daba-4b39-97a9-27080ffd6999
+names(Xt, Int)
+
+# ╔═╡ 7db8e1cd-a3f6-4ca9-9864-b7fce67fe67b
+md"""
+注意， 上面的类型必须是存储类型， 用科学类型不能选出符合条件的。
+"""
+
+# ╔═╡ dcd88f53-4533-4746-8b89-50a6ee7934b2
+names(Xt, Count)
+
+# ╔═╡ 56008d6c-0bfc-4418-bf8b-26c1872a854c
+md"""
+如果要选出某种科学类型的字段， 需要用到更高级的用法： 通过一个函数,判断每一列是否是某种科学类型， 形成一个bool向量（boolvec），通过这个向量，选择满足条件的字段名。
+
+下面定义一个函数， 这个函数可以用于判断参数的元素的科学类型是否是某种类型。 默认的**关键字参数**给出的是Count类型。
+"""
+
+# ╔═╡ 96616d0e-1f77-4589-b1a5-9ea15dc1a38f
+fun(x;tp = Count) = elscitype(x) == tp
+
+# ╔═╡ 3ae5298a-1284-4c5b-9fd8-cce449f116ed
+fun(Xt.age)
+
+# ╔═╡ 6b359608-f19f-4210-82fa-5a656e6c2df5
+md"""
+为了判断一个数据框的每一列是否是某种类型的变量， 我们需要遍历每一个字段， 用for循环当然能够实现， 但处理一个数据框的每一列是一个常见的操作， DataFrames包中提供了一个函数`eachcol`， 通过这个函数可以获得一个dataframe的每一列的可迭代对象。 可以将其想象为， 你获得了一个向量， 只是这个向量的元素会在迭代过程中一个一个取出来。 有了这个可迭代对象， 就可以实现对每一列执行某种操作了。
+
+下面就是将上面定义的函数fun施加到Xt的每一列上， 注意函数名后的点., 这表示向量化运算， 即这个函数fun会施加到后面数据框的每一列上。
+
+如果你还想了解更多点运算实现向量化的背景， 可以参考[这里。](https://docs.julialang.org/en/v1/manual/functions/#man-vectorized)
+"""
+
+# ╔═╡ 437344cb-89b4-4df7-896b-9c50f7c9fe20
+fun.(eachcol(Xt))
+
+# ╔═╡ b78034cf-d2e0-487c-a3bc-6c2e7e0aad6b
+md"""
+有了上面的基础， 我们可以找到具有某种科学类型的字段了。
+"""
+
+# ╔═╡ 929b3de2-2c41-43b7-b25d-7c54d73682c3
+names(Xt, fun.(eachcol(Xt)))
+
+# ╔═╡ b6f069a6-fdb8-4617-88fe-fe65e7b10b10
+md"""
+找到了相应的字段， 然后去选择字段， 构造新的X是非常容易的。 用select函数就可以了。
+"""
+
+# ╔═╡ 0eee807f-e09b-471a-9ab7-53345dce7ee6
+select(Xt, names(Xt, fun.(eachcol(Xt))))
+
+# ╔═╡ c398af14-f25e-493f-a2ae-0fcaf240eafc
+md"""
+很多模型都需要输入变量是连续类型， 可以看看我们的数据中到底有多少是连续的。
+"""
+
+# ╔═╡ 0c4f87ec-daee-4670-bd08-298f74543aab
+names(Xt, fun.(eachcol(Xt), tp = Continuous))
+
+# ╔═╡ 4c57e45b-4d11-4ec7-8d3d-c437f2ab10c1
+md"""
+上面的结果告诉你， 我们的数据集中连续变量只有一个。 这显然不符合事实。 如果你去仔细分析， 会发现，许多Count类型的变量应该理解为连续变量更合理（比如年龄age）。因此， 我们需要一个能将Count类型转换为Continuous类型的函数。这可以方便的通过coease实现。
+
+coease有三种不同的使用方法：
+```julia
+coerce(vec, type)
+coerce(X, :name1=>type1, :name2=>type2,...)
+coerce(X, type1=>type2, ...)
+```
+下面是一个例子
+```julia
+#将向量y中的元素都转化为Multiclass类型
+coerce(y, Multiclass) 
+#将表格X中的字段：x1转化为Continuous， 字段x2转化为OrderedFactor
+coerce(X, :x1 => Continuous, :x2 => OrderedFactor)
+#将表格中所有的Count类型都转化为Continuous类型。
+coerce(X, Count => Continuous) 
+
+```
+
+"""
+
+# ╔═╡ ecfe89e3-3d3f-4113-b720-9c22dc8d33a4
+md"""
+下面我们将所有的Count类型都转化为continous类型， 进而选择用continous类型的数据去建模， 看看能用的模型有多少。
+
+为了更清楚的看到数据处理的流程， 我们将从最原始的数据开始， 综合上面提到的每一个步骤：
+"""
+
+# ╔═╡ 11185a67-0f19-4bc2-b651-2b01915c9159
+Xtn = @chain trains begin
+select(Not([:fraud,:policy_id]))
+coerce(Count => Continuous)
+select(_,names(_, fun.(eachcol(_),tp = Continuous)))
+end
+
+# ╔═╡ d8683ab5-8f70-4ae8-a060-8adb6bea846f
+ms = models(matching(Xtn, yt))
+
+# ╔═╡ 262bf688-0178-4150-aeba-e257242117a5
+md"""
+可以看到，现在的模型已经有 $(length(ms))个了。 我们可以在这中间挑选你想要的模型去建模了。 由于上面还是可以找到决策树模型（显然的）， 下面我们尝试用决策树模型去对我们的问题建模一次。
+"""
+
+# ╔═╡ d9dd8372-67c1-4fea-badf-77a8cef4e15b
+md"""
+## 加载模型结构
+如果还是使用决策树模型， 这一步不需要做了， 因为上面的例子中， 已经把模型结构加载进来， 我们只要给定参数去构建实例就好。不过， 为了完整起见， 我还是加载一次， 并将其赋值给不同的对象。
+"""
+
+# ╔═╡ e810a496-1d60-48ca-b7e9-c741113597b1
+Tree2 = @load DecisionTreeClassifier pkg=DecisionTree
+
+# ╔═╡ a08bfc8c-cb47-49ec-95a3-9055fdc20ce6
 md"""
 ## 构建模型实例
-构建特征选择模型的实例时， 一个重要的参数是指定要选择的特征features, 通常是一个特征名字(Symbol）组成的向量。
-比如，下面的模型可以用于从数据集中选择两列:age, :customer_months。
-
-当然， 也可以使用一个函数， 请参考[这里](https://alan-turing-institute.github.io/MLJ.jl/dev/transformers/#MLJModels.FeatureSelector)了解更多。
+这时候， 我们把超参数稍作修改。
 """
 
-# ╔═╡ 80ab5f06-dec1-4eae-996f-397832d5a83f
-selector = FeatureSelector(features=[:age, :customer_months ])
+# ╔═╡ f1b39c2e-7e47-4535-882f-607b02ea82f3
+tree2 = Tree2(max_depth = 5)
 
-# ╔═╡ eca076c5-5dcd-4536-92d3-62ead66632eb
+# ╔═╡ bc97582d-6e2f-4636-be46-58e7b4ab5deb
 md"""
-## 构建机器
-构建机器就是将模型跟数据绑定起来。 这里的模型只是从数据中选择列， 所有没有y（无监督学习）
+## 构造机器
 """
 
-# ╔═╡ daef6a63-5eea-441c-ad66-6d4f11f885a0
-mach1 = machine(selector, trains)
+# ╔═╡ 69d8cff1-b68c-41c1-b171-40a9712b94ba
+mach2 = machine(tree2, Xtn, yt)
 
-# ╔═╡ 05e3e86b-b61c-4c6f-8a0e-b9840c17d7e8
+# ╔═╡ 07ec992c-530f-4bef-a603-15bddaf74817
+md"""
+## 数据集划分
+"""
+
+# ╔═╡ 534903b7-0ffa-4b7f-b6a4-60581419854a
+train2, test2 = partition(eachindex(yt), 0.7, shuffle = true) 
+
+# ╔═╡ 428421eb-8dd8-4692-841d-bbf1b44789e8
 md"""
 ## 拟合模型
-这里拟合模型其实不需要做太多的工作。因为并没有太多参数需要学习。不过， 有些无监督学习时需要学习一些参数的， 比如标准化就需要学习均值和方差。
-
-同时请注意， 我们这里也没有指定训练集和测试集， 因为在特征选择里， 不需要区分这两者。
 """
 
-# ╔═╡ 3b0ac5de-0c27-448b-8957-48f9347a3ddc
-MLJ.fit!(mach1)
+# ╔═╡ 2d9baa60-9b06-4bd3-be1c-5c086c98512a
+MLJ.fit!(mach2, rows=train2)
 
-# ╔═╡ 769ce8e1-cf8c-47b7-b921-00c2329af64a
+# ╔═╡ 2d98cfde-15ea-4154-b7e3-c3a7a7f798ce
+yhat21 = MLJ.predict(mach2, Xtn[test2,:])
+
+# ╔═╡ 7ffbaf58-f3b1-4002-93d6-5ded742ee2fb
+yhat22 = MLJ.predict_mode(mach2, Xtn[test2,:])
+
+# ╔═╡ f3215352-4f86-4f30-a4ee-0bf2d40bc43b
 md"""
-## 变换数据
-拟合机器之后， 就可以用机器去变换数据了。变换使用的函数是transform。 从下面的结果可以看到， 我们的悬链数据经过变换之后， 只剩下两列了。
+## 评估模型结果
+由于我们竞赛用的是auc指标， 我们当然也希望用auc指标去评估模型。下面是在测试集上去评估模型。
 """
 
-# ╔═╡ dcaf72e8-43f2-4e8c-b777-4818d4fd281d
-MLJ.transform(mach1, trains)
+# ╔═╡ 348ab9d7-6f70-4891-8a8f-d9dfe4c3b8c9
+auc(yhat21, yt[test2])
 
-# ╔═╡ 63049bd2-d1b2-4040-8c21-53f556e10b10
+# ╔═╡ e50e1362-9169-4325-905f-7ea6ae71d8b7
 md"""
-上面演示了一个简单的特征选择模型的作用过程。从上面可以看出， 这类模型显然比常规的监督学习模型要简单很多， 但在处理数据的框架上，还是有很多类似之处。 下面再演示几个例子。 
-
-由于我们可以会需要根据不同的特征建立多个相关模型， 因此， 我们可以建立多个特征选择模型。 这时候， 因为特征选择模型已经加载好了。 我们只需要构建不同的实例就可以了。
-
-比如， 下面的特征选择模型选择了另外的特征。
+上面的结果可能让你失望， 因为它可能还没有聚类分析来的效果好。 不过由于我们并没有做太多的特征处理，而且这里做的预测只是样本内的预测， 其效果不是很理想也能理解。不过， 你现在可能希望把这个模型用到真实的测试集上， 然后，提交系统，看到底能得多少分？下面我们实现这个步骤。
 """
 
-# ╔═╡ 4b05e29d-f70b-4907-8b16-450d434828cb
-selector1 = FeatureSelector(features=[:age,	:customer_months,	:policy_bind_date ])
-
-# ╔═╡ cf7f5aeb-e198-458e-bb2d-697451ce01a2
+# ╔═╡ f47f6676-bda8-4011-bdbd-f90a2c615963
 md"""
-为了演示方便， 下面把构建机器， 拟合机器， 数据变换写到了同一行里。 
+# 4. 提交比赛
+下面是将模型的结果用于比赛的测试集。 现在假定你认为， 我们的模型已经不错了。 提交比赛需要做以下步骤：
+1. 对测试集数据通过与训练集相同的数据处理； 
+2. 在所有的训练集上重新训练一下模型； 
+3. 用重新训练的模型预测新构建的测试集。
+4. 将预测结果， 写入csv提交系统。
 """
 
-# ╔═╡ e3e3cd08-cc48-4a4f-b199-d860f0a659f1
-MLJ.transform(MLJ.fit!(machine(selector1, trains)),trains)
-
-# ╔═╡ 0561ca5d-7f5f-4e27-a33f-553458a0c70a
+# ╔═╡ 6c8a368a-3fc8-4c29-9b6d-87a3d036a546
 md"""
-# 2 独热编码
-独热编码可以实现将类别变量或有序因子转换为独热变量。 因为在我们的数据集中，并没有这种类型的变量。 所以我们需要首先对数据做类型转化。 比如， 我们可以将文本类型的变量先转化为类别型变量。
+## 处理测试数据
+系统提供的测试数据需要经过跟训练数据相同的处理， 才能用于预测模型。因此， 我们首先处理一下测试数据。处理的过程很简单， 只需要跟训练集施加同样的操作即可。 在上面， 我们用一个@chain对训练集做了多个操作， 下面把代码搬过来，类似操作一下即可。 只是请注意， 在测试集中， 没有:fraud字段， 所有最开始选择的时候， 不要有这个字段就好。
 """
 
-# ╔═╡ d9e87f1d-e1a7-4707-97ae-bfce36c9880d
-trainsn = coerce(trains, Textual => Multiclass)
+# ╔═╡ 8bb6367f-19de-4cf5-b5df-c3eb9af8745f
+testbx = CSV.read("..\\data\\testbx.csv", DataFrame)
 
-# ╔═╡ e6dbe3ed-7686-42c1-b6e4-f67e07747ee3
-OneHotEncoder = @load OneHotEncoder pkg=MLJModels
+# ╔═╡ 16059ee1-a669-48c1-beb5-099fc55f6a50
+testbxn = @chain testbx begin
+select(Not([:policy_id]))
+coerce(Count => Continuous)
+select(_,names(_, fun.(eachcol(_),tp = Continuous)))
+end
 
-# ╔═╡ cf1c3ee6-d0b1-4c24-8716-f28d193f4622
-OneHotEncoder()
-
-# ╔═╡ 492fc857-69d0-48ed-9d72-6cd280f4ab79
-machcode = MLJ.fit!(machine(OneHotEncoder(), trainsn))
-
-# ╔═╡ 2408cdbe-32ff-4703-9a7f-d019c021bd43
-MLJ.transform(machcode, trainsn)
-
-# ╔═╡ aa39c47e-7eb5-4295-9649-d95c040cc3e6
+# ╔═╡ 3b513fb7-c47b-4408-881c-9346743ebe9e
 md"""
-# 3 连续编码
-连续编码的作用是将所有可以数值化的特征全部数值化。 其使用方法跟上述模型是类似的。
+## 重新训练一下模型
+上面已经训练了一个模型， 可以直接用于预测了。不过，上面训练的模型只是利用训练集上的一部分数据训练得到的。 我们让模型在整个训练集上去“学习”， 理论上应该可以得到更好的模型。 这时候， 我们不再需要指定rows参数。相当于用所有的行来训练模型。
 """
 
-# ╔═╡ 2c2db3b4-b761-4c94-9aba-bbfb75fecde6
-ContinuousEncoder = @load ContinuousEncoder pkg=MLJModels
+# ╔═╡ de4841eb-0975-4209-94f1-f13cbb46fb58
+MLJ.fit!(mach2)
 
-# ╔═╡ b33efe80-feb3-4933-88ba-332bc8cb648a
-machcontinuous = MLJ.fit!(machine(ContinuousEncoder(), trains))
-
-# ╔═╡ 8566fb19-726a-4d3b-8171-2607ce74dbe5
-MLJ.transform(machcontinuous, trains)
-
-# ╔═╡ 66ef0379-d1af-4b3b-b2a7-144ee76f5424
+# ╔═╡ f1b30e01-044a-4499-8630-9d633abc32a5
 md"""
-# 4 模型串联（管道）
-MLJ中还有更多的数据变换模型， 但操作方式都基本相同。可以在需要的时候自己去看文档。这里介绍一个更重要的需求--将多个操作的串联在一起，形成一个整体。
-
-事实上， 数据处理的过程就像一个对数据的加工过程。 加工过程中的每一个环节都是对数据做模型类型的操作。
-我们希望将各种类型的操作合并在一起形成一个整体。 比如， 我们先选择某些特征， 然后对数据做合适的科学类型转换， 最后将其做连续编码。这可以通过将多个操作（模型）串联到一起实现， 其基本的语法是：
-```julia
-pipe = mode1 |> model2 |> model3 |> ... |> modeln
-```
-这里的模型（model）既可以是前面讲过的模型， 也可以是某个函数。 唯一需要注意的是：数据是依次通过各个模型处理， 然后再输出的。前一个模型的输出结果会输入后一个模型。
+## 预测测试集
 """
 
-# ╔═╡ 125eeff4-3204-4492-b68d-51354f4e7dd5
-pipe = FeatureSelector(features=[:age,	:customer_months ,:insured_sex, :insured_education_level]) |>  (X -> coerce(X, Textual => Multiclass)) |> ContinuousEncoder() 
+# ╔═╡ d3f6c9bd-291a-4c30-bc01-1bbef2435f74
+yuce = MLJ.predict(mach2,testbxn )
 
-# ╔═╡ f81a805a-ab4a-4cb1-bff9-3db3f2cf2551
-machpip = machine(pipe, trains)
+# ╔═╡ 469d1d36-bcec-4a01-a2e7-c5b141e19d3a
+md"""
+上面预测的结果是一个分布(分别给出每个样本是0和1的概率)， 但我们需要的是这个分布在1上的取值， 本质上是概率密度函数（pdf）在1上的取值。因此， 我们可以通过pdf函数获得。
+"""
 
-# ╔═╡ e3fcaf6e-d1bd-41d4-8ac9-a1f1f7ff7b26
-MLJ.fit!(machpip)
+# ╔═╡ ee781216-8998-4073-8770-89152f5698c2
+yuce2 = pdf.(yuce, 1)
 
-# ╔═╡ 23b28bfe-15b9-4eb1-8a17-252b2ae494ea
-MLJ.transform(machpip, trains)
+# ╔═╡ 12301fef-ca85-4be9-a1e4-dafddb72864a
+md"""
+## 构造提交CSV
+注意， 提交系统的CSV只要两列（分别是policy_id和fraud）就可以了。policy_id可以从最开始读取的测试集得到。而fraud，则是一个我们预测的概率值。
+"""
+
+# ╔═╡ a31ea97c-2130-45dc-b705-be8e1688836d
+subm = DataFrame(policy_id = testbx.policy_id,fraud = yuce2)
+
+# ╔═╡ 998cde61-0814-4177-971d-2c1bbd1382a8
+CSV.write("../data/submit1.csv",subm)
+
+# ╔═╡ 0d5265c3-ba2c-4e9e-8d8c-1cfcc1dc3080
+md"""
+最终提交系统后， 成绩为0.6297。比本地测试的效果稍好一点。但还是很不理想。 
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -196,16 +551,18 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
+DecisionTree = "7806a523-6efd-50cb-b5f6-3fa6f1930dbb"
 MLJ = "add582a8-e3ab-11e8-2d5e-e98b27df1bc7"
-MLJModels = "d491faf4-2d78-11e9-2867-c94bc002c0b7"
+MLJDecisionTreeInterface = "c6f25543-311c-4c74-83dc-3ea6d1015661"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 CSV = "~0.10.11"
 DataFrames = "~1.6.1"
 DataFramesMeta = "~0.14.1"
+DecisionTree = "~0.12.4"
 MLJ = "~0.20.2"
-MLJModels = "~0.16.12"
+MLJDecisionTreeInterface = "~0.4.0"
 PlutoUI = "~0.7.54"
 """
 
@@ -213,9 +570,9 @@ PlutoUI = "~0.7.54"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.9.3"
+julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "580fefcece0c4aeeac8ef4db6ce0759a58f76d4f"
+project_hash = "21237913cb3d44b13436013c08036ec531808c0a"
 
 [[deps.ARFFFiles]]
 deps = ["CategoricalArrays", "Dates", "Parsers", "Tables"]
@@ -225,9 +582,14 @@ version = "1.4.1"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
-git-tree-sha1 = "91bd53c39b9cbfb5ef4b015e8b582d344532bd0a"
+git-tree-sha1 = "793501dcd3fa7ce8d375a2c878dca2296232686e"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.2.0"
+version = "1.2.2"
+
+[[deps.AbstractTrees]]
+git-tree-sha1 = "faa260e4cb5aba097a73fab382dd4b5819d8ec8c"
+uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
+version = "0.4.4"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
@@ -371,9 +733,9 @@ version = "1.0.2"
 
 [[deps.Compat]]
 deps = ["UUIDs"]
-git-tree-sha1 = "8a62af3e248a8c4bad6b32cbbe663ae02275e32c"
+git-tree-sha1 = "886826d76ea9e72b35fcd000e535588f7b60f21d"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "4.10.0"
+version = "4.10.1"
 weakdeps = ["Dates", "LinearAlgebra"]
 
     [deps.Compat.extensions]
@@ -382,7 +744,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.0.5+0"
+version = "1.1.0+0"
 
 [[deps.CompositionsBase]]
 git-tree-sha1 = "802bb88cd69dfd1509f6670416bd4434015693ad"
@@ -463,6 +825,12 @@ version = "1.0.0"
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
+[[deps.DecisionTree]]
+deps = ["AbstractTrees", "DelimitedFiles", "LinearAlgebra", "Random", "ScikitLearnBase", "Statistics"]
+git-tree-sha1 = "526ca14aaaf2d5a0e242f3a8a7966eb9065d7d78"
+uuid = "7806a523-6efd-50cb-b5f6-3fa6f1930dbb"
+version = "0.12.4"
+
 [[deps.DefineSingletons]]
 git-tree-sha1 = "0fba8b706d0178b4dc7fd44a96a92382c9065c2c"
 uuid = "244e2a9f-e319-4986-a169-4d1fe445cd52"
@@ -476,9 +844,9 @@ version = "1.9.1"
 
 [[deps.Distances]]
 deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
-git-tree-sha1 = "5225c965635d8c21168e32a12954675e7bea1151"
+git-tree-sha1 = "66c4c81f259586e8f002eacebc177e1fb06363b0"
 uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
-version = "0.10.10"
+version = "0.10.11"
 weakdeps = ["ChainRulesCore", "SparseArrays"]
 
     [deps.Distances.extensions]
@@ -557,12 +925,13 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random"]
-git-tree-sha1 = "35f0c0f345bff2c6d636f95fdb136323b5a796ef"
+git-tree-sha1 = "28e4e9c4b7b162398ec8004bdabe9a90c78c122d"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "1.7.0"
-weakdeps = ["SparseArrays", "Statistics"]
+version = "1.8.0"
+weakdeps = ["PDMats", "SparseArrays", "Statistics"]
 
     [deps.FillArrays.extensions]
+    FillArraysPDMatsExt = "PDMats"
     FillArraysSparseArraysExt = "SparseArrays"
     FillArraysStatisticsExt = "Statistics"
 
@@ -584,9 +953,9 @@ version = "0.1.5"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "5eab648309e2e060198b45820af1a37182de3cce"
+git-tree-sha1 = "abbbb9ec3afd783a7cbd82ef01dcd088ea051398"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.10.0"
+version = "1.10.1"
 
 [[deps.HypergeometricFunctions]]
 deps = ["DualNumbers", "LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
@@ -720,21 +1089,26 @@ version = "0.1.0"
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
-version = "0.6.3"
+version = "0.6.4"
 
 [[deps.LibCURL_jll]]
 deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "7.84.0+0"
+version = "8.4.0+0"
 
 [[deps.LibGit2]]
-deps = ["Base64", "NetworkOptions", "Printf", "SHA"]
+deps = ["Base64", "LibGit2_jll", "NetworkOptions", "Printf", "SHA"]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
+
+[[deps.LibGit2_jll]]
+deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll"]
+uuid = "e37daf67-58a4-590a-8e99-b0245dd2ffc5"
+version = "1.6.4+0"
 
 [[deps.LibSSH2_jll]]
 deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
-version = "1.10.2+0"
+version = "1.11.0+1"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -801,6 +1175,12 @@ weakdeps = ["StatisticalMeasures"]
     [deps.MLJBase.extensions]
     DefaultMeasuresExt = "StatisticalMeasures"
 
+[[deps.MLJDecisionTreeInterface]]
+deps = ["CategoricalArrays", "DecisionTree", "MLJModelInterface", "Random", "Tables"]
+git-tree-sha1 = "8059d088428cbe215ea0eb2199a58da2d806d446"
+uuid = "c6f25543-311c-4c74-83dc-3ea6d1015661"
+version = "0.4.0"
+
 [[deps.MLJEnsembles]]
 deps = ["CategoricalArrays", "CategoricalDistributions", "ComputationalResources", "Distributed", "Distributions", "MLJModelInterface", "ProgressMeter", "Random", "ScientificTypesBase", "StatisticalMeasuresBase", "StatsBase"]
 git-tree-sha1 = "94403b2c8f692011df6731913376e0e37f6c0fe9"
@@ -860,14 +1240,14 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
-git-tree-sha1 = "f512dc13e64e96f703fd92ce617755ee6b5adf0f"
+git-tree-sha1 = "c067a280ddc25f196b5e7df3877c6b226d390aaf"
 uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.1.8"
+version = "1.1.9"
 
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.2+0"
+version = "2.28.2+1"
 
 [[deps.MicroCollections]]
 deps = ["BangBang", "InitialValues", "Setfield"]
@@ -886,7 +1266,7 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2022.10.11"
+version = "2023.1.10"
 
 [[deps.NNlib]]
 deps = ["Adapt", "Atomix", "ChainRulesCore", "GPUArraysCore", "KernelAbstractions", "LinearAlgebra", "Pkg", "Random", "Requires", "Statistics"]
@@ -925,12 +1305,12 @@ version = "1.2.0"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.21+4"
+version = "0.3.23+4"
 
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+0"
+version = "0.8.1+2"
 
 [[deps.OpenML]]
 deps = ["ARFFFiles", "HTTP", "JSON", "Markdown", "Pkg", "Scratch"]
@@ -957,15 +1337,15 @@ uuid = "efe28fd5-8261-553b-a9e1-b2916fc3738e"
 version = "0.5.5+0"
 
 [[deps.OrderedCollections]]
-git-tree-sha1 = "2e73fe17cac3c62ad1aebe70d44c963c3cfdc3e3"
+git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
-version = "1.6.2"
+version = "1.6.3"
 
 [[deps.PDMats]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "f6f85a2edb9c356b829934ad3caed2ad0ebbfc99"
+git-tree-sha1 = "4e5be6bb265d33669f98eb55d2a57addd1eeb72c"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
-version = "0.11.29"
+version = "0.11.30"
 
 [[deps.Parameters]]
 deps = ["OrderedCollections", "UnPack"]
@@ -982,7 +1362,7 @@ version = "2.8.0"
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.9.2"
+version = "1.10.0"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -1020,9 +1400,9 @@ version = "0.4.1"
 
 [[deps.PrettyTables]]
 deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "3f43c2aae6aa4a2503b05587ab74f4f6aeff9fd0"
+git-tree-sha1 = "88b895d13d53b5577fd53379d913b9ab9ac82660"
 uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "2.3.0"
+version = "2.3.1"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -1045,7 +1425,7 @@ deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [[deps.Random]]
-deps = ["SHA", "Serialization"]
+deps = ["SHA"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [[deps.RecipesBase]]
@@ -1098,6 +1478,12 @@ git-tree-sha1 = "a8e18eb383b5ecf1b5e6fc237eb39255044fd92b"
 uuid = "30f210dd-8aff-4c5f-94ba-8e64358c1161"
 version = "3.0.0"
 
+[[deps.ScikitLearnBase]]
+deps = ["LinearAlgebra", "Random", "Statistics"]
+git-tree-sha1 = "7877e55c1523a4b336b433da39c8e8c08d2f221f"
+uuid = "6e75b9c4-186b-50bd-896f-2d2496a4843e"
+version = "0.5.0"
+
 [[deps.Scratch]]
 deps = ["Dates"]
 git-tree-sha1 = "3bac05bc7e74a75fd9cba4295cde4045d9fe2386"
@@ -1147,6 +1533,7 @@ version = "1.2.0"
 [[deps.SparseArrays]]
 deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+version = "1.10.0"
 
 [[deps.SpecialFunctions]]
 deps = ["IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_jll"]
@@ -1214,7 +1601,7 @@ version = "3.2.0"
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-version = "1.9.0"
+version = "1.10.0"
 
 [[deps.StatsAPI]]
 deps = ["LinearAlgebra"]
@@ -1253,9 +1640,9 @@ deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[deps.SuiteSparse_jll]]
-deps = ["Artifacts", "Libdl", "Pkg", "libblastrampoline_jll"]
+deps = ["Artifacts", "Libdl", "libblastrampoline_jll"]
 uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
-version = "5.10.1+6"
+version = "7.2.1+1"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -1359,60 +1746,142 @@ version = "1.6.1"
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.13+0"
+version = "1.2.13+1"
 
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.8.0+0"
+version = "5.8.0+1"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.48.0+0"
+version = "1.52.0+1"
 
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
-version = "17.4.0+0"
+version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
-# ╠═dff9e5b0-959b-11ee-2223-419029c55758
-# ╠═8c09a51f-e3cf-4601-a82a-b076b518551f
-# ╠═6cdeaf76-c751-4051-93d8-741a5fa3e7a6
-# ╟─6ceb287c-fec1-43a3-9822-49bef5003607
-# ╟─0da6aa89-d6d7-47fa-9cf1-7425d806ca8d
-# ╠═5bc9dbcf-841b-4bb6-b438-6dcce5d662ab
-# ╠═59ddc03e-b710-4848-bf94-6fd1d93086fb
-# ╟─54dec9c9-31a9-42ce-98c3-bdce214415ed
-# ╠═a180eec7-1da4-4900-8be2-3dd7cc2cf24e
-# ╟─054f9a1d-1521-4131-8ed8-2e2b2179cca0
-# ╠═80ab5f06-dec1-4eae-996f-397832d5a83f
-# ╟─eca076c5-5dcd-4536-92d3-62ead66632eb
-# ╠═daef6a63-5eea-441c-ad66-6d4f11f885a0
-# ╟─05e3e86b-b61c-4c6f-8a0e-b9840c17d7e8
-# ╠═3b0ac5de-0c27-448b-8957-48f9347a3ddc
-# ╟─769ce8e1-cf8c-47b7-b921-00c2329af64a
-# ╠═dcaf72e8-43f2-4e8c-b777-4818d4fd281d
-# ╟─63049bd2-d1b2-4040-8c21-53f556e10b10
-# ╠═4b05e29d-f70b-4907-8b16-450d434828cb
-# ╟─cf7f5aeb-e198-458e-bb2d-697451ce01a2
-# ╠═e3e3cd08-cc48-4a4f-b199-d860f0a659f1
-# ╟─0561ca5d-7f5f-4e27-a33f-553458a0c70a
-# ╠═d9e87f1d-e1a7-4707-97ae-bfce36c9880d
-# ╠═e6dbe3ed-7686-42c1-b6e4-f67e07747ee3
-# ╠═cf1c3ee6-d0b1-4c24-8716-f28d193f4622
-# ╠═492fc857-69d0-48ed-9d72-6cd280f4ab79
-# ╠═2408cdbe-32ff-4703-9a7f-d019c021bd43
-# ╟─aa39c47e-7eb5-4295-9649-d95c040cc3e6
-# ╠═2c2db3b4-b761-4c94-9aba-bbfb75fecde6
-# ╠═b33efe80-feb3-4933-88ba-332bc8cb648a
-# ╠═8566fb19-726a-4d3b-8171-2607ce74dbe5
-# ╟─66ef0379-d1af-4b3b-b2a7-144ee76f5424
-# ╠═125eeff4-3204-4492-b68d-51354f4e7dd5
-# ╠═f81a805a-ab4a-4cb1-bff9-3db3f2cf2551
-# ╠═e3fcaf6e-d1bd-41d4-8ac9-a1f1f7ff7b26
-# ╠═23b28bfe-15b9-4eb1-8a17-252b2ae494ea
+# ╠═474a99e2-9032-11ee-2d38-95a5b97c5516
+# ╠═eaeae502-3ef6-4053-9ad5-6d7a4aafe04b
+# ╟─0ee80ce8-a007-4e26-8dd4-dbf0938fd96a
+# ╟─8344e755-ffc6-4bb3-ac3b-e2a737033030
+# ╠═6c5de159-e6b6-459b-96e2-3feeff8a4b70
+# ╟─1bfc9917-68ac-415a-aea3-336728d39b37
+# ╠═2079416a-f031-4313-bb81-0b51b147904b
+# ╠═85ef2d6b-db0c-49e4-857f-01622f96e7eb
+# ╠═6bbb67b2-f25c-48ed-938c-e6479c29aff4
+# ╟─235ca537-f55f-4842-b81e-f791d67b67b4
+# ╠═13bb7c17-1e87-46b1-bdd1-25441adc20b7
+# ╟─4b4dadf7-fbb3-475f-902d-391c8839b78d
+# ╠═13c49081-8bb4-4766-bf8b-5fc53b7246bf
+# ╟─766bf320-4ae5-4124-8031-1f79810e086c
+# ╠═fce0a140-e63b-4e17-9c20-a9fef3797319
+# ╠═74d6dcc1-0037-47ce-8e1d-6dc46771ff62
+# ╠═f2c65c26-f1c4-4567-b522-4669a4d096f7
+# ╟─c3234c05-bf00-4bca-ac9e-268698d9f029
+# ╠═ecdebdad-1d76-4f60-80c7-926200119bec
+# ╠═e5404658-5aee-4dcd-822c-28a318cf0953
+# ╟─b30728ba-cb35-4d3d-b7b2-e62cf90f9e10
+# ╟─a0b1219f-02a7-4a2b-9b76-d525033b2ab1
+# ╠═00a7cba8-8e18-4be6-acbe-f9b089a8def6
+# ╟─b536589e-f7ad-4d81-a532-7bcd27f12984
+# ╠═284f5c91-c788-45f1-8792-f8d63b6aa627
+# ╠═a159ffbf-07c1-4bb2-b45d-5a2dadeb2271
+# ╠═c4f4f032-a784-44a9-a258-1f00e682d588
+# ╠═3cc0b04d-6c56-4599-9680-f1b05ccf6b20
+# ╟─08999fb3-e10b-4f64-b0cc-d41c21d4f3ed
+# ╠═9519d45b-48d9-4287-a8c8-dae8a1551b0d
+# ╠═3dd2216b-18fe-4182-bd11-f8027ce66e1f
+# ╟─7139aa61-c887-4124-bad3-a11790a9fc85
+# ╠═e060deb3-46a6-41f8-b341-0f4597a368a9
+# ╠═6d7d7024-2fdc-4ea5-8e45-767c2a684f80
+# ╟─1bd17442-1b24-486e-b1fb-1f9c9ba1d30d
+# ╠═15919fa0-59d6-4590-9af1-8708bbb62c2e
+# ╠═4330b6e4-1da1-4867-940b-c874255c80b9
+# ╟─a2e0f1b9-2173-4dd7-be7b-78f1d3b16f28
+# ╠═869ad4f0-9065-4362-b86b-0d70c58a6fbe
+# ╟─8b269dd4-5366-411b-93b8-143d98f8eb64
+# ╠═cf091683-25d2-4249-bab8-7dd3b051b78c
+# ╟─16986288-495e-4204-ad39-28a2afb66ea8
+# ╠═97248a11-ce38-490f-8fc9-a6f885297885
+# ╠═6c32a7b2-9209-472e-9bcb-0a3c6fe77745
+# ╠═3a45e417-649b-4bab-a121-4ede48c2fc94
+# ╠═fe35ac8f-baa5-42df-8bb4-aaab27595e46
+# ╠═c58e547e-9165-48d7-9942-8ec11e928939
+# ╟─338197fd-4792-4ea2-b9be-124d3ee4f684
+# ╟─ae762710-6f96-4575-a9ab-86a50e559bc6
+# ╠═05721e0d-91ba-4460-9230-a18906c17e98
+# ╟─9fec7844-aad4-400a-a0f6-a17d1a447b10
+# ╠═1bfb7cc7-a89a-4ce7-aa3e-3cab2258b0d1
+# ╠═75e4e8e3-6f26-4b7b-b87c-2fb8e0a13c4f
+# ╠═83d7ad6e-f7cd-4e70-8b38-0f06a6020dcb
+# ╟─a02e8b6e-5fab-4b20-a3d8-6abc4e7c5d40
+# ╠═6c689670-d6cb-417b-86e6-0253b3894254
+# ╠═a5a9c896-2114-4b07-adc8-2873e6ad93c2
+# ╟─c2d137d2-b65e-4669-a393-65887233f922
+# ╠═bd38191a-c57d-4dc4-ad71-814b782f1432
+# ╟─755fb8bb-7230-48d5-ae60-448fcb217c52
+# ╠═22edcd12-5b58-49c1-9fb5-4cc8f7b1dffb
+# ╠═07694d8c-29f4-4651-9302-bc997cc38071
+# ╟─ab5daca3-aabb-49b8-b863-014cab8ffca9
+# ╠═d6300b07-45cc-4012-aa6e-fc717144d57e
+# ╟─a80849b4-e961-4613-869b-24c47d5db1c6
+# ╟─ac9ddcb0-96cd-4d73-8314-07e714a2025e
+# ╠═abe1d9c3-6509-47a9-884d-9fbd36d13d45
+# ╠═bebc6df9-b57e-486b-ab37-4aa39fdb3a6e
+# ╠═f08ef805-47db-4e1d-9fa4-0c604d71f8ef
+# ╟─f696cad1-5eb2-4829-89e0-40247dcca90c
+# ╠═b839ac95-daba-4b39-97a9-27080ffd6999
+# ╟─7db8e1cd-a3f6-4ca9-9864-b7fce67fe67b
+# ╠═dcd88f53-4533-4746-8b89-50a6ee7934b2
+# ╟─56008d6c-0bfc-4418-bf8b-26c1872a854c
+# ╠═96616d0e-1f77-4589-b1a5-9ea15dc1a38f
+# ╠═3ae5298a-1284-4c5b-9fd8-cce449f116ed
+# ╟─6b359608-f19f-4210-82fa-5a656e6c2df5
+# ╠═437344cb-89b4-4df7-896b-9c50f7c9fe20
+# ╟─b78034cf-d2e0-487c-a3bc-6c2e7e0aad6b
+# ╠═929b3de2-2c41-43b7-b25d-7c54d73682c3
+# ╟─b6f069a6-fdb8-4617-88fe-fe65e7b10b10
+# ╠═0eee807f-e09b-471a-9ab7-53345dce7ee6
+# ╟─c398af14-f25e-493f-a2ae-0fcaf240eafc
+# ╠═0c4f87ec-daee-4670-bd08-298f74543aab
+# ╟─4c57e45b-4d11-4ec7-8d3d-c437f2ab10c1
+# ╟─ecfe89e3-3d3f-4113-b720-9c22dc8d33a4
+# ╠═11185a67-0f19-4bc2-b651-2b01915c9159
+# ╠═d8683ab5-8f70-4ae8-a060-8adb6bea846f
+# ╟─262bf688-0178-4150-aeba-e257242117a5
+# ╟─d9dd8372-67c1-4fea-badf-77a8cef4e15b
+# ╠═e810a496-1d60-48ca-b7e9-c741113597b1
+# ╟─a08bfc8c-cb47-49ec-95a3-9055fdc20ce6
+# ╠═f1b39c2e-7e47-4535-882f-607b02ea82f3
+# ╟─bc97582d-6e2f-4636-be46-58e7b4ab5deb
+# ╠═69d8cff1-b68c-41c1-b171-40a9712b94ba
+# ╟─07ec992c-530f-4bef-a603-15bddaf74817
+# ╠═534903b7-0ffa-4b7f-b6a4-60581419854a
+# ╟─428421eb-8dd8-4692-841d-bbf1b44789e8
+# ╠═2d9baa60-9b06-4bd3-be1c-5c086c98512a
+# ╠═2d98cfde-15ea-4154-b7e3-c3a7a7f798ce
+# ╠═7ffbaf58-f3b1-4002-93d6-5ded742ee2fb
+# ╟─f3215352-4f86-4f30-a4ee-0bf2d40bc43b
+# ╠═348ab9d7-6f70-4891-8a8f-d9dfe4c3b8c9
+# ╟─e50e1362-9169-4325-905f-7ea6ae71d8b7
+# ╟─f47f6676-bda8-4011-bdbd-f90a2c615963
+# ╟─6c8a368a-3fc8-4c29-9b6d-87a3d036a546
+# ╠═8bb6367f-19de-4cf5-b5df-c3eb9af8745f
+# ╠═16059ee1-a669-48c1-beb5-099fc55f6a50
+# ╟─3b513fb7-c47b-4408-881c-9346743ebe9e
+# ╠═de4841eb-0975-4209-94f1-f13cbb46fb58
+# ╠═f1b30e01-044a-4499-8630-9d633abc32a5
+# ╠═d3f6c9bd-291a-4c30-bc01-1bbef2435f74
+# ╟─469d1d36-bcec-4a01-a2e7-c5b141e19d3a
+# ╠═ee781216-8998-4073-8770-89152f5698c2
+# ╟─12301fef-ca85-4be9-a1e4-dafddb72864a
+# ╠═a31ea97c-2130-45dc-b705-be8e1688836d
+# ╠═998cde61-0814-4177-971d-2c1bbd1382a8
+# ╟─0d5265c3-ba2c-4e9e-8d8c-1cfcc1dc3080
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

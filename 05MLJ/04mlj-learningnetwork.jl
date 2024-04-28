@@ -1,566 +1,393 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.36
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 474a99e2-9032-11ee-2d38-95a5b97c5516
-using MLJ, DataFrames, PlutoUI,CSV,DataFramesMeta
-
-# ╔═╡ 74d6dcc1-0037-47ce-8e1d-6dc46771ff62
-using DecisionTree,MLJDecisionTreeInterface
-
-# ╔═╡ eaeae502-3ef6-4053-9ad5-6d7a4aafe04b
-PlutoUI.TableOfContents(title = "目录")
-
-# ╔═╡ 0ee80ce8-a007-4e26-8dd4-dbf0938fd96a
-md"""
-下面介绍用[MLJ](https://alan-turing-institute.github.io/MLJ.jl/stable/)做数据挖掘的方法。先用 **[iris](https://www.gairuo.com/p/iris-dataset)** 数据集做一个用 [**MLJ**](https://alan-turing-institute.github.io/MLJ.jl/dev/) 建模的基本过程。
-"""
-
-# ╔═╡ 8344e755-ffc6-4bb3-ac3b-e2a737033030
-md"""
-# 1. 准备数据
-这里只是简单的引入已有数据， 更多的数据准备工作在前面的课程， 后面会进一步总结。
-"""
-
-# ╔═╡ 6c5de159-e6b6-459b-96e2-3feeff8a4b70
-iris = DataFrame(load_iris())
-
-# ╔═╡ 1bfc9917-68ac-415a-aea3-336728d39b37
-md"""
-构造预测变量X和目标变量y。 也可以使用dataframe的select去选择X和y， 不过要注意y需要转换为类别变量,例如通过下面的代码可以构造y
-```julia
-X1 = select(iris, Not(:target))
-y1 = categorical(iris.target)
-```
-"""
-
-# ╔═╡ 2079416a-f031-4313-bb81-0b51b147904b
-y,X = unpack(iris, ==(:target))
-
-# ╔═╡ 85ef2d6b-db0c-49e4-857f-01622f96e7eb
-y
-
-# ╔═╡ 6bbb67b2-f25c-48ed-938c-e6479c29aff4
-X
-
-# ╔═╡ 235ca537-f55f-4842-b81e-f791d67b67b4
-md"""
-# 2. MLJ建模
-下面的@load 宏用于从一个注册的pkg中加载一个模型， 需要这个pkg事先安装好。 一个**模型**本质上是一个struct， 记录了模型的一些超参数。
-
-## 2.1 加载模型结构（struct）
-**搜索匹配数据的模型**
-"""
-
-# ╔═╡ 13bb7c17-1e87-46b1-bdd1-25441adc20b7
-# 找到所有匹配我们数据的模型
-models(matching(X, y))
-
-# ╔═╡ 4b4dadf7-fbb3-475f-902d-391c8839b78d
-md"""
-**搜索包含某种字段的模型**
-"""
-
-# ╔═╡ 13c49081-8bb4-4766-bf8b-5fc53b7246bf
-models("Bayes")
-
-# ╔═╡ 766bf320-4ae5-4124-8031-1f79810e086c
-md"""
-**列出所有的模型**
-"""
-
-# ╔═╡ fce0a140-e63b-4e17-9c20-a9fef3797319
-models()
-
-# ╔═╡ f2c65c26-f1c4-4567-b522-4669a4d096f7
-Tree = @load DecisionTreeClassifier pkg=DecisionTree
-
-# ╔═╡ c3234c05-bf00-4bca-ac9e-268698d9f029
-md"""
-## 2.2 构建模型实例
-相当于初始化模型结构。
-"""
-
-# ╔═╡ ecdebdad-1d76-4f60-80c7-926200119bec
-tree = Tree(max_depth = 3)
-
-# ╔═╡ e5404658-5aee-4dcd-822c-28a318cf0953
-Tree()
-
-# ╔═╡ b30728ba-cb35-4d3d-b7b2-e62cf90f9e10
-md"""
-当然， 可以将第一步和第二步合并到一起：
-"""
-
-# ╔═╡ a0b1219f-02a7-4a2b-9b76-d525033b2ab1
-md"""
-## 2.3 构造机器（machine）
-**机器（machine）**可以认为是绑定了数据的模型
-"""
-
-# ╔═╡ 00a7cba8-8e18-4be6-acbe-f9b089a8def6
-mach = machine(tree, X, y)
-
-# ╔═╡ b536589e-f7ad-4d81-a532-7bcd27f12984
-md"""
-## 2.4 数据集划分
-主要是划分训练集、测试集
-"""
-
-# ╔═╡ 284f5c91-c788-45f1-8792-f8d63b6aa627
-train, test = partition(eachindex(y), 0.7, shuffle = true) # 注意，默认情况下不是随机划分
-
-# ╔═╡ a159ffbf-07c1-4bb2-b45d-5a2dadeb2271
-train
-
-# ╔═╡ c4f4f032-a784-44a9-a258-1f00e682d588
-1:length(y)
-
-# ╔═╡ 3cc0b04d-6c56-4599-9680-f1b05ccf6b20
-eachindex(y)
-
-# ╔═╡ 08999fb3-e10b-4f64-b0cc-d41c21d4f3ed
-md"""
-## 2.5 拟合模型
-一般在训练集上拟合模型
-"""
-
-# ╔═╡ 9519d45b-48d9-4287-a8c8-dae8a1551b0d
-MLJ.fit!(mach, rows=train)
-
-# ╔═╡ 3dd2216b-18fe-4182-bd11-f8027ce66e1f
-mach.model
-
-# ╔═╡ 7139aa61-c887-4124-bad3-a11790a9fc85
-md"""
-查看拟合的模型参数和模型结果
-"""
-
-# ╔═╡ e060deb3-46a6-41f8-b341-0f4597a368a9
-fitted_params(mach)
-
-# ╔═╡ 6d7d7024-2fdc-4ea5-8e45-767c2a684f80
-# 
-report(mach).print_tree(4)
-
-# ╔═╡ 1bd17442-1b24-486e-b1fb-1f9c9ba1d30d
-md"""
-## 2.6 预测
-用拟合的模型去预测测试集的类别。注意， 因为预测目标是一个类别（三种之一）， 这里预测结果是一个分布：相当于属于每一种的概率。 
-"""
-
-# ╔═╡ 15919fa0-59d6-4590-9af1-8708bbb62c2e
-yhat = MLJ.predict(mach, X[test,:])
-
-# ╔═╡ 4330b6e4-1da1-4867-940b-c874255c80b9
-yhat[1:2]
-
-# ╔═╡ a2e0f1b9-2173-4dd7-be7b-78f1d3b16f28
-md"""
-如果不想获得分布预测结果，可以使用predict_mode函数。也可以在分布预测结果上去求众数(mode)及获得概率最大的预测结果。
-"""
-
-# ╔═╡ 869ad4f0-9065-4362-b86b-0d70c58a6fbe
-yhat2 = predict_mode(mach, X[test,:])
-
-# ╔═╡ 8b269dd4-5366-411b-93b8-143d98f8eb64
-md"""
-## 2.7 评估预测结果
-评估模型效果本质上是要评估预测值与实际值(ground truth)之间的差距（损失），可以使用`measure()`列出所有的损失评估函数, 参考[这里](https://alan-turing-institute.github.io/MLJ.jl/v0.3/measures/)。 MLJ中实现[LossFunctions.jl](https://github.com/JuliaML/LossFunctions.jl)包中的损失函数， 但做了一些表示上的修改。
-
-一般， 设预测值为yhat, 实际值为y， $r = yhat - y$, 损失函数是一个关于r的函数。 
-
-分类问题一个常见的损失函数时交叉熵(cross entropy). 这里有个简单的博客做关于**[熵的介绍.](https://blog.csdn.net/xg123321123/article/details/52864830)**
-"""
-
-# ╔═╡ cf091683-25d2-4249-bab8-7dd3b051b78c
-log_loss(yhat, y[test]) |> mean
-
-# ╔═╡ 16986288-495e-4204-ad39-28a2afb66ea8
-md"""
-我们可以定义自己的损失函数，比如评估预测的准确度
-"""
-
-# ╔═╡ 97248a11-ce38-490f-8fc9-a6f885297885
-function myloss(yhat, y)
-	sum(yhat .== y)/length(yhat)
+# ╔═╡ 54b70d8d-ec5c-4e7c-a4be-82fe98660d89
+begin
+using PlutoUI,MLJ, MLJMultivariateStatsInterface,MLJDecisionTreeInterface
 end
 
-# ╔═╡ 6c32a7b2-9209-472e-9bcb-0a3c6fe77745
-myloss(yhat, y[test])
+# ╔═╡ 9980a076-9225-4ef4-8805-635d52001ba9
+TableOfContents(title="目录")
 
-# ╔═╡ 3a45e417-649b-4bab-a121-4ede48c2fc94
-accuracy(mode.(yhat), y[test])
+# ╔═╡ 5c840389-4d21-466c-948c-bb74ce189645
+import MLJModelInterface as MMI
 
-# ╔═╡ fe35ac8f-baa5-42df-8bb4-aaab27595e46
-measures()
-
-# ╔═╡ c58e547e-9165-48d7-9942-8ec11e928939
-auc(yhat, y[test])
-
-# ╔═╡ 338197fd-4792-4ea2-b9be-124d3ee4f684
+# ╔═╡ a5f158d6-e672-4b6d-b3b6-9aab2e317a23
 md"""
-# 3. 处理竞赛数据
+# 前言
+这里主要介绍模型和机器涉及的一些基本概念， 以及如何定义自己的模型。
 """
 
-# ╔═╡ ae762710-6f96-4575-a9ab-86a50e559bc6
+# ╔═╡ dd368673-da9a-498d-8d5a-ba0f8c775c64
 md"""
-## 数据准备
-在实际建模过程中， 因为数据可能具有各种不同的类型与状况， 数据准备将是一个非常耗时的工作。
+# 基本概念
+
+## 超参数
+超参数是一个模型不能从数据中学习的参数， 是需要在学习之前指定的参数。比如kmeans算法的k。
 """
 
-# ╔═╡ 05721e0d-91ba-4460-9230-a18906c17e98
-trains = CSV.read("data/trainbx.csv", DataFrame)
-
-# ╔═╡ 9fec7844-aad4-400a-a0f6-a17d1a447b10
+# ╔═╡ d4ec5210-d252-4062-9603-6d86848c5475
 md"""
-构造竞赛数据的X,y。 通常， X中不应该包含id字段和目标字段。
+## 模型
+模型（model）是一个算法的超参数构成的可变结构体。 模型的抽象类型是Model。通常模型有两种类型， 有监督（supervised）和无监督（Unsupervised）。 两类不同的模型通常可以执行不同的操作。
 """
 
-# ╔═╡ 1bfb7cc7-a89a-4ce7-aa3e-3cab2258b0d1
-Xt = select(trains, Not([:fraud,:policy_id]))
-
-# ╔═╡ 75e4e8e3-6f26-4b7b-b87c-2fb8e0a13c4f
-yt = categorical(trains.fraud)
-
-# ╔═╡ 83d7ad6e-f7cd-4e70-8b38-0f06a6020dcb
-models(matching(Xt,yt))
-
-# ╔═╡ a02e8b6e-5fab-4b20-a3d8-6abc4e7c5d40
+# ╔═╡ 5930cda1-911a-49cf-bebc-3fa4ba421840
 md"""
-从上面可以看出， 能用的模型非常少。 原因应该不能想到：我们的Xt包含太多的数据类型。 在MLJ建模时，我们更关注数据的科学类型， 而不是存储类型。 科学类型代表的是数据的“含义”，更加接近建模中看到的数据类型， 而存储类型只是数据的存储方式。用schema函数， 可以同时看到数据的科学类型和存储类型。
-"""
-
-# ╔═╡ 6c689670-d6cb-417b-86e6-0253b3894254
-schema(trains)
-
-# ╔═╡ a5a9c896-2114-4b07-adc8-2873e6ad93c2
-unique(schema(trains).scitypes)
-
-# ╔═╡ c2d137d2-b65e-4669-a393-65887233f922
-md"""
-上面将数据的科学类型去重之后可以看到， 数据有4种类型的科学类型。一般而言：科学类型主要涉及以下几类：
-"""
-
-# ╔═╡ bd38191a-c57d-4dc4-ad71-814b782f1432
-md"""
-[科学类型]
-
-![](https://alan-turing-institute.github.io/MLJ.jl/dev/img/scitypes_small.png)
-"""
-
-# ╔═╡ 755fb8bb-7230-48d5-ae60-448fcb217c52
-md"""
-一般而言， 整型（Int）存储类型会被处理为Count， 浮点数（Float）类型会被处理为Continuous， 字符串类型（String）会被处理为textual。 直接读取数据，一般不会有有序因子（OrderedFactor）和类别变量（Multiclass）， 需要转化。可以使用scitype和elscitype分别获取数据框中字段的科学类型和字段取值的科学类型。
-"""
-
-# ╔═╡ 22edcd12-5b58-49c1-9fb5-4cc8f7b1dffb
-scitype(trains.age)
-
-# ╔═╡ 07694d8c-29f4-4651-9302-bc997cc38071
-elscitype(trains.age)
-
-# ╔═╡ ab5daca3-aabb-49b8-b863-014cab8ffca9
-md"""
-科学类型的一个重要作用用于模型选择时的数据类型指定。 比如对于上面提到的鸢尾花分类问题， 在所有的模型中， 只有一部分是适合这个问题的。 MLJ是如何判断一个模型是否适合我们的问题的呢？事实上， 一个模型包含了许多的信息， 其中的模型名字和所在包的名字是最重要的。
-
-下面， 我们看一下前面用到的DecisionTree包中，DecisionTreeClassifier的相关信息。
-"""
-
-# ╔═╡ d6300b07-45cc-4012-aa6e-fc717144d57e
-info("DecisionTreeClassifier", pkg="DecisionTree")
-
-# ╔═╡ a80849b4-e961-4613-869b-24c47d5db1c6
-md"""
-在模型返回的诸多信息中， 有两个字段input_scitype和target_scitype， 分别表示输入数据X和目标变量Y的的科学类型。比如上面的模型， 输入数据的类型是：
-Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}
-虽然这个看上去看复杂， 但仔细看还是比较容易理解的。首先， 输入数据必须是表格Table（dataframe是表格）， 表格中字段的类型都是向量Vector， 其元素可以是：Continuous， Count, OrderedFactor类型。
-对于目标变量，其类型是：AbstractVector{<:Finite}， 也就是有限类型就行。
-
-正是因为一个模型对输入变量和目标变量的数据类型是有要求的， 因此， 我们可以使用models(matching(X, y))去搜索所有能用于对X和y建模的模型。
-"""
-
-# ╔═╡ ac9ddcb0-96cd-4d73-8314-07e714a2025e
-md"""
-在实际建模中，我们的X通常会有多种数据类型， 有时候，我们需要选择某种/些类型的变量用于建模， 这时候， 需要用到类型的获取工具。 运算工具： == 可以用于比较两种类型是否相同。 type1<:type2表示判断type1类型是否是type2类型的子类型（包括type2类型）。类似的， type1>:type2表示判断type1类型是否是type2类型的父类型（包括type2类型）。
-"""
-
-# ╔═╡ abe1d9c3-6509-47a9-884d-9fbd36d13d45
-elscitype(trains.age) == Count
-
-# ╔═╡ bebc6df9-b57e-486b-ab37-4aa39fdb3a6e
-elscitype(trains.age) <: Count
-
-# ╔═╡ f08ef805-47db-4e1d-9fa4-0c604d71f8ef
-elscitype(trains.age) >: Count
-
-# ╔═╡ f696cad1-5eb2-4829-89e0-40247dcca90c
-md"""
-在DataFrames包中， 提供了一个函数[`names`](https://dataframes.juliadata.org/stable/lib/functions/#Base.names)用于获取一个数据框中满足条件的字段名。 这个函数有多种用法， 请自行参考帮助文档， 下面介绍两种常见的。
-
+## 机器(machine)
+一个机器（machine）本质上来说，也是换一个可变的结构体。记录了这个机器的模型（model）和数据（通过args）。
 ```julia
-names(df, type)
-names(df, boolvec)
+mutable struct Machine{M<Model}
+
+    model::M
+    fitresult
+    cache
+    args::Tuple    # e.g., (X, y) for supervised models
+    report
+    previous_rows # remember the last rows used
+end
 ```
 
-1。 选择元素是某种存储类型(type)的字段： 比如， 选出所有整型（Int）数据字段。
+
 """
 
-# ╔═╡ b839ac95-daba-4b39-97a9-27080ffd6999
-names(Xt, Int)
-
-# ╔═╡ 7db8e1cd-a3f6-4ca9-9864-b7fce67fe67b
+# ╔═╡ e44aa442-71d8-427d-a3c9-8368f6b2f772
 md"""
-注意， 上面的类型必须是存储类型， 用科学类型不能选出符合条件的。
-"""
-
-# ╔═╡ dcd88f53-4533-4746-8b89-50a6ee7934b2
-names(Xt, Count)
-
-# ╔═╡ 56008d6c-0bfc-4418-bf8b-26c1872a854c
-md"""
-如果要选出某种科学类型的字段， 需要用到更高级的用法： 通过一个函数,判断每一列是否是某种科学类型， 形成一个bool向量（boolvec），通过这个向量，选择满足条件的字段名。
-
-下面定义一个函数， 这个函数可以用于判断参数的元素的科学类型是否是某种类型。 默认的**关键字参数**给出的是Count类型。
-"""
-
-# ╔═╡ 96616d0e-1f77-4589-b1a5-9ea15dc1a38f
-fun(x;tp = Count) = elscitype(x) == tp
-
-# ╔═╡ 3ae5298a-1284-4c5b-9fd8-cce449f116ed
-fun(Xt.age)
-
-# ╔═╡ 6b359608-f19f-4210-82fa-5a656e6c2df5
-md"""
-为了判断一个数据框的每一列是否是某种类型的变量， 我们需要遍历每一个字段， 用for循环当然能够实现， 但处理一个数据框的每一列是一个常见的操作， DataFrames包中提供了一个函数`eachcol`， 通过这个函数可以获得一个dataframe的每一列的可迭代对象。 可以将其想象为， 你获得了一个向量， 只是这个向量的元素会在迭代过程中一个一个取出来。 有了这个可迭代对象， 就可以实现对每一列执行某种操作了。
-
-下面就是将上面定义的函数fun施加到Xt的每一列上， 注意函数名后的点., 这表示向量化运算， 即这个函数fun会施加到后面数据框的每一列上。
-
-如果你还想了解更多点运算实现向量化的背景， 可以参考[这里。](https://docs.julialang.org/en/v1/manual/functions/#man-vectorized)
-"""
-
-# ╔═╡ 437344cb-89b4-4df7-896b-9c50f7c9fe20
-fun.(eachcol(Xt))
-
-# ╔═╡ b78034cf-d2e0-487c-a3bc-6c2e7e0aad6b
-md"""
-有了上面的基础， 我们可以找到具有某种科学类型的字段了。
-"""
-
-# ╔═╡ 929b3de2-2c41-43b7-b25d-7c54d73682c3
-names(Xt, fun.(eachcol(Xt)))
-
-# ╔═╡ b6f069a6-fdb8-4617-88fe-fe65e7b10b10
-md"""
-找到了相应的字段， 然后去选择字段， 构造新的X是非常容易的。 用select函数就可以了。
-"""
-
-# ╔═╡ 0eee807f-e09b-471a-9ab7-53345dce7ee6
-select(Xt, names(Xt, fun.(eachcol(Xt))))
-
-# ╔═╡ c398af14-f25e-493f-a2ae-0fcaf240eafc
-md"""
-很多模型都需要输入变量是连续类型， 可以看看我们的数据中到底有多少是连续的。
-"""
-
-# ╔═╡ 0c4f87ec-daee-4670-bd08-298f74543aab
-names(Xt, fun.(eachcol(Xt), tp = Continuous))
-
-# ╔═╡ 4c57e45b-4d11-4ec7-8d3d-c437f2ab10c1
-md"""
-上面的结果告诉你， 我们的数据集中连续变量只有一个。 这显然不符合事实。 如果你去仔细分析， 会发现，许多Count类型的变量应该理解为连续变量更合理（比如年龄age）。因此， 我们需要一个能将Count类型转换为Continuous类型的函数。这可以方便的通过coease实现。
-
-coease有三种不同的使用方法：
+### 机器初始化
+机器初始化的时候， 只需要提供模型实例和对应的数据就行。 机器在最开始的时候，是没有定义拟合结果（fitresult）,previous\_rows等字段的。这些字段需要在训练后才有。
 ```julia
-coerce(vec, type)
-coerce(X, :name1=>type1, :name2=>type2,...)
-coerce(X, type1=>type2, ...)
-```
-下面是一个例子
-```julia
-#将向量y中的元素都转化为Multiclass类型
-coerce(y, Multiclass) 
-#将表格X中的字段：x1转化为Continuous， 字段x2转化为OrderedFactor
-coerce(X, :x1 => Continuous, :x2 => OrderedFactor)
-#将表格中所有的Count类型都转化为Continuous类型。
-coerce(X, Count => Continuous) 
-
+    function Machine{M}(model::M, args...) where M<:Model
+        machine = new{M}(model)
+        machine.args = args
+        machine.report = Dict{Symbol,Any}()
+        return machine
+    end
 ```
 
 """
 
-# ╔═╡ ecfe89e3-3d3f-4113-b720-9c22dc8d33a4
+# ╔═╡ 9c8882b2-d53d-4e53-b849-69e2ccbb763f
 md"""
-下面我们将所有的Count类型都转化为continous类型， 进而选择用continous类型的数据去建模， 看看能用的模型有多少。
+### 拟合机器fit!
+拟合机器在本质上会根据模型调用对应的模型拟合函数。下面只是给出了拟合机器的一般框架。
+```julia
+function fit!(mach::Machine; rows=nothing, force=false, verbosity=1)
 
-为了更清楚的看到数据处理的流程， 我们将从最原始的数据开始， 综合上面提到的每一个步骤：
-"""
+    if rows === nothing
+        rows = (:)   # 如果没有指定训练集，那么默认所有样本构成训练集
+    end
+	# 前面没有定义：previous_rows字段（表明模型没有被训练过）或者新指定的rows跟训练过的rows不同（表明，训练集换了， 需要重新训练）
+    rows_have_changed  = (!isdefined(mach, :previous_rows) ||
+	    rows != mach.previous_rows)
+	# 按照rows选定训练数据；
+    args = [MLJ.selectrows(arg, rows) for arg in mach.args]
+	# 在没有定义：fitresult字段或训练集变了或强制重新训练的情况下，训练模型， 否则就是更新模型就好。
+    if !isdefined(mach, :fitresult) || rows_have_changed || force
+        mach.fitresult, mach.cache, report =
+            fit(mach.model, verbosity, args...)# 调用模型的拟合函数。
+    else # call `update`:
+        mach.fitresult, mach.cache, report =
+            update(mach.model, verbosity, mach.fitresult, mach.cache, args...)
+    end
+	# 记录这次训练用到的训练样本编号
+    if rows_have_changed
+        mach.previous_rows = deepcopy(rows)
+    end
+	# 记录训练报告
+    if report !== nothing
+        merge!(mach.report, report)
+    end
 
-# ╔═╡ 11185a67-0f19-4bc2-b651-2b01915c9159
-Xtn = @chain trains begin
-select(Not([:fraud,:policy_id]))
-coerce(Count => Continuous)
-select(_,names(_, fun.(eachcol(_),tp = Continuous)))
+    return mach
+
 end
 
-# ╔═╡ d8683ab5-8f70-4ae8-a060-8adb6bea846f
-ms = models(matching(Xtn, yt))
-
-# ╔═╡ 262bf688-0178-4150-aeba-e257242117a5
-md"""
-可以看到，现在的模型已经有 $(length(ms))个了。 我们可以在这中间挑选你想要的模型去建模了。 由于上面还是可以找到决策树模型（显然的）， 下面我们尝试用决策树模型去对我们的问题建模一次。
+```
 """
 
-# ╔═╡ d9dd8372-67c1-4fea-badf-77a8cef4e15b
+# ╔═╡ ecabba3d-3898-49eb-bc79-0cd686cbc2af
 md"""
-## 加载模型结构
-如果还是使用决策树模型， 这一步不需要做了， 因为上面的例子中， 已经把模型结构加载进来， 我们只要给定参数去构建实例就好。不过， 为了完整起见， 我还是加载一次， 并将其赋值给不同的对象。
+### 拟合结果
+从上面的代码可以看出来，机器拟合本质上是模型在拟合（fit函数的第一个参数）。机器拟合的过程， 只是把模型拟合的结果存储到机器的对应字段。 
+
+模型拟合返回三个结果： fitresult, cache, report。
+
+其中**fitresult**是一个模型通过数据学习到或拟合的参数。比如， 线性模型的系数、主成分分析的投影矩阵等。这个字段可以通过函数fitted_params获取。模型创建者可以重定义该方法， 更好的展示模型的返回结果。
+
+**report**是一个命名元组（NamedTuple）（可能是空的）， 用于记录模型拟合得到的一些中间参数。比如算法拟合中得到的距离、损失、特征重要性等等。这些信息对于模型的诊断是有价值的。 
+
+**cache**没有限定类型，可能是nothing。 主要用于模型更新update时，提供必要的信息。 比如，这里可以包含对数据的预处理结果。
+
+
 """
 
-# ╔═╡ e810a496-1d60-48ca-b7e9-c741113597b1
-Tree2 = @load DecisionTreeClassifier pkg=DecisionTree
-
-# ╔═╡ a08bfc8c-cb47-49ec-95a3-9055fdc20ce6
+# ╔═╡ 415fe16f-d96c-4628-936f-02e4829cc851
 md"""
-## 构建模型实例
-这时候， 我们把超参数稍作修改。
+当机器用于预测时， 跟拟合类似， 也是根据模型和拟合结果做分派，调用对应的预测函数。 预测只有在监督学习时才做。
+```julia
+function predict(machine::Machine{<:Supervised}, Xnew)
+    if isdefined(machine, :fitresult)
+        return predict(machine.model, machine.fitresult, Xnew))
+    else
+        throw(error("$machine is not trained and so cannot predict."))
+    end
+end
+```
 """
 
-# ╔═╡ f1b39c2e-7e47-4535-882f-607b02ea82f3
-tree2 = Tree2(max_depth = 5)
-
-# ╔═╡ bc97582d-6e2f-4636-be46-58e7b4ab5deb
+# ╔═╡ 54c93d2b-9f92-4800-8b93-10cc221aa7c3
 md"""
-## 构造机器
+如果是无监督学习， 一般是用transform函数。
+```julia
+function transform(machine::Machine{<:Unsupervised}, Xnew)
+    if isdefined(machine, :fitresult)
+        return transform(machine.model, machine.fitresult, Xnew))
+    else
+        throw(error("$machine is not trained and so cannot transform."))
+    end
+end
+```
 """
 
-# ╔═╡ 69d8cff1-b68c-41c1-b171-40a9712b94ba
-mach2 = machine(tree2, Xtn, yt)
-
-# ╔═╡ 07ec992c-530f-4bef-a603-15bddaf74817
+# ╔═╡ be30817a-061e-45a5-86df-12da2739989a
 md"""
-## 数据集划分
+## 操作（operation）
+操作是一种数据变换。 它可能是基于模型的拟合结果。比如对监督学习，可以有Predict、Predict\_Mean、Predict\_median或Predict\_mode方法实现对输入数据（X）变换为预测数据（y）；对于无监督学习， 可使用Transformation或Against_transform方法实现对输入数据（X）的直接变换或逆变换。
+
+操作也可以指不依赖于拟合结果的普通数据处理方法，比如一个函数广播到所有数据上。 为清楚起见， 这类方法被称为静态操作。非静态的操作则是动态的。
 """
 
-# ╔═╡ 534903b7-0ffa-4b7f-b6a4-60581419854a
-train2, test2 = partition(eachindex(yt), 0.7, shuffle = true) 
-
-# ╔═╡ 428421eb-8dd8-4692-841d-bbf1b44789e8
+# ╔═╡ 92a91528-8825-4bc3-a266-c3a8a6dd39a5
 md"""
-## 拟合模型
+# 定义模型
+MLJ生态提供两种模型定义的方式。 一种是通过模型接口MLJModelInterface去定义（参考[这里](https://alan-turing-institute.github.io/MLJ.jl/dev/adding_models_for_general_use/)）。这种方式适合需要定义一个供整个生态使用的模型。比如， 通过models搜索到的很多模型都是通过这个方式定义的。 这种定义方式需要实现很多在MLJModelInterface定义的接口， 相对而言稍显复杂。 另一种定义模型的方式是通过实现机器（machine）提供的接口实现构建新的模型。这种方式适合定义暂时供自己使用的模型。 下面主要介绍这种方式。
+
+
+定义一个模型很简单，只需要做三件事：
+- 定义一个mutable struct, 用于记录模型的超参数。这个结构体是Probabilistic、Deterministic 或Unsupervised的子类型， 用于表明模型可以用于得到概率（向量）、常规的向量作为预测结果，还是只能做变换。其中，前两种模型Probabilistic、Deterministic是Supervised的子类型。这三种类型都是抽象类型。
+- 定义一个fit！方法， 用于拟合模型时，返回拟合结果fitresult.
+- 定义一个predict方法， 用模型和拟合结果做分派， 实现对新数据的预测。或者对无监督机器， 定义一个transform方法，实现对新数据的变换。 对监督学习，predict返回的结果要么是一个跟y具有相同元素数据类型的向量， 要么就是一个概率分布向量（对分类问题）。
+
+一个模型可能定义一个clean！方法， 判断模型的参数是否合法， 不合法时可以抛出警告。对一个合法的模型， 该方法不会更改任何信息。
 """
 
-# ╔═╡ 2d9baa60-9b06-4bd3-be1c-5c086c98512a
-MLJ.fit!(mach2, rows=train2)
-
-# ╔═╡ 2d98cfde-15ea-4154-b7e3-c3a7a7f798ce
-yhat21 = MLJ.predict(mach2, Xtn[test2,:])
-
-# ╔═╡ 7ffbaf58-f3b1-4002-93d6-5ded742ee2fb
-yhat22 = MLJ.predict_mode(mach2, Xtn[test2,:])
-
-# ╔═╡ f3215352-4f86-4f30-a4ee-0bf2d40bc43b
+# ╔═╡ e86c79ec-0d3e-4032-9cf4-642e77faaa23
 md"""
-## 评估模型结果
-由于我们竞赛用的是auc指标， 我们当然也希望用auc指标去评估模型。下面是在测试集上去评估模型。
+# 学习网络（Learning network）
+学习网络是指通过将数据和数据的处理视为节点（node）， 数据在节点之间的流动视为边，形成的有向无环图。学习网络的核心是延迟计算（delayed computation； lazy computation）。 下面用具体的例子介绍学习网络。
 """
 
-# ╔═╡ 348ab9d7-6f70-4891-8a8f-d9dfe4c3b8c9
-auc(yhat21, yt[test2])
-
-# ╔═╡ e50e1362-9169-4325-905f-7ea6ae71d8b7
+# ╔═╡ 0b9992c7-20e2-4e13-a197-62a020c5b3ac
 md"""
-上面的结果可能让你失望， 因为它可能还没有聚类分析来的效果好。 不过由于我们并没有做太多的特征处理，而且这里做的预测只是样本内的预测， 其效果不是很理想也能理解。不过， 你现在可能希望把这个模型用到真实的测试集上， 然后，提交系统，看到底能得多少分？下面我们实现这个步骤。
+## 延迟计算
+通常计算都是实时的，即给定了代计算和数据和计算方法（函数、操作符）， 计算结果会立即得到。比如，下面的计算过程, 在给定了x和y的值之后， z的值是3。
 """
 
-# ╔═╡ f47f6676-bda8-4011-bdbd-f90a2c615963
+# ╔═╡ a5ebbc58-b0a8-4d1f-aa38-827d126ea422
+x=1;y=2;  w = 3*y; z = x+w;
+
+# ╔═╡ 5f177518-db25-4f2c-a484-d556a42ab112
 md"""
-# 4. 提交比赛
-下面是将模型的结果用于比赛的测试集。 现在假定你认为， 我们的模型已经不错了。 提交比赛需要做以下步骤：
-1. 对测试集数据通过与训练集相同的数据处理； 
-2. 在所有的训练集上重新训练一下模型； 
-3. 用重新训练的模型预测新构建的测试集。
-4. 将预测结果， 写入csv提交系统。
+但如果我们将x，y分别定义为数据节点，则z的计算就不是实时的了。为了避免冲突，我们用新的变量名
 """
 
-# ╔═╡ 6c8a368a-3fc8-4c29-9b6d-87a3d036a546
+# ╔═╡ 2a76d0fc-6a8e-4de2-995d-843ce56d05a8
+x1=source(1);y1= source(2); w1 = 3*y1; z1= x1+w1;
+
+# ╔═╡ 62876545-369d-4844-a647-700268da5adc
+z1
+
+# ╔═╡ 44fe4275-8393-453a-b807-f64174073ba4
 md"""
-## 处理测试数据
-系统提供的测试数据需要经过跟训练数据相同的处理， 才能用于预测模型。因此， 我们首先处理一下测试数据。处理的过程很简单， 只需要跟训练集施加同样的操作即可。 在上面， 我们用一个@chain对训练集做了多个操作， 下面把代码搬过来，类似操作一下即可。 只是请注意， 在测试集中， 没有:fraud字段， 所有最开始选择的时候， 不要有这个字段就好。
+可以看到， z1现在不再是一个计算得到的数据， 而是一个节点， 这个节点是我通过+连接两个参数。当我们需要z1的值的时候， 可以将z1写成一个函数调用。
 """
 
-# ╔═╡ 8bb6367f-19de-4cf5-b5df-c3eb9af8745f
-testbx = CSV.read("data\\testbx.csv", DataFrame)
+# ╔═╡ e97ed498-1de6-4f5c-a57e-844f671bd046
+z1()
 
-# ╔═╡ 16059ee1-a669-48c1-beb5-099fc55f6a50
-testbxn = @chain testbx begin
-select(Not([:policy_id]))
-coerce(Count => Continuous)
-select(_,names(_, fun.(eachcol(_),tp = Continuous)))
+# ╔═╡ 68ccb425-0453-4ad4-acef-d46ced524889
+md"""
+上面的例子其实是给出了一个从源节点（x1,y1）到最终节点z1的计算过程。 这就是一个计算网络。 我们可以通过rebind!函数更改源节点绑定的数据， 这样就可以通过计算网络得到新的计算结果。
+"""
+
+# ╔═╡ a4a962b7-b72b-4f99-b3b4-7e7fe487b447
+rebind!(x1,10)
+
+# ╔═╡ c34bc842-7b10-4a41-8068-b036763d3b41
+z1()
+
+# ╔═╡ 6dbb364a-ce69-4457-bf34-1b111afcf33e
+md"""
+这种修改数据的方法比较不直观。因为对z1节点来说，它可能不知道它的源节点已经修改。如果一个节点的源节点只有一个， 那么可以方便的通过节点本身去修改其源节点。
+"""
+
+# ╔═╡ 20cfa343-a791-4f2d-9ca0-e46186547354
+md"""
+我们可以通过origins函数获得一个节点的源节点（source）。
+"""
+
+# ╔═╡ bfcc0777-d1c5-4068-b645-37cdb551b5c9
+origins(z1)
+
+# ╔═╡ 72397617-ba70-48d4-813f-8cd6dea2d9fb
+origins(w1)
+
+# ╔═╡ 569db7ef-345f-4077-b004-a1d350b16775
+md"""
+可以看到w1只有一个源节点， 注意观察下面两种计算方式的结果。
+"""
+
+# ╔═╡ a8c89725-3d14-44d6-90bc-98a54036484d
+w1()
+
+# ╔═╡ 46afd362-5305-4e36-ab7c-5a2e37c70a64
+w1(3)
+
+# ╔═╡ 9f9adbe0-b437-41e1-b95b-53597b9e772d
+md"""
+这种单一源节点表现的就像一个函数， 我们可以像通过参数赋值一样给源节点赋予不同的值实现计算。
+"""
+
+# ╔═╡ 69dc1e2b-28a7-44b9-93f6-fbd0fcb1ab13
+md"""
+## 函数计算
+通过上面的例子我们看到， x1,y1,w1，z1等都是节点（node）。 节点之间通过运算实现连接（运算的参数和结果之间形成有向边）。 上面给出的运算是简单的*和+， 在MLJ中， 下面这些函数都能够直接作用到节点上MLJBase.matrix, MLJBase.table, vcat, hcat, mean, median, mode, first, last, as well as broadcasted versions of log, exp, mean, mode and median.
+"""
+
+# ╔═╡ 935d6db3-3fff-475d-90b4-8925766feb73
+md"""
+除了上面提到的函数外， 一个普通函数可能不能直接作用到节点上. 
+"""
+
+# ╔═╡ 3874cac7-5f81-4782-a2a8-cd7e00ae175a
+z2 = sin(x1)
+
+# ╔═╡ 44d864ec-8b2a-4b56-95df-b2def849049d
+md"""
+这时候， 我们需要通过node函数定义实现普通函数计算的节点。node函数的调用方式如下：`
+N = node(f::Function, args...)`。 它可以将函数f作用到给出的节点（args）上，得到一个新的节点N。
+"""
+
+# ╔═╡ 3567e9c0-61c3-4764-b040-6391b5af81fd
+z3 = node(sin, x1)
+
+# ╔═╡ a6510f06-5d4b-464d-9364-901e556ad168
+z3()
+
+# ╔═╡ 8dd3c993-b6d9-44ca-a4b9-4946d2944bfa
+md"""
+## 会学习的网络
+上面构建的网络能够实现延迟计算， 但不能学习。 为了让一个网络能够学习， MLJ允许机器:1)允许节点绑定“机器”； 2）在数据节点和机器上调用predict或transform创建操作节点。下面演示这些节点的构建。
+
+### 准备数据
+下面的函数`X, y = make_blobs(n=100, p=2; kwargs...)`用于生成n个样本，每个样本p个特征。默认情况下， centers=3表示样本分成3类。
+"""
+
+# ╔═╡ e510e9e8-4141-470c-a8e7-96f8d01fef09
+Xb,yb = make_blobs(100,rng=123)
+
+# ╔═╡ 5408cd03-a639-4ab4-8318-5984681f72aa
+Xnew, _ = make_blobs(3)
+
+# ╔═╡ d14e767d-1e6a-4527-b359-b626dec10e88
+md"""
+### 准备两个模型实例
+"""
+
+# ╔═╡ c550be42-e907-40e8-be63-71bf64fdd304
+begin
+pca = (@load PCA pkg=MultivariateStats verbosity=0)()
+tree = (@load DecisionTreeClassifier pkg=DecisionTree verbosity=0)()
 end
 
-# ╔═╡ 3b513fb7-c47b-4408-881c-9346743ebe9e
+# ╔═╡ 3e80f552-01e5-41bf-9b38-4912aab1380a
 md"""
-## 重新训练一下模型
-上面已经训练了一个模型， 可以直接用于预测了。不过，上面训练的模型只是利用训练集上的一部分数据训练得到的。 我们让模型在整个训练集上去“学习”， 理论上应该可以得到更好的模型。 这时候， 我们不再需要指定rows参数。相当于用所有的行来训练模型。
+### 构建数据节点
 """
 
-# ╔═╡ de4841eb-0975-4209-94f1-f13cbb46fb58
-MLJ.fit!(mach2)
+# ╔═╡ b1d07971-d4ae-4a0d-97f3-08218149bcf8
+begin
+Xs = source(Xb)
+ys = source(yb)
+end
 
-# ╔═╡ f1b30e01-044a-4499-8630-9d633abc32a5
+# ╔═╡ 87c36a43-320a-413a-bb5e-e290aafc6b23
 md"""
-## 预测测试集
+### 构建学习节点
 """
 
-# ╔═╡ d3f6c9bd-291a-4c30-bc01-1bbef2435f74
-yuce = MLJ.predict(mach2,testbxn )
-
-# ╔═╡ 469d1d36-bcec-4a01-a2e7-c5b141e19d3a
+# ╔═╡ 9e8ef0f1-56e7-4e03-9eb6-2e9155ad1ea3
 md"""
-上面预测的结果是一个分布(分别给出每个样本是0和1的概率)， 但我们需要的是这个分布在1上的取值， 本质上是概率密度函数（pdf）在1上的取值。因此， 我们可以通过pdf函数获得。
+把模型和数据绑定在一起，只是为了说明，我们要从数据中学得一个机器。这个学得的机器在数据上的操作（transform）才是构成的新的节点（操作节点）。 所以，机器本身不是节点。机器只是指向了它要学习的数据源和给定学习的目标（模型）， 机器本身需要成为构建新节点的输入。
+
+简单来说， 构建学习节点分两步：
+- 1）构建机器（指定要学什么？（模型）和从哪里学？（数据））
+- 2）在数据（或节点）上施加学到的操作。
+
+**学习节点是数据节点上施加带机器的操作形成的节点。**
 """
 
-# ╔═╡ ee781216-8998-4073-8770-89152f5698c2
-yuce2 = pdf.(yuce, 1)
+# ╔═╡ c2bafeed-f0cb-4ce6-a6a5-b7866678ee26
+begin
+mach1 = machine(pca, Xs)
+xx = transform(mach1, Xs)
+end
 
-# ╔═╡ 12301fef-ca85-4be9-a1e4-dafddb72864a
+# ╔═╡ b5f32075-2fdb-43ff-9e4c-3e7d21c4f6e2
+begin
+mach2 = machine(tree, xx, ys)
+yhat = predict(mach2, xx)
+end
+
+# ╔═╡ 9ab4bca6-4307-40e5-99b6-e6c925d67618
 md"""
-## 构造提交CSV
-注意， 提交系统的CSV只要两列（分别是policy_id和fraud）就可以了。policy_id可以从最开始读取的测试集得到。而fraud，则是一个我们预测的概率值。
+注意， 这里yhat节点只有一个源节点。 虽然看上去，yhat除了Xs作为源节点外，还有一个ys（通过mach2）, 但mach2本身不是节点。因此， yhat跟ys之间不存在直接边。事实上， 这个看似间接边也会在节点学习之后消失。简单总结就是：**通过机器连接的节点，不存在连边。**
 """
 
-# ╔═╡ a31ea97c-2130-45dc-b705-be8e1688836d
-subm = DataFrame(policy_id = testbx.policy_id,fraud = yuce2)
+# ╔═╡ 3cefcc02-6628-404c-88a4-ec198e03375d
+origins(yhat)
 
-# ╔═╡ 998cde61-0814-4177-971d-2c1bbd1382a8
-CSV.write("data/submit1.csv",subm)
-
-# ╔═╡ 0d5265c3-ba2c-4e9e-8d8c-1cfcc1dc3080
+# ╔═╡ e49f8a96-3845-4436-a3ba-8c07c18345ad
 md"""
-最终提交系统后， 成绩为0.6297。比本地测试的效果稍好一点。但还是很不理想。 
+### 学习节点的学习
 """
+
+# ╔═╡ 83f7f986-e9ba-4528-a18e-01f92f1e45bb
+md"""
+以上构建的xx和yhat都是可学习的节点，它们在调用之前，需要先学习。 但yhat这个节点是以xx节点为输入的。因此， 当yhat学习时， 会导致其依赖的xx节点也进行学习。
+"""
+
+# ╔═╡ 8e62dc47-061d-4c4b-9508-5dd097ee1676
+fit!(yhat)
+
+# ╔═╡ 8099c70d-63a3-459c-976a-46414bcb2c0e
+md"""
+学习节点完成学习后，就可以调用了。注意，这个时候的学习节点是单源节点。我们可以直接修改源节点值实现利用学习网络做预测。
+"""
+
+# ╔═╡ 75ef369c-3605-4d16-a199-a1b866838ea3
+yhat()[1:2]
+
+# ╔═╡ d99ffd5a-b964-46c6-af11-9a618e0d1bcc
+yhat(Xnew)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
-DecisionTree = "7806a523-6efd-50cb-b5f6-3fa6f1930dbb"
 MLJ = "add582a8-e3ab-11e8-2d5e-e98b27df1bc7"
 MLJDecisionTreeInterface = "c6f25543-311c-4c74-83dc-3ea6d1015661"
+MLJModelInterface = "e80e1ace-859a-464e-9ed9-23947d8ae3ea"
+MLJMultivariateStatsInterface = "1b6a4a23-ba22-4f51-9698-8599985d3728"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-CSV = "~0.10.11"
-DataFrames = "~1.6.1"
-DataFramesMeta = "~0.14.1"
-DecisionTree = "~0.12.4"
 MLJ = "~0.20.2"
 MLJDecisionTreeInterface = "~0.4.0"
+MLJModelInterface = "~1.9.4"
+MLJMultivariateStatsInterface = "~0.5.3"
 PlutoUI = "~0.7.54"
 """
 
@@ -570,7 +397,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "21237913cb3d44b13436013c08036ec531808c0a"
+project_hash = "990ec17578dccd6e9e54bf0a57548442df8ef0fd"
 
 [[deps.ARFFFiles]]
 deps = ["CategoricalArrays", "Dates", "Parsers", "Tables"]
@@ -591,9 +418,9 @@ version = "0.4.4"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
-git-tree-sha1 = "02f731463748db57cc2ebfbd9fbc9ce8280d3433"
+git-tree-sha1 = "cde29ddf7e5726c9fb511f340244ea3481267608"
 uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
-version = "3.7.1"
+version = "3.7.2"
 weakdeps = ["StaticArrays"]
 
     [deps.Adapt.extensions]
@@ -607,6 +434,18 @@ version = "2.3.0"
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.1"
+
+[[deps.Arpack]]
+deps = ["Arpack_jll", "Libdl", "LinearAlgebra", "Logging"]
+git-tree-sha1 = "9b9b347613394885fd1c8c7729bfc60528faa436"
+uuid = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
+version = "0.5.4"
+
+[[deps.Arpack_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "OpenBLAS_jll", "Pkg"]
+git-tree-sha1 = "5ba6c757e8feccf03a1554dfaf3e26b3cfc7fd5e"
+uuid = "68821587-b530-5797-8361-c406ea357684"
+version = "3.5.1+1"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -651,15 +490,9 @@ uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
 version = "0.1.8"
 
 [[deps.CEnum]]
-git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
+git-tree-sha1 = "389ad5c84de1ae7cf0e28e381131c98ea87d54fc"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
-version = "0.4.2"
-
-[[deps.CSV]]
-deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "PrecompileTools", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings", "WorkerUtilities"]
-git-tree-sha1 = "44dbf560808d49041989b8a96cae4cffbeb7966a"
-uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-version = "0.10.11"
+version = "0.5.0"
 
 [[deps.Calculus]]
 deps = ["LinearAlgebra"]
@@ -697,16 +530,11 @@ version = "0.1.13"
     [deps.CategoricalDistributions.weakdeps]
     UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
-[[deps.Chain]]
-git-tree-sha1 = "8c4920235f6c561e401dfe569beb8b924adad003"
-uuid = "8be319e6-bccf-4806-a6f7-6fae938471bc"
-version = "0.5.0"
-
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra"]
-git-tree-sha1 = "e0af648f0692ec1691b5d094b8724ba1346281cf"
+git-tree-sha1 = "2118cb2765f8197b08e5958cdd17c165427425ee"
 uuid = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-version = "1.18.0"
+version = "1.19.0"
 weakdeps = ["SparseArrays"]
 
     [deps.ChainRulesCore.extensions]
@@ -796,18 +624,6 @@ git-tree-sha1 = "8da84edb865b0b5b0100c0666a9bc9a0b71c553c"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.15.0"
 
-[[deps.DataFrames]]
-deps = ["Compat", "DataAPI", "DataStructures", "Future", "InlineStrings", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrecompileTools", "PrettyTables", "Printf", "REPL", "Random", "Reexport", "SentinelArrays", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
-git-tree-sha1 = "04c738083f29f86e62c8afc341f0967d8717bdb8"
-uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-version = "1.6.1"
-
-[[deps.DataFramesMeta]]
-deps = ["Chain", "DataFrames", "MacroTools", "OrderedCollections", "Reexport"]
-git-tree-sha1 = "6970958074cd09727b9200685b8631b034c0eb16"
-uuid = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
-version = "0.14.1"
-
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
 git-tree-sha1 = "3dbd312d370723b6bb43ba9d02fc36abade4518d"
@@ -857,9 +673,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.Distributions]]
 deps = ["FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SpecialFunctions", "Statistics", "StatsAPI", "StatsBase", "StatsFuns"]
-git-tree-sha1 = "a6c00f894f24460379cb7136633cef54ac9f6f4a"
+git-tree-sha1 = "9242eec9b7e2e14f9952e8ea1c7e31a50501d587"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.103"
+version = "0.25.104"
 
     [deps.Distributions.extensions]
     DistributionsChainRulesCoreExt = "ChainRulesCore"
@@ -923,9 +739,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random"]
-git-tree-sha1 = "28e4e9c4b7b162398ec8004bdabe9a90c78c122d"
+git-tree-sha1 = "5b93957f6dcd33fc343044af3d48c215be2562f1"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "1.8.0"
+version = "1.9.3"
 weakdeps = ["PDMats", "SparseArrays", "Statistics"]
 
     [deps.FillArrays.extensions]
@@ -984,12 +800,6 @@ git-tree-sha1 = "4da0f88e9a39111c2fa3add390ab15f3a44f3ca3"
 uuid = "22cec73e-a1b8-11e9-2c92-598750a2cf9c"
 version = "0.3.1"
 
-[[deps.InlineStrings]]
-deps = ["Parsers"]
-git-tree-sha1 = "9cc2baf75c6d09f9da536ddf58eb2f29dedaf461"
-uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
-version = "1.4.0"
-
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
@@ -1035,9 +845,9 @@ version = "0.2.4"
 
 [[deps.KernelAbstractions]]
 deps = ["Adapt", "Atomix", "InteractiveUtils", "LinearAlgebra", "MacroTools", "PrecompileTools", "Requires", "SparseArrays", "StaticArrays", "UUIDs", "UnsafeAtomics", "UnsafeAtomicsLLVM"]
-git-tree-sha1 = "b0737cbbe1c8da6f1139d1c23e35e7cea129c0af"
+git-tree-sha1 = "653e0824fc9ab55b3beec67a6dbbe514a65fb954"
 uuid = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
-version = "0.9.13"
+version = "0.9.15"
 
     [deps.KernelAbstractions.extensions]
     EnzymeExt = "EnzymeCore"
@@ -1047,9 +857,9 @@ version = "0.9.13"
 
 [[deps.LLVM]]
 deps = ["CEnum", "LLVMExtra_jll", "Libdl", "Preferences", "Printf", "Requires", "Unicode"]
-git-tree-sha1 = "c879e47398a7ab671c782e02b51a4456794a7fa3"
+git-tree-sha1 = "0678579657515e88b6632a3a482d39adcbb80445"
 uuid = "929cbde3-209d-540e-8aea-75f648917ca0"
-version = "6.4.0"
+version = "6.4.1"
 
     [deps.LLVM.extensions]
     BFloat16sExt = "BFloat16s"
@@ -1194,15 +1004,21 @@ version = "0.6.0"
 
 [[deps.MLJModelInterface]]
 deps = ["Random", "ScientificTypesBase", "StatisticalTraits"]
-git-tree-sha1 = "381d99f0af76d98f50bd5512dcf96a99c13f8223"
+git-tree-sha1 = "0cd3514d865b928e6a36f03497f65b5b1dee38c1"
 uuid = "e80e1ace-859a-464e-9ed9-23947d8ae3ea"
-version = "1.9.3"
+version = "1.9.4"
 
 [[deps.MLJModels]]
 deps = ["CategoricalArrays", "CategoricalDistributions", "Combinatorics", "Dates", "Distances", "Distributions", "InteractiveUtils", "LinearAlgebra", "MLJModelInterface", "Markdown", "OrderedCollections", "Parameters", "Pkg", "PrettyPrinting", "REPL", "Random", "RelocatableFolders", "ScientificTypes", "StatisticalTraits", "Statistics", "StatsBase", "Tables"]
 git-tree-sha1 = "10d221910fc3f3eedad567178ddbca3cc0f776a3"
 uuid = "d491faf4-2d78-11e9-2867-c94bc002c0b7"
 version = "0.16.12"
+
+[[deps.MLJMultivariateStatsInterface]]
+deps = ["CategoricalDistributions", "Distances", "LinearAlgebra", "MLJModelInterface", "MultivariateStats", "StatsBase"]
+git-tree-sha1 = "0d76e36bf83926235dcd3eaeafa7f47d3e7f32ea"
+uuid = "1b6a4a23-ba22-4f51-9698-8599985d3728"
+version = "0.5.3"
 
 [[deps.MLJTuning]]
 deps = ["ComputationalResources", "Distributed", "Distributions", "LatinHypercubeSampling", "MLJBase", "ProgressMeter", "Random", "RecipesBase", "StatisticalMeasuresBase"]
@@ -1223,9 +1039,9 @@ version = "0.4.3"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
-git-tree-sha1 = "9ee1618cbf5240e6d4e0371d6f24065083f60c48"
+git-tree-sha1 = "b211c553c199c111d998ecdaf7623d1b89b69f93"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
-version = "0.5.11"
+version = "0.5.12"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -1261,11 +1077,17 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2022.10.11"
 
+[[deps.MultivariateStats]]
+deps = ["Arpack", "LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI", "StatsBase"]
+git-tree-sha1 = "68bf5103e002c44adfd71fea6bd770b3f0586843"
+uuid = "6f286f6a-111f-5878-ab1e-185364afe411"
+version = "0.10.2"
+
 [[deps.NNlib]]
 deps = ["Adapt", "Atomix", "ChainRulesCore", "GPUArraysCore", "KernelAbstractions", "LinearAlgebra", "Pkg", "Random", "Requires", "Statistics"]
-git-tree-sha1 = "ac86d2944bf7a670ac8bf0f7ec099b5898abcc09"
+git-tree-sha1 = "7c221293228506db2fe883251407581e0846688e"
 uuid = "872c559c-99b0-510c-b3b7-b6c96a88d5cd"
-version = "0.9.8"
+version = "0.9.9"
 
     [deps.NNlib.extensions]
     NNlibAMDGPUExt = "AMDGPU"
@@ -1336,9 +1158,9 @@ version = "1.6.3"
 
 [[deps.PDMats]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "4e5be6bb265d33669f98eb55d2a57addd1eeb72c"
+git-tree-sha1 = "949347156c25054de2db3b166c52ac4728cbad65"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
-version = "0.11.30"
+version = "0.11.31"
 
 [[deps.Parameters]]
 deps = ["OrderedCollections", "UnPack"]
@@ -1348,9 +1170,9 @@ version = "0.12.3"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
-git-tree-sha1 = "a935806434c9d4c506ba941871b327b96d41f2bf"
+git-tree-sha1 = "8489905bcdbcfac64d1daa51ca07c0d8f0283821"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.8.0"
+version = "2.8.1"
 
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
@@ -1362,12 +1184,6 @@ deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNu
 git-tree-sha1 = "bd7c69c7f7173097e7b5e1be07cee2b8b7447f51"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 version = "0.7.54"
-
-[[deps.PooledArrays]]
-deps = ["DataAPI", "Future"]
-git-tree-sha1 = "36d8b4b899628fb92c2749eb488d884a926614d3"
-uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
-version = "1.4.3"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -1483,12 +1299,6 @@ git-tree-sha1 = "3bac05bc7e74a75fd9cba4295cde4045d9fe2386"
 uuid = "6c6a2e73-6563-6170-7368-637461726353"
 version = "1.2.1"
 
-[[deps.SentinelArrays]]
-deps = ["Dates", "Random"]
-git-tree-sha1 = "0e7508ff27ba32f26cd459474ca2ede1bc10991f"
-uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
-version = "1.4.1"
-
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
@@ -1545,18 +1355,19 @@ version = "0.1.15"
 
 [[deps.StableRNGs]]
 deps = ["Random", "Test"]
-git-tree-sha1 = "3be7d49667040add7ee151fefaf1f8c04c8c8276"
+git-tree-sha1 = "ddc1a7b85e760b5285b50b882fa91e40c603be47"
 uuid = "860ef19b-820b-49d6-a774-d7a799459cd3"
-version = "1.0.0"
+version = "1.0.1"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "PrecompileTools", "Random", "StaticArraysCore"]
-git-tree-sha1 = "5ef59aea6f18c25168842bded46b16662141ab87"
+git-tree-sha1 = "fba11dbe2562eecdfcac49a05246af09ee64d055"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.7.0"
-weakdeps = ["Statistics"]
+version = "1.8.1"
+weakdeps = ["ChainRulesCore", "Statistics"]
 
     [deps.StaticArrays.extensions]
+    StaticArraysChainRulesCoreExt = "ChainRulesCore"
     StaticArraysStatisticsExt = "Statistics"
 
 [[deps.StaticArraysCore]]
@@ -1724,17 +1535,6 @@ git-tree-sha1 = "323e3d0acf5e78a56dfae7bd8928c989b4f3083e"
 uuid = "d80eeb9a-aca5-4d75-85e5-170c8b632249"
 version = "0.1.3"
 
-[[deps.WeakRefStrings]]
-deps = ["DataAPI", "InlineStrings", "Parsers"]
-git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
-uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
-version = "1.4.2"
-
-[[deps.WorkerUtilities]]
-git-tree-sha1 = "cd1659ba0d57b71a464a29e64dbc67cfe83d54e7"
-uuid = "76eceee3-57b5-4d4a-8e66-0e911cebbf60"
-version = "1.6.1"
-
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
@@ -1757,123 +1557,63 @@ version = "17.4.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═474a99e2-9032-11ee-2d38-95a5b97c5516
-# ╟─eaeae502-3ef6-4053-9ad5-6d7a4aafe04b
-# ╟─0ee80ce8-a007-4e26-8dd4-dbf0938fd96a
-# ╟─8344e755-ffc6-4bb3-ac3b-e2a737033030
-# ╠═6c5de159-e6b6-459b-96e2-3feeff8a4b70
-# ╟─1bfc9917-68ac-415a-aea3-336728d39b37
-# ╠═2079416a-f031-4313-bb81-0b51b147904b
-# ╠═85ef2d6b-db0c-49e4-857f-01622f96e7eb
-# ╠═6bbb67b2-f25c-48ed-938c-e6479c29aff4
-# ╟─235ca537-f55f-4842-b81e-f791d67b67b4
-# ╠═13bb7c17-1e87-46b1-bdd1-25441adc20b7
-# ╟─4b4dadf7-fbb3-475f-902d-391c8839b78d
-# ╠═13c49081-8bb4-4766-bf8b-5fc53b7246bf
-# ╟─766bf320-4ae5-4124-8031-1f79810e086c
-# ╠═fce0a140-e63b-4e17-9c20-a9fef3797319
-# ╠═74d6dcc1-0037-47ce-8e1d-6dc46771ff62
-# ╠═f2c65c26-f1c4-4567-b522-4669a4d096f7
-# ╟─c3234c05-bf00-4bca-ac9e-268698d9f029
-# ╠═ecdebdad-1d76-4f60-80c7-926200119bec
-# ╠═e5404658-5aee-4dcd-822c-28a318cf0953
-# ╟─b30728ba-cb35-4d3d-b7b2-e62cf90f9e10
-# ╟─a0b1219f-02a7-4a2b-9b76-d525033b2ab1
-# ╠═00a7cba8-8e18-4be6-acbe-f9b089a8def6
-# ╟─b536589e-f7ad-4d81-a532-7bcd27f12984
-# ╠═284f5c91-c788-45f1-8792-f8d63b6aa627
-# ╠═a159ffbf-07c1-4bb2-b45d-5a2dadeb2271
-# ╠═c4f4f032-a784-44a9-a258-1f00e682d588
-# ╠═3cc0b04d-6c56-4599-9680-f1b05ccf6b20
-# ╟─08999fb3-e10b-4f64-b0cc-d41c21d4f3ed
-# ╠═9519d45b-48d9-4287-a8c8-dae8a1551b0d
-# ╠═3dd2216b-18fe-4182-bd11-f8027ce66e1f
-# ╟─7139aa61-c887-4124-bad3-a11790a9fc85
-# ╠═e060deb3-46a6-41f8-b341-0f4597a368a9
-# ╠═6d7d7024-2fdc-4ea5-8e45-767c2a684f80
-# ╟─1bd17442-1b24-486e-b1fb-1f9c9ba1d30d
-# ╠═15919fa0-59d6-4590-9af1-8708bbb62c2e
-# ╠═4330b6e4-1da1-4867-940b-c874255c80b9
-# ╟─a2e0f1b9-2173-4dd7-be7b-78f1d3b16f28
-# ╠═869ad4f0-9065-4362-b86b-0d70c58a6fbe
-# ╟─8b269dd4-5366-411b-93b8-143d98f8eb64
-# ╠═cf091683-25d2-4249-bab8-7dd3b051b78c
-# ╟─16986288-495e-4204-ad39-28a2afb66ea8
-# ╠═97248a11-ce38-490f-8fc9-a6f885297885
-# ╠═6c32a7b2-9209-472e-9bcb-0a3c6fe77745
-# ╠═3a45e417-649b-4bab-a121-4ede48c2fc94
-# ╠═fe35ac8f-baa5-42df-8bb4-aaab27595e46
-# ╠═c58e547e-9165-48d7-9942-8ec11e928939
-# ╟─338197fd-4792-4ea2-b9be-124d3ee4f684
-# ╟─ae762710-6f96-4575-a9ab-86a50e559bc6
-# ╠═05721e0d-91ba-4460-9230-a18906c17e98
-# ╟─9fec7844-aad4-400a-a0f6-a17d1a447b10
-# ╠═1bfb7cc7-a89a-4ce7-aa3e-3cab2258b0d1
-# ╠═75e4e8e3-6f26-4b7b-b87c-2fb8e0a13c4f
-# ╠═83d7ad6e-f7cd-4e70-8b38-0f06a6020dcb
-# ╟─a02e8b6e-5fab-4b20-a3d8-6abc4e7c5d40
-# ╠═6c689670-d6cb-417b-86e6-0253b3894254
-# ╠═a5a9c896-2114-4b07-adc8-2873e6ad93c2
-# ╟─c2d137d2-b65e-4669-a393-65887233f922
-# ╠═bd38191a-c57d-4dc4-ad71-814b782f1432
-# ╟─755fb8bb-7230-48d5-ae60-448fcb217c52
-# ╠═22edcd12-5b58-49c1-9fb5-4cc8f7b1dffb
-# ╠═07694d8c-29f4-4651-9302-bc997cc38071
-# ╟─ab5daca3-aabb-49b8-b863-014cab8ffca9
-# ╠═d6300b07-45cc-4012-aa6e-fc717144d57e
-# ╟─a80849b4-e961-4613-869b-24c47d5db1c6
-# ╟─ac9ddcb0-96cd-4d73-8314-07e714a2025e
-# ╠═abe1d9c3-6509-47a9-884d-9fbd36d13d45
-# ╠═bebc6df9-b57e-486b-ab37-4aa39fdb3a6e
-# ╠═f08ef805-47db-4e1d-9fa4-0c604d71f8ef
-# ╟─f696cad1-5eb2-4829-89e0-40247dcca90c
-# ╠═b839ac95-daba-4b39-97a9-27080ffd6999
-# ╟─7db8e1cd-a3f6-4ca9-9864-b7fce67fe67b
-# ╠═dcd88f53-4533-4746-8b89-50a6ee7934b2
-# ╟─56008d6c-0bfc-4418-bf8b-26c1872a854c
-# ╠═96616d0e-1f77-4589-b1a5-9ea15dc1a38f
-# ╠═3ae5298a-1284-4c5b-9fd8-cce449f116ed
-# ╟─6b359608-f19f-4210-82fa-5a656e6c2df5
-# ╠═437344cb-89b4-4df7-896b-9c50f7c9fe20
-# ╟─b78034cf-d2e0-487c-a3bc-6c2e7e0aad6b
-# ╠═929b3de2-2c41-43b7-b25d-7c54d73682c3
-# ╟─b6f069a6-fdb8-4617-88fe-fe65e7b10b10
-# ╠═0eee807f-e09b-471a-9ab7-53345dce7ee6
-# ╟─c398af14-f25e-493f-a2ae-0fcaf240eafc
-# ╠═0c4f87ec-daee-4670-bd08-298f74543aab
-# ╟─4c57e45b-4d11-4ec7-8d3d-c437f2ab10c1
-# ╟─ecfe89e3-3d3f-4113-b720-9c22dc8d33a4
-# ╠═11185a67-0f19-4bc2-b651-2b01915c9159
-# ╠═d8683ab5-8f70-4ae8-a060-8adb6bea846f
-# ╟─262bf688-0178-4150-aeba-e257242117a5
-# ╟─d9dd8372-67c1-4fea-badf-77a8cef4e15b
-# ╠═e810a496-1d60-48ca-b7e9-c741113597b1
-# ╟─a08bfc8c-cb47-49ec-95a3-9055fdc20ce6
-# ╠═f1b39c2e-7e47-4535-882f-607b02ea82f3
-# ╟─bc97582d-6e2f-4636-be46-58e7b4ab5deb
-# ╠═69d8cff1-b68c-41c1-b171-40a9712b94ba
-# ╟─07ec992c-530f-4bef-a603-15bddaf74817
-# ╠═534903b7-0ffa-4b7f-b6a4-60581419854a
-# ╟─428421eb-8dd8-4692-841d-bbf1b44789e8
-# ╠═2d9baa60-9b06-4bd3-be1c-5c086c98512a
-# ╠═2d98cfde-15ea-4154-b7e3-c3a7a7f798ce
-# ╠═7ffbaf58-f3b1-4002-93d6-5ded742ee2fb
-# ╟─f3215352-4f86-4f30-a4ee-0bf2d40bc43b
-# ╠═348ab9d7-6f70-4891-8a8f-d9dfe4c3b8c9
-# ╟─e50e1362-9169-4325-905f-7ea6ae71d8b7
-# ╟─f47f6676-bda8-4011-bdbd-f90a2c615963
-# ╟─6c8a368a-3fc8-4c29-9b6d-87a3d036a546
-# ╠═8bb6367f-19de-4cf5-b5df-c3eb9af8745f
-# ╠═16059ee1-a669-48c1-beb5-099fc55f6a50
-# ╟─3b513fb7-c47b-4408-881c-9346743ebe9e
-# ╠═de4841eb-0975-4209-94f1-f13cbb46fb58
-# ╠═f1b30e01-044a-4499-8630-9d633abc32a5
-# ╠═d3f6c9bd-291a-4c30-bc01-1bbef2435f74
-# ╟─469d1d36-bcec-4a01-a2e7-c5b141e19d3a
-# ╠═ee781216-8998-4073-8770-89152f5698c2
-# ╟─12301fef-ca85-4be9-a1e4-dafddb72864a
-# ╠═a31ea97c-2130-45dc-b705-be8e1688836d
-# ╠═998cde61-0814-4177-971d-2c1bbd1382a8
-# ╟─0d5265c3-ba2c-4e9e-8d8c-1cfcc1dc3080
+# ╠═54b70d8d-ec5c-4e7c-a4be-82fe98660d89
+# ╠═9980a076-9225-4ef4-8805-635d52001ba9
+# ╠═5c840389-4d21-466c-948c-bb74ce189645
+# ╟─a5f158d6-e672-4b6d-b3b6-9aab2e317a23
+# ╟─dd368673-da9a-498d-8d5a-ba0f8c775c64
+# ╟─d4ec5210-d252-4062-9603-6d86848c5475
+# ╟─5930cda1-911a-49cf-bebc-3fa4ba421840
+# ╟─e44aa442-71d8-427d-a3c9-8368f6b2f772
+# ╟─9c8882b2-d53d-4e53-b849-69e2ccbb763f
+# ╟─ecabba3d-3898-49eb-bc79-0cd686cbc2af
+# ╟─415fe16f-d96c-4628-936f-02e4829cc851
+# ╟─54c93d2b-9f92-4800-8b93-10cc221aa7c3
+# ╟─be30817a-061e-45a5-86df-12da2739989a
+# ╟─92a91528-8825-4bc3-a266-c3a8a6dd39a5
+# ╟─e86c79ec-0d3e-4032-9cf4-642e77faaa23
+# ╟─0b9992c7-20e2-4e13-a197-62a020c5b3ac
+# ╠═a5ebbc58-b0a8-4d1f-aa38-827d126ea422
+# ╟─5f177518-db25-4f2c-a484-d556a42ab112
+# ╠═2a76d0fc-6a8e-4de2-995d-843ce56d05a8
+# ╠═62876545-369d-4844-a647-700268da5adc
+# ╟─44fe4275-8393-453a-b807-f64174073ba4
+# ╠═e97ed498-1de6-4f5c-a57e-844f671bd046
+# ╟─68ccb425-0453-4ad4-acef-d46ced524889
+# ╠═a4a962b7-b72b-4f99-b3b4-7e7fe487b447
+# ╠═c34bc842-7b10-4a41-8068-b036763d3b41
+# ╟─6dbb364a-ce69-4457-bf34-1b111afcf33e
+# ╟─20cfa343-a791-4f2d-9ca0-e46186547354
+# ╠═bfcc0777-d1c5-4068-b645-37cdb551b5c9
+# ╠═72397617-ba70-48d4-813f-8cd6dea2d9fb
+# ╟─569db7ef-345f-4077-b004-a1d350b16775
+# ╠═a8c89725-3d14-44d6-90bc-98a54036484d
+# ╠═46afd362-5305-4e36-ab7c-5a2e37c70a64
+# ╟─9f9adbe0-b437-41e1-b95b-53597b9e772d
+# ╟─69dc1e2b-28a7-44b9-93f6-fbd0fcb1ab13
+# ╟─935d6db3-3fff-475d-90b4-8925766feb73
+# ╟─3874cac7-5f81-4782-a2a8-cd7e00ae175a
+# ╟─44d864ec-8b2a-4b56-95df-b2def849049d
+# ╠═3567e9c0-61c3-4764-b040-6391b5af81fd
+# ╠═a6510f06-5d4b-464d-9364-901e556ad168
+# ╟─8dd3c993-b6d9-44ca-a4b9-4946d2944bfa
+# ╠═e510e9e8-4141-470c-a8e7-96f8d01fef09
+# ╠═5408cd03-a639-4ab4-8318-5984681f72aa
+# ╟─d14e767d-1e6a-4527-b359-b626dec10e88
+# ╠═c550be42-e907-40e8-be63-71bf64fdd304
+# ╟─3e80f552-01e5-41bf-9b38-4912aab1380a
+# ╠═b1d07971-d4ae-4a0d-97f3-08218149bcf8
+# ╟─87c36a43-320a-413a-bb5e-e290aafc6b23
+# ╟─9e8ef0f1-56e7-4e03-9eb6-2e9155ad1ea3
+# ╠═c2bafeed-f0cb-4ce6-a6a5-b7866678ee26
+# ╠═b5f32075-2fdb-43ff-9e4c-3e7d21c4f6e2
+# ╟─9ab4bca6-4307-40e5-99b6-e6c925d67618
+# ╠═3cefcc02-6628-404c-88a4-ec198e03375d
+# ╟─e49f8a96-3845-4436-a3ba-8c07c18345ad
+# ╟─83f7f986-e9ba-4528-a18e-01f92f1e45bb
+# ╠═8e62dc47-061d-4c4b-9508-5dd097ee1676
+# ╟─8099c70d-63a3-459c-976a-46414bcb2c0e
+# ╠═75ef369c-3605-4d16-a199-a1b866838ea3
+# ╠═d99ffd5a-b964-46c6-af11-9a618e0d1bcc
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
