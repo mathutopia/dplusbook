@@ -13,6 +13,59 @@ md"""
 这里主要总结一下[StatisticalMeasures.jl](https://juliaai.github.io/StatisticalMeasures.jl/dev/)包的使用。 MLJ使用的也是这个包中的测度。
 """
 
+# ╔═╡ e5a47772-3cbd-4f6a-a511-5a131283b7a2
+md"""
+## 基本用法
+对于一个给定的测度m， 其基本的用法是：
+```julia
+m(ŷ, y)
+m(ŷ, y, weights)
+m(ŷ, y, class_weights::AbstractDict)
+m(ŷ, y, weights, class_weights)
+```
+也就是， 一个测度只能应用于预测和真实值， 额外能增加的参数只有样本权重weights和类别权重classweight。 一个classweight是真实值的各种取值到权重的一个字典。
+"""
+
+# ╔═╡ b49244ac-8109-4132-8d97-6cd7ed95916a
+md"""
+## 基本思想
+一个测度是怎么来的呢？ 一个自然的想法是每个测度对应一个函数。这是没错的。但StatisticalMeasures.jl包是通过实现StatisticalMeasuresBase.jl的接口实现的所有的测度。使用接口的好处是： 我们只需要编写对单个样本预测和真实的测量误差函数，就可以实现一个测度能够用的所有的功能。 这无疑是强大的。
+
+其坏处是： 构建一个测度稍微麻烦一点点。
+
+其基本思想是： 每一个测度通过一个结构体保存这个测度的参数，然后用实例可调用的函数实现测度函数。 因此，任何一个测度， 应该首先构建一个测度实例（通常可以改变参数）， 然后用实例去评估待评估的数据。
+
+下面以计算分类常见的precision为例做介绍。
+
+precision对应的结构名是：PositivePredictiveValue。其构造函数如下：
+`PositivePredictiveValue(; levels=nothing, rev=nothing, checks=true)`
+这个结构用于正例（positive）的预测准确性。 对应应该是二分类问题。 默认会把真实值的水平（levels）最后一个值当成正例。
+
+到[这里](https://juliaai.github.io/StatisticalMeasures.jl/dev/auto_generated_list_of_measures/#The-Measures)可以找到所有实现的测度。
+
+"""
+
+# ╔═╡ 37766a1c-81b5-4f2a-90d9-856d6f2d10c4
+precision= PositivePredictiveValue(levels=[0,1], checks=false)
+
+# ╔═╡ af96211b-912b-4c0a-aa8d-f505505ab192
+recall = TruePositiveRate(; levels=[0,1], checks=false)
+
+# ╔═╡ f73e5f00-7a99-4d5d-886d-e7696175f1b9
+fscore = FScore(levels=[0,1], checks=false)
+
+# ╔═╡ 05635e69-3a92-4560-8d2d-398e8d06eb75
+
+
+# ╔═╡ 3808c71c-bf71-47f0-abeb-8dfd65be280c
+y  = [1,0,1,0,1,0,1,0]
+
+# ╔═╡ cd98c77a-58d7-4371-8c8b-5c36d2b5b5e1
+yh = [0,1,1,1,0,0,1,1]
+
+# ╔═╡ fe219122-b496-4976-b2ab-e8a6c743c804
+fscore(yh, y)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -859,5 +912,14 @@ version = "17.4.0+2"
 # ╔═╡ Cell order:
 # ╠═e685efd2-0302-11ef-00af-9b47a693e5f4
 # ╟─a7c81d06-ea5a-41fb-b779-4b78fa36cccc
+# ╟─e5a47772-3cbd-4f6a-a511-5a131283b7a2
+# ╟─b49244ac-8109-4132-8d97-6cd7ed95916a
+# ╠═37766a1c-81b5-4f2a-90d9-856d6f2d10c4
+# ╠═af96211b-912b-4c0a-aa8d-f505505ab192
+# ╠═f73e5f00-7a99-4d5d-886d-e7696175f1b9
+# ╠═05635e69-3a92-4560-8d2d-398e8d06eb75
+# ╠═3808c71c-bf71-47f0-abeb-8dfd65be280c
+# ╠═cd98c77a-58d7-4371-8c8b-5c36d2b5b5e1
+# ╠═fe219122-b496-4976-b2ab-e8a6c743c804
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

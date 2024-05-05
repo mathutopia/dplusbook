@@ -47,9 +47,9 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[deps.Box]]
 deps = ["HypertextLiteral", "Markdown"]
-git-tree-sha1 = "905f28f8e56e7a117d741cf586b011dd68c498d4"
+git-tree-sha1 = "bee6dbf5fa690f991d4c3b018cbfbb206e59dc18"
 uuid = "247ae7ab-d1b9-4f88-8529-b44b862cffa0"
-version = "1.0.13"
+version = "1.0.14"
 
 [[deps.HypertextLiteral]]
 deps = ["Tricks"]
