@@ -5,7 +5,13 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ e685efd2-0302-11ef-00af-9b47a693e5f4
-using StatisticalMeasures
+using StatisticalMeasures,CategoricalArrays,PlutoUI
+
+# ╔═╡ 4ab9ed1a-035c-44f8-8548-99f3b5186bc5
+using CategoricalDistributions
+
+# ╔═╡ 3e981562-1a6b-4a4e-a25b-5f40f8d40217
+TableOfContents(title = "目录")
 
 # ╔═╡ a7c81d06-ea5a-41fb-b779-4b78fa36cccc
 md"""
@@ -35,43 +41,140 @@ md"""
 
 其基本思想是： 每一个测度通过一个结构体保存这个测度的参数，然后用实例可调用的函数实现测度函数。 因此，任何一个测度， 应该首先构建一个测度实例（通常可以改变参数）， 然后用实例去评估待评估的数据。
 
-下面以计算分类常见的precision为例做介绍。
-
-precision对应的结构名是：PositivePredictiveValue。其构造函数如下：
-`PositivePredictiveValue(; levels=nothing, rev=nothing, checks=true)`
-这个结构用于正例（positive）的预测准确性。 对应应该是二分类问题。 默认会把真实值的水平（levels）最后一个值当成正例。
-
 到[这里](https://juliaai.github.io/StatisticalMeasures.jl/dev/auto_generated_list_of_measures/#The-Measures)可以找到所有实现的测度。
 
 """
 
-# ╔═╡ 37766a1c-81b5-4f2a-90d9-856d6f2d10c4
-precision= PositivePredictiveValue(levels=[0,1], checks=false)
+# ╔═╡ ee81f822-ce45-435d-bc11-fd40e4cb5d66
+md"""
+## 例子
+"""
 
-# ╔═╡ af96211b-912b-4c0a-aa8d-f505505ab192
-recall = TruePositiveRate(; levels=[0,1], checks=false)
+# ╔═╡ 8f42dc4f-ee66-451f-8061-d078c023dbeb
+md"""
+### 二分类问题
+二分类问题很常见， 下面做简单演示。 假定我们有一个预测的y值（yp）、以及真实的y值（yb）向量。下面给出其常见的度量计算。
+"""
 
-# ╔═╡ f73e5f00-7a99-4d5d-886d-e7696175f1b9
-fscore = FScore(levels=[0,1], checks=false)
+# ╔═╡ 97a8b4b9-e7a6-4823-973a-66660d330253
+begin
+yb = [0,0,0,1,0,1,0,1]
+yp = [1,0,1,0,1,0,1,1]
+end
 
-# ╔═╡ 05635e69-3a92-4560-8d2d-398e8d06eb75
+# ╔═╡ 051c0031-b13f-4631-b3e7-fb81c11d7cdf
+md"""
+### 混淆矩阵
+下面是计算混淆矩阵。
+"""
+
+# ╔═╡ ad46ad89-6432-4df5-9eea-f9d3b51617d7
+confmat(yp,  yb)
+
+# ╔═╡ 328674f3-f6c4-4540-8e2d-45584e25c6f6
+md"""
+### 精度precision
+下面计算分类常见的precision。 precision对应的结构名是：PositivePredictiveValue。其构造函数如下： `PositivePredictiveValue(; levels=nothing, rev=nothing, checks=true)`
+这个结构用于正例（positive）的预测准确性。 对应应该是二分类问题。 默认会把真实值的水平（levels）最后一个值当成正例。 这个结构有几个实例别名，`positive_predictive_value, ppv, positivepredictive_value, precision`。建议不要用precision， 因为这是一个Base包中的函数， 用ppv就很方便。
 
 
-# ╔═╡ 3808c71c-bf71-47f0-abeb-8dfd65be280c
-y  = [1,0,1,0,1,0,1,0]
+"""
 
-# ╔═╡ cd98c77a-58d7-4371-8c8b-5c36d2b5b5e1
-yh = [0,1,1,1,0,0,1,1]
+# ╔═╡ 5663d042-7cf3-4cc6-8717-8cb3a018867a
+ppv(yp, yb)
 
-# ╔═╡ fe219122-b496-4976-b2ab-e8a6c743c804
-fscore(yh, y)
+# ╔═╡ 300e1ca7-873c-4c8b-b339-fff54a97d7e1
+md"""
+上面有一个警告信息：`
+Levels not explicitly ordered. Using the order [0, 1]. The "positive" level is 1. `
+
+这个信息表明， 我们的预测yp， 并没有给出谁是positive的， 默认就当成是1了。 (注意， ppv是正类的预测准确度。) 为了避免这个警告， 同时有时候， 我们可能要预测的正类应该是0。最好将预测值和真实值都转化为有序类型变量， 同时指定其水平。这可以通过categorical函数实现。
+
+"""
+
+# ╔═╡ c55f3e6c-a37b-420e-bf7f-5d4d165ff635
+begin
+ybc = categorical(yb, levels=[0,1], ordered=true)
+ypc = categorical(yp, levels = levels(ybc), ordered = true)
+end
+
+# ╔═╡ 1f652cc0-7bf3-4348-a7fb-065682cf122a
+ppv(ypc, ybc)
+
+# ╔═╡ 4a573cd9-3aa3-4157-adb5-f015663bb6fb
+md"""
+可以看到， 两者的结果是一致的。 但这个时候， 不会再有警告信息了。 
+
+如果， 我们改变水平（levels）的顺序。 这时候， 预测结果就完全变了。
+"""
+
+# ╔═╡ 16f67fcf-ace7-4247-bc82-3f278206a13a
+begin
+ybc1 = categorical(yb, levels=[1,0], ordered=true)
+ypc1 = categorical(yp, levels = levels(ybc1), ordered = true)
+end
+
+# ╔═╡ 42c1b9c9-07d6-4711-8579-3572c8d0c3f2
+ppv(ypc1, ybc1)
+
+# ╔═╡ 92d4b891-b114-4ea1-9bab-f3ba2cbfe2df
+md"""
+### 其他指标recall、f1score
+比如， 查全率recall、f1分数f1score跟precision是一样的。
+"""
+
+# ╔═╡ f1ea71ee-dc72-4041-9b9d-799c0e460f9c
+PositivePredictiveValue()
+
+# ╔═╡ dfe9d2c0-0053-45d9-abca-8ef5e60de2bf
+recall(ypc, ybc)
+
+# ╔═╡ 3cb95ed5-25b6-4b9a-bcb3-4a934bf412ad
+f1score(ypc, ybc)
+
+# ╔═╡ f78609a6-4298-43a4-bc71-5156ce316ab1
+md"""
+### 概率预测
+前面的预测值是单个的值， 但有时我们预测的是多个值中每个值的概率。比如， 欺诈的概率是XX， 非欺诈的概率是XX。这本质上是预测了一个概率分布。 这个分布是一个单变量分布。需要用到CategoricalDistributions.jl包。 本质上， 我们需要构造一个UnivariateFinite对象：
+
+```julia
+UnivariateFinite(support,
+                 probs;
+                 pool=nothing,
+                 augmented=false,
+                 ordered=false)
+```
+其中，support是一个向量， 用于表示一个分布的取值。probs是一个每种取值的概率的矩阵（跟support向量给出的顺序对应）。如果augmented=true, 那么 probs可以少一列（第一个取值的概率，通过其他的算出来）。所以， 如果是两个取值的话， 只要给出后一个取值的概率（用向量）就好。 pool通常用于指定可能取值的范围， 用一个categorical向量来初始化。
+"""
+
+# ╔═╡ 90db0234-5022-4ef5-b2d2-213e391250cd
+md"""
+在前面我们已经将预测转化为有序因子的情况下(ypc), 现在假定， 对1的预测的概率分别为：[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8]。 于是可以构造预测的分布如下：
+"""
+
+# ╔═╡ 3059af6a-94a0-48d4-b465-e01271e721a7
+ypp = UnivariateFinite([0,1], [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8],augment=true, pool=ybc)
+
+# ╔═╡ b8c582a2-1292-4b44-b448-1c882db0f3c1
+md"""
+有了预测的分布， 下面可以计算需要概率才能计算的指标， 如auc。
+"""
+
+# ╔═╡ dc502915-48ae-44d6-b66a-28161cc6a611
+auc(ypp, ybc)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
+CategoricalDistributions = "af321ab8-2d2e-40a6-b165-3d674595d28e"
+PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 StatisticalMeasures = "a19d573c-0a75-4610-95b3-7071388c7541"
 
 [compat]
+CategoricalArrays = "~0.10.8"
+CategoricalDistributions = "~0.1.15"
+PlutoUI = "~0.7.59"
 StatisticalMeasures = "~0.1.6"
 """
 
@@ -81,7 +184,13 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "b6435549d84d2e70a0d32f8ea18ecf9e4bf830ba"
+project_hash = "b279a66c6c225dc79383d73390158a0382da08b5"
+
+[[deps.AbstractPlutoDingetjes]]
+deps = ["Pkg"]
+git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
+uuid = "6e696c72-6542-2067-7265-42206c756150"
+version = "1.3.2"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
@@ -95,9 +204,9 @@ weakdeps = ["StaticArrays"]
 
 [[deps.AliasTables]]
 deps = ["Random"]
-git-tree-sha1 = "ca95b2220ef440817963baa71525a8f2f4ae7f8f"
+git-tree-sha1 = "07591db28451b3e45f4c0088a2d5e986ae5aa92d"
 uuid = "66dad0bd-aa9a-41b7-9441-69ab47430ed8"
-version = "1.0.0"
+version = "1.1.1"
 
 [[deps.ArgCheck]]
 git-tree-sha1 = "a3a402a35a2f7e0b87828ccabbd5ebfbebe356b4"
@@ -338,9 +447,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "881275fc6b8c6f0dfb9cfa4a878979a33cb26be3"
+git-tree-sha1 = "57f08d5665e76397e96b168f9acc12ab17c84a68"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "1.10.1"
+version = "1.10.2"
 weakdeps = ["PDMats", "SparseArrays", "Statistics"]
 
     [deps.FillArrays.extensions]
@@ -370,6 +479,24 @@ git-tree-sha1 = "f218fe3736ddf977e0e772bc9a586b2383da2685"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
 version = "0.3.23"
 
+[[deps.Hyperscript]]
+deps = ["Test"]
+git-tree-sha1 = "179267cfa5e712760cd43dcae385d7ea90cc25a4"
+uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+version = "0.0.5"
+
+[[deps.HypertextLiteral]]
+deps = ["Tricks"]
+git-tree-sha1 = "7134810b1afce04bbc1045ca1985fbe81ce17653"
+uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
+version = "0.9.5"
+
+[[deps.IOCapture]]
+deps = ["Logging", "Random"]
+git-tree-sha1 = "8b72179abc660bfab5e28472e019392b97d0985c"
+uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
+version = "0.2.4"
+
 [[deps.InitialValues]]
 git-tree-sha1 = "4da0f88e9a39111c2fa3add390ab15f3a44f3ca3"
 uuid = "22cec73e-a1b8-11e9-2c92-598750a2cf9c"
@@ -394,6 +521,12 @@ deps = ["Artifacts", "Preferences"]
 git-tree-sha1 = "7e5d6779a1e09a36db2a7b6cff50942a0a7d0fca"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
 version = "1.5.0"
+
+[[deps.JSON]]
+deps = ["Dates", "Mmap", "Parsers", "Unicode"]
+git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
+uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+version = "0.21.4"
 
 [[deps.JuliaVariables]]
 deps = ["MLStyle", "NameResolution"]
@@ -495,6 +628,11 @@ version = "0.3.27"
 
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
+
+[[deps.MIMEs]]
+git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
+uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
+version = "0.1.4"
 
 [[deps.MLStyle]]
 git-tree-sha1 = "bc38dff0548128765760c79eb7388a4b37fae2c8"
@@ -602,10 +740,22 @@ git-tree-sha1 = "949347156c25054de2db3b166c52ac4728cbad65"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.11.31"
 
+[[deps.Parsers]]
+deps = ["Dates", "PrecompileTools", "UUIDs"]
+git-tree-sha1 = "8489905bcdbcfac64d1daa51ca07c0d8f0283821"
+uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
+version = "2.8.1"
+
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 version = "1.10.0"
+
+[[deps.PlutoUI]]
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "ab55ee1510ad2af0ff674dbcced5e94921f867a9"
+uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+version = "0.7.59"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -870,6 +1020,16 @@ version = "0.4.80"
     OnlineStatsBase = "925886fa-5bf2-5e8e-b522-a9147a512338"
     Referenceables = "42d2dcc6-99eb-4e98-b66c-637b7d73030e"
 
+[[deps.Tricks]]
+git-tree-sha1 = "eae1bb484cd63b36999ee58be2de6c178105112f"
+uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
+version = "0.1.8"
+
+[[deps.URIs]]
+git-tree-sha1 = "67db6cc7b3821e19ebe75791a9dd19c9b1188f2b"
+uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
+version = "1.5.1"
+
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
 uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
@@ -911,15 +1071,32 @@ version = "17.4.0+2"
 
 # ╔═╡ Cell order:
 # ╠═e685efd2-0302-11ef-00af-9b47a693e5f4
+# ╟─3e981562-1a6b-4a4e-a25b-5f40f8d40217
 # ╟─a7c81d06-ea5a-41fb-b779-4b78fa36cccc
 # ╟─e5a47772-3cbd-4f6a-a511-5a131283b7a2
 # ╟─b49244ac-8109-4132-8d97-6cd7ed95916a
-# ╠═37766a1c-81b5-4f2a-90d9-856d6f2d10c4
-# ╠═af96211b-912b-4c0a-aa8d-f505505ab192
-# ╠═f73e5f00-7a99-4d5d-886d-e7696175f1b9
-# ╠═05635e69-3a92-4560-8d2d-398e8d06eb75
-# ╠═3808c71c-bf71-47f0-abeb-8dfd65be280c
-# ╠═cd98c77a-58d7-4371-8c8b-5c36d2b5b5e1
-# ╠═fe219122-b496-4976-b2ab-e8a6c743c804
+# ╠═ee81f822-ce45-435d-bc11-fd40e4cb5d66
+# ╠═8f42dc4f-ee66-451f-8061-d078c023dbeb
+# ╠═97a8b4b9-e7a6-4823-973a-66660d330253
+# ╟─051c0031-b13f-4631-b3e7-fb81c11d7cdf
+# ╠═ad46ad89-6432-4df5-9eea-f9d3b51617d7
+# ╟─328674f3-f6c4-4540-8e2d-45584e25c6f6
+# ╠═5663d042-7cf3-4cc6-8717-8cb3a018867a
+# ╟─300e1ca7-873c-4c8b-b339-fff54a97d7e1
+# ╠═c55f3e6c-a37b-420e-bf7f-5d4d165ff635
+# ╠═1f652cc0-7bf3-4348-a7fb-065682cf122a
+# ╟─4a573cd9-3aa3-4157-adb5-f015663bb6fb
+# ╠═16f67fcf-ace7-4247-bc82-3f278206a13a
+# ╠═42c1b9c9-07d6-4711-8579-3572c8d0c3f2
+# ╟─92d4b891-b114-4ea1-9bab-f3ba2cbfe2df
+# ╠═f1ea71ee-dc72-4041-9b9d-799c0e460f9c
+# ╠═dfe9d2c0-0053-45d9-abca-8ef5e60de2bf
+# ╠═3cb95ed5-25b6-4b9a-bcb3-4a934bf412ad
+# ╟─f78609a6-4298-43a4-bc71-5156ce316ab1
+# ╠═4ab9ed1a-035c-44f8-8548-99f3b5186bc5
+# ╟─90db0234-5022-4ef5-b2d2-213e391250cd
+# ╠═3059af6a-94a0-48d4-b465-e01271e721a7
+# ╟─b8c582a2-1292-4b44-b448-1c882db0f3c1
+# ╠═dc502915-48ae-44d6-b66a-28161cc6a611
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

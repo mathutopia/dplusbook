@@ -44,6 +44,9 @@ y,X = unpack(iris, ==(:target))
 # ╔═╡ 85ef2d6b-db0c-49e4-857f-01622f96e7eb
 y
 
+# ╔═╡ bb19ca67-4c46-43b9-bd0f-662a85b10ede
+levels(y)
+
 # ╔═╡ 6bbb67b2-f25c-48ed-938c-e6479c29aff4
 X
 
@@ -67,6 +70,9 @@ md"""
 
 # ╔═╡ 13c49081-8bb4-4766-bf8b-5fc53b7246bf
 models("Bayes")
+
+# ╔═╡ 0af17c3d-3caf-48f7-8331-56d8eb463f46
+models("decision")
 
 # ╔═╡ 766bf320-4ae5-4124-8031-1f79810e086c
 md"""
@@ -155,6 +161,9 @@ md"""
 
 # ╔═╡ 15919fa0-59d6-4590-9af1-8708bbb62c2e
 yhat = MLJ.predict(mach, X[test,:])
+
+# ╔═╡ 22849d34-e459-43b6-a725-c25cc039bb5d
+ypp = UnivariateFinite([0,1], [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8],augment=true, pool=categorical([0,1]))
 
 # ╔═╡ 4330b6e4-1da1-4867-940b-c874255c80b9
 yhat[1:2]
@@ -494,7 +503,7 @@ md"""
 """
 
 # ╔═╡ 8bb6367f-19de-4cf5-b5df-c3eb9af8745f
-testbx = CSV.read("..\\data\\testbx.csv", DataFrame)
+testbx = CSV.read("../data/testbx.csv", DataFrame)
 
 # ╔═╡ 16059ee1-a669-48c1-beb5-099fc55f6a50
 testbxn = @chain testbx begin
@@ -1773,11 +1782,13 @@ version = "17.4.0+2"
 # ╟─1bfc9917-68ac-415a-aea3-336728d39b37
 # ╠═2079416a-f031-4313-bb81-0b51b147904b
 # ╠═85ef2d6b-db0c-49e4-857f-01622f96e7eb
+# ╠═bb19ca67-4c46-43b9-bd0f-662a85b10ede
 # ╠═6bbb67b2-f25c-48ed-938c-e6479c29aff4
 # ╟─235ca537-f55f-4842-b81e-f791d67b67b4
 # ╠═13bb7c17-1e87-46b1-bdd1-25441adc20b7
 # ╟─4b4dadf7-fbb3-475f-902d-391c8839b78d
 # ╠═13c49081-8bb4-4766-bf8b-5fc53b7246bf
+# ╠═0af17c3d-3caf-48f7-8331-56d8eb463f46
 # ╟─766bf320-4ae5-4124-8031-1f79810e086c
 # ╠═fce0a140-e63b-4e17-9c20-a9fef3797319
 # ╠═74d6dcc1-0037-47ce-8e1d-6dc46771ff62
@@ -1801,6 +1812,7 @@ version = "17.4.0+2"
 # ╠═6d7d7024-2fdc-4ea5-8e45-767c2a684f80
 # ╟─1bd17442-1b24-486e-b1fb-1f9c9ba1d30d
 # ╠═15919fa0-59d6-4590-9af1-8708bbb62c2e
+# ╠═22849d34-e459-43b6-a725-c25cc039bb5d
 # ╠═4330b6e4-1da1-4867-940b-c874255c80b9
 # ╟─a2e0f1b9-2173-4dd7-be7b-78f1d3b16f28
 # ╠═869ad4f0-9065-4362-b86b-0d70c58a6fbe
@@ -1823,7 +1835,7 @@ version = "17.4.0+2"
 # ╠═6c689670-d6cb-417b-86e6-0253b3894254
 # ╠═a5a9c896-2114-4b07-adc8-2873e6ad93c2
 # ╟─c2d137d2-b65e-4669-a393-65887233f922
-# ╠═bd38191a-c57d-4dc4-ad71-814b782f1432
+# ╟─bd38191a-c57d-4dc4-ad71-814b782f1432
 # ╟─755fb8bb-7230-48d5-ae60-448fcb217c52
 # ╠═22edcd12-5b58-49c1-9fb5-4cc8f7b1dffb
 # ╠═07694d8c-29f4-4651-9302-bc997cc38071
