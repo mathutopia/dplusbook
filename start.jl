@@ -2,7 +2,7 @@ cd(@__DIR__)
 using Pkg
 Pkg.activate(".")
 # pushfirst!(DEPOT_PATH, "D:/.julia")
-"Pluto" ∈ keys(Pkg.project().dependencies) || Pkg.add("Pluto")
+"Pluto" ∈ keys(Pkg.project().dependencies) && Pkg.add("Pluto")
 
 if !isdir(joinpath(DEPOT_PATH[1],"registries","dplus")) 
     Pkg.Registry.add(RegistrySpec(url = "https://gitee.com/mathutopia/dplusreg.git"))

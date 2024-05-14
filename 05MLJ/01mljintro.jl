@@ -250,21 +250,26 @@ schema(trains)
 # ╔═╡ a5a9c896-2114-4b07-adc8-2873e6ad93c2
 unique(schema(trains).scitypes)
 
-# ╔═╡ c2d137d2-b65e-4669-a393-65887233f922
-md"""
-上面将数据的科学类型去重之后可以看到， 数据有4种类型的科学类型。一般而言：科学类型主要涉及以下几类：
-"""
-
-# ╔═╡ bd38191a-c57d-4dc4-ad71-814b782f1432
-md"""
-[科学类型]
-
-![](https://alan-turing-institute.github.io/MLJ.jl/dev/img/scitypes_small.png)
-"""
-
 # ╔═╡ 755fb8bb-7230-48d5-ae60-448fcb217c52
 md"""
-一般而言， 整型（Int）存储类型会被处理为Count， 浮点数（Float）类型会被处理为Continuous， 字符串类型（String）会被处理为textual。 直接读取数据，一般不会有有序因子（OrderedFactor）和类别变量（Multiclass）， 需要转化。可以使用scitype和elscitype分别获取数据框中字段的科学类型和字段取值的科学类型。
+### [科学类型](https://juliaai.github.io/MLJ.jl/stable/getting_started/#Data-containers-and-scientific-types)
+上面将数据的科学类型去重之后可以看到， 数据有4种类型的科学类型。一般而言：科学类型主要涉及以下几类：
+
+- Missing
+- Textual
+- Finite{N}
+  - OrderedFactor{N}
+  - Multiclass(N)
+- Inifinite
+  - Continous
+  - Count
+其中Finite{N}是指有N个取值的类型。它可能是有序因子（OrderedFactor{N}）， 也可能只是一个无序的类别变量Multiclass(N)。而Inifinite是指有无穷多个取值的字段， 它可能是连续取值的（Contious）， 也可能是离散取值的计数变量（Count）。
+
+!!! hint "为什么要有科学类型？"
+	数据本身有一个存储类型， 比如整数（Int）、浮点数（Float）、字符串（String）等等。那为什么还要引进一个科学类型呢？ 原因很简单， 科学类型是从建模的角度考虑问题，是从数据的“语义”出发的。而存储类型是从数据的存储角度出发的。一个字段的“语义”跟其存储之间不一定是直接联系的。比如， 学历字段， 从语义的角度， 它应该是一个“有序类别变量”， 但计算机存储的时候， 可能将不同的学历用字符（或字符串）表示， 也有可能用整数或其他形式表示。 虽然字段的存储（表示）方式可能有多种，但其语义相对是固定。 科学类型就是从语义的角度给数据一个类型标记。
+
+
+一般而言， 整型（Int）存储类型的科学类型为Count， 浮点数（Float）类型的科学类型为Continuous， 字符串类型（String）的科学类型为textual。 直接读取数据，一般不会有有序因子（OrderedFactor）和类别变量（Multiclass）， 需要手动转化。可以使用scitype和elscitype分别获取数据框中字段的科学类型和字段取值的科学类型。
 """
 
 # ╔═╡ 22edcd12-5b58-49c1-9fb5-4cc8f7b1dffb
@@ -285,7 +290,7 @@ info("DecisionTreeClassifier", pkg="DecisionTree")
 
 # ╔═╡ a80849b4-e961-4613-869b-24c47d5db1c6
 md"""
-在模型返回的诸多信息中， 有两个字段input_scitype和target_scitype， 分别表示输入数据X和目标变量Y的的科学类型。比如上面的模型， 输入数据的类型是：
+在模型返回的诸多信息中， 有两个字段input\_scitype和target\_scitype， 分别表示输入数据X和目标变量Y的的科学类型。比如上面的模型， 输入数据的类型是：
 Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVector{<:OrderedFactor}}}
 虽然这个看上去看复杂， 但仔细看还是比较容易理解的。首先， 输入数据必须是表格Table（dataframe是表格）， 表格中字段的类型都是向量Vector， 其元素可以是：Continuous， Count, OrderedFactor类型。
 对于目标变量，其类型是：AbstractVector{<:Finite}， 也就是有限类型就行。
@@ -295,6 +300,7 @@ Table{<:Union{AbstractVector{<:Continuous}, AbstractVector{<:Count}, AbstractVec
 
 # ╔═╡ ac9ddcb0-96cd-4d73-8314-07e714a2025e
 md"""
+### 选择指定类型的字段
 在实际建模中，我们的X通常会有多种数据类型， 有时候，我们需要选择某种/些类型的变量用于建模， 这时候， 需要用到类型的获取工具。 运算工具： == 可以用于比较两种类型是否相同。 type1<:type2表示判断type1类型是否是type2类型的子类型（包括type2类型）。类似的， type1>:type2表示判断type1类型是否是type2类型的父类型（包括type2类型）。
 """
 
@@ -381,6 +387,7 @@ names(Xt, fun.(eachcol(Xt), tp = Continuous))
 
 # ╔═╡ 4c57e45b-4d11-4ec7-8d3d-c437f2ab10c1
 md"""
+### 科学类型转换
 上面的结果告诉你， 我们的数据集中连续变量只有一个。 这显然不符合事实。 如果你去仔细分析， 会发现，许多Count类型的变量应该理解为连续变量更合理（比如年龄age）。因此， 我们需要一个能将Count类型转换为Continuous类型的函数。这可以方便的通过coease实现。
 
 coease有三种不同的使用方法：
@@ -389,6 +396,15 @@ coerce(vec, type)
 coerce(X, :name1=>type1, :name2=>type2,...)
 coerce(X, type1=>type2, ...)
 ```
+他们的含义分别如下：
+
+- coerce(vec, type)
+  - 把一个向量vec转换为某种科学类型type
+- coerce(X, :name1=>type1, :name2=>type2,...)
+  - 把一个表格（数据框）X中的某些字段转化为某种类型（:name1=>type1...）
+- coerce(X, type1=>type2, ...)
+  - 把一个表格（数据框）X中的某些类型的字段type1, 转化为另一种类型type2
+
 下面是一个例子
 ```julia
 #将向量y中的元素都转化为Multiclass类型
@@ -1834,8 +1850,6 @@ version = "17.4.0+2"
 # ╟─a02e8b6e-5fab-4b20-a3d8-6abc4e7c5d40
 # ╠═6c689670-d6cb-417b-86e6-0253b3894254
 # ╠═a5a9c896-2114-4b07-adc8-2873e6ad93c2
-# ╟─c2d137d2-b65e-4669-a393-65887233f922
-# ╟─bd38191a-c57d-4dc4-ad71-814b782f1432
 # ╟─755fb8bb-7230-48d5-ae60-448fcb217c52
 # ╠═22edcd12-5b58-49c1-9fb5-4cc8f7b1dffb
 # ╠═07694d8c-29f4-4651-9302-bc997cc38071
