@@ -41,6 +41,9 @@ md"""
 下面对常用的无监督模型做简要介绍。 看[这里](https://alan-turing-institute.github.io/MLJ.jl/dev/transformers/#Transformers-and-Other-Unsupervised-Models)了解更多。
 """
 
+# ╔═╡ 2e388b48-ff39-4876-ae5d-e5ca4607b673
+
+
 # ╔═╡ 0da6aa89-d6d7-47fa-9cf1-7425d806ca8d
 md"""
 ## 1 特征选择
@@ -214,7 +217,7 @@ PlutoUI = "~0.7.54"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.2"
+julia_version = "1.10.3"
 manifest_format = "2.0"
 project_hash = "580fefcece0c4aeeac8ef4db6ce0759a58f76d4f"
 
@@ -383,7 +386,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.1.0+0"
+version = "1.1.1+0"
 
 [[deps.CompositionsBase]]
 git-tree-sha1 = "802bb88cd69dfd1509f6670416bd4434015693ad"
@@ -1389,6 +1392,7 @@ version = "17.4.0+2"
 # ╠═8c09a51f-e3cf-4601-a82a-b076b518551f
 # ╠═6cdeaf76-c751-4051-93d8-741a5fa3e7a6
 # ╟─6ceb287c-fec1-43a3-9822-49bef5003607
+# ╠═2e388b48-ff39-4876-ae5d-e5ca4607b673
 # ╟─0da6aa89-d6d7-47fa-9cf1-7425d806ca8d
 # ╠═5bc9dbcf-841b-4bb6-b438-6dcce5d662ab
 # ╠═59ddc03e-b710-4848-bf94-6fd1d93086fb
