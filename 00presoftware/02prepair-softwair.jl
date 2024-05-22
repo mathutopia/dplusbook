@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.36
+# v0.19.41
 
 using Markdown
 using InteractiveUtils
@@ -7,7 +7,6 @@ using InteractiveUtils
 # ╔═╡ a37e7480-7e13-4c45-9dcd-8a6f0688d7f3
 begin
 using PlutoUI
-include("Box.jl")
 TableOfContents(title="目录")
 end
 
@@ -28,7 +27,26 @@ md"""
 """
 
 # ╔═╡ a4781db0-1cbe-46f2-9c5a-3efe0329e902
-LocalResource("img/repl.png")
+LocalResource("../img/repl.png")
+
+# ╔═╡ 4ca8ac78-fbc6-427c-9555-2a81cad221e2
+md"""
+REPL环境有四种模式： 第一种模式就是**代码（Julian）模式**，提示符是 `julia>`， 这也是REPL启动的时候的默认模式。 这种模式下， 可以直接写Julia的代码。
+
+在代码模式下， 输入右边中括号`]`,进入第二种模式—**包模式**，其提示符是Julia的版本号。例如：`(@v1.10 pkg)>`。这种模式下， 可以使用`add Pkgname`安装需要的包（Package）。 比如，安装Pluto包(`add Pluto`) 。 可以同时安装多个包，只需要逗号分隔就好。 在包模式下， 按删除键可以退回代码模式。
+
+在代码模式下， 输入问号`?`， 将进入**帮助（help）模式**， 其提示符是`help?>`。在该模式下， 输入任何`名字`, 可获得该名字的帮助文档。 在帮助模式下， 按删除键可以退回代码模式。 
+
+在代码模式下， 按分号键`;`， 可以进入**shell模式**。其提示符为`shell>`。 命令模式可以执行一些操作系统命令。同样， 按删除键可以退回代码模式。
+
+
+"""
+
+# ╔═╡ 20de8e05-edb4-43aa-a14e-5fd24e290ecd
+md"""
+!!! warn "设置包安装路径"
+	不管你安装Julia的时候选择的路径是什么， 后续Julia都会将你安装的包之类的资料放到全局变量`DEPOT_PATH`指定的路径下， 你可以在REPL中输入这个变量名看看路径是什么， 通常是当前用户的家目录下的`.julia`目录（`~/.julia`）。对Windows系统而言， 这个目录通常在C盘。随着Julia的使用， 安装的包等各类资源可能会越来越多， 这个目录下的文件可能会越来越多， 为了避免C盘空间不足， 建议在安装任何第三方包之前先修改这个路径。修改的方式有很多， 推荐最省事的一种。定义一个环境变量， `JULIA_DEPOT_PATH`, 其值为你想要设置的路径， 比如设置为""D:/.julia"。这样，以后所有的包都会默认安装在D盘， 不会影响C盘的空间。
+"""
 
 # ╔═╡ 4dfeadb7-ca9b-45ac-a332-5bb621a133aa
 md"""
@@ -47,7 +65,7 @@ Pluto.run()
 """
 
 # ╔═╡ 49ace3ca-acb5-4028-aae5-b38d0ac6e5f7
-LocalResource("video/pluto安装.mp4", :width => 800)
+LocalResource("../video/pluto安装.mp4", :width => 800)
 
 # ╔═╡ 357f5116-3a19-4591-a5c5-6efc1165b63a
 md"""
@@ -56,7 +74,30 @@ md"""
 """
 
 # ╔═╡ 7fe6300f-72c4-4ce3-ac1e-6c2cf2e9579f
-LocalResource("video/Pluto写代码.mp4", :width => 800)
+LocalResource("../video/Pluto写代码.mp4", :width => 800)
+
+# ╔═╡ 2f91e247-0ecd-411c-852f-ba1bbc229813
+md"""
+关于Pluto， 需要了解以下内容：
+
+- 如何打开和保存Pluto文件
+- Pluto文件，本质上还是可直接运行的jl文件
+- Pluto文件中， 每一个cell只能有一条julia语句。如果要写多条语句， 需要用`begin...end`包裹起来。相当于构建复合语句。
+- 如果想在cell中写文本，可以按照makdwon格式去写，然后将文本用三引号包裹（相当于Julia中的字符串)，再在前面加一个`md`即可。这是Julia中的一种特殊字符串， Julia会按照`markdwon`语法解析字符串，并最终形成html文本显示出来。 如果觉得这么写比较麻烦， 可以使用快捷键`Ctrl + M`， 它会自动给一个cell加上`md`关键字和字符串标识。
+```julia
+md'''
+...你的文本...
+'''
+```
+当然， 你也可以直接写html字符串。只需要在字符串的前面加上`html`标识即可。
+- Pluto文件中， 每一个变量名只能定义一次（这是一个跟写Jupyer Notebook 有显著差异的地方）。
+"""
+
+# ╔═╡ 4f968683-efca-4d27-8952-7a02ba9c09a0
+md"""
+!!! info "更简洁的启动"
+	上面介绍的是Pluto启动的一般方法。在这个文件夹中， 有一个`run_julia_pluto.bat`文件， 如果你是windows系统， 并且按上面的要求安装了Julia，设置了路径， 只要点击这个文件， 就可以自动打开Pluto了（不需要启动Julia）。 如果你启动了Julia， 只要执行include本目录下的"start.jl"文件也是可以的。
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -71,7 +112,7 @@ PlutoUI = "~0.7.55"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.9.3"
+julia_version = "1.10.3"
 manifest_format = "2.0"
 project_hash = "f64cdffc70331b0a2f407efefd54fd84eb680773"
 
@@ -100,7 +141,7 @@ version = "0.11.4"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.0.5+0"
+version = "1.1.1+0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -151,21 +192,26 @@ version = "0.21.4"
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
-version = "0.6.3"
+version = "0.6.4"
 
 [[deps.LibCURL_jll]]
 deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "7.84.0+0"
+version = "8.4.0+0"
 
 [[deps.LibGit2]]
-deps = ["Base64", "NetworkOptions", "Printf", "SHA"]
+deps = ["Base64", "LibGit2_jll", "NetworkOptions", "Printf", "SHA"]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
+
+[[deps.LibGit2_jll]]
+deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll"]
+uuid = "e37daf67-58a4-590a-8e99-b0245dd2ffc5"
+version = "1.6.4+0"
 
 [[deps.LibSSH2_jll]]
 deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
-version = "1.10.2+0"
+version = "1.11.0+1"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -189,14 +235,14 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.2+0"
+version = "2.28.2+1"
 
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2022.10.11"
+version = "2023.1.10"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
@@ -205,7 +251,7 @@ version = "1.2.0"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.21+4"
+version = "0.3.23+4"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
@@ -216,7 +262,7 @@ version = "2.8.1"
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.9.2"
+version = "1.10.0"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -245,7 +291,7 @@ deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [[deps.Random]]
-deps = ["SHA", "Serialization"]
+deps = ["SHA"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [[deps.Reexport]]
@@ -266,16 +312,17 @@ uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 [[deps.SparseArrays]]
 deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+version = "1.10.0"
 
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-version = "1.9.0"
+version = "1.10.0"
 
 [[deps.SuiteSparse_jll]]
-deps = ["Artifacts", "Libdl", "Pkg", "libblastrampoline_jll"]
+deps = ["Artifacts", "Libdl", "libblastrampoline_jll"]
 uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
-version = "5.10.1+6"
+version = "7.2.1+1"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -311,31 +358,35 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.13+0"
+version = "1.2.13+1"
 
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.8.0+0"
+version = "5.8.0+1"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.48.0+0"
+version = "1.52.0+1"
 
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
-version = "17.4.0+0"
+version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
 # ╠═a37e7480-7e13-4c45-9dcd-8a6f0688d7f3
 # ╟─8cc0e920-a680-4b44-9d34-710a378f19dc
 # ╠═a4781db0-1cbe-46f2-9c5a-3efe0329e902
+# ╟─4ca8ac78-fbc6-427c-9555-2a81cad221e2
+# ╟─20de8e05-edb4-43aa-a14e-5fd24e290ecd
 # ╟─4dfeadb7-ca9b-45ac-a332-5bb621a133aa
 # ╠═49ace3ca-acb5-4028-aae5-b38d0ac6e5f7
-# ╠═357f5116-3a19-4591-a5c5-6efc1165b63a
+# ╟─357f5116-3a19-4591-a5c5-6efc1165b63a
 # ╠═7fe6300f-72c4-4ce3-ac1e-6c2cf2e9579f
+# ╟─2f91e247-0ecd-411c-852f-ba1bbc229813
+# ╟─4f968683-efca-4d27-8952-7a02ba9c09a0
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

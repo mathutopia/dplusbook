@@ -111,6 +111,18 @@ md"""
 # ╔═╡ 8d5d8ec9-c5cf-4058-a3ae-062286fdfde2
 model1 = delfs |> baoxian |> text2categorical |> ContinuousEncoder |> tree1
 
+# ╔═╡ 83d29c2d-09fc-4666-a26a-1f2e25e289b1
+trans = delfs |> baoxian |> text2categorical
+
+# ╔═╡ 17c3ebca-a97b-4236-9acd-9fbe49219d0d
+xtmp=MLJ.transform(MLJ.fit!(machine(trans, trains)), trains)
+
+# ╔═╡ 0661a0e4-e687-4725-ba30-b8ea8cd4494c
+schema(xtmp)
+
+# ╔═╡ 3cc509ee-e301-4331-8b34-bf387d6f410d
+levels(xtmp[:,:insured_sex])
+
 # ╔═╡ 83aa9f6f-4686-42bb-8e27-f77747855fd0
 model2 = delfs |> shigu |> text2categorical |> ContinuousEncoder |> tree2
 
@@ -123,11 +135,8 @@ md"""
 # ╔═╡ 99be23c4-7413-4cc4-af9a-317cdb3fe7c5
 eres1 = evaluate(model1, trains, y, resampling=CV(nfolds=5), measure=[auc])
 
-# ╔═╡ 149bf25e-8008-41ef-8d69-bc458c9c035f
-eres2 = evaluate(model2, trains, y, resampling=CV(nfolds=5), measure=[auc])
-
 # ╔═╡ 20db7374-d507-46b6-8cfa-3e80f44ce88f
-eres.per_fold[1]
+eres1.per_fold[1]
 
 # ╔═╡ ab3372ea-ee51-48df-9ba0-fdc3faa1b0a8
 md"""
@@ -138,19 +147,14 @@ md"""
 """
 
 # ╔═╡ 0ae731d4-fd08-4536-b1f4-bd3c5dd51d33
-1.96*std(eres.per_fold[1])/sqrt(5-1)
+1.96*std(eres1.per_fold[1])/sqrt(5-1)
 
-# ╔═╡ 146821f0-1ba3-43cf-a3f3-904cc897c4d7
-evaluate(rfm, X, y)
-
-# ╔═╡ 75b774d4-769f-457a-897a-d1d77fb55986
+# ╔═╡ 5e75ebb3-5b73-45ca-8a7f-8efdf2d9d026
 md"""
-# 模型调优*
-一个模型包含了很多的参数， 通常必要的参数都会有默认的值， 但默认的参数值不见得是最适合数据的。 因此， 需要通过一定的方法找到最合适的模型参数。 这个过程被称为**模型调优**。 简单来说， 模型调优就是要遍历所有可能的参数组合， 找到最合适的那个模型。 然而， 对连续取值的参数来说， 遍历所有可能的取值是不现实的。 因此， 调优的过程必然涉及到调优策略的问题。 
+!!! warn "注意"
+	注意， 上面的虽然看上去很强大， 因为把很多东西都聚到了一起。 不过中间埋了一个坑。 坑就在模型中间有一个将文本转化为类别的函数。这个一般是没问题的。但当我们在评估的时候， 因为会在不同的训练集上训练， 这就可能导致测试时出现训练时没有见过的文本。从而导致错误。这个问题在MLJ中暂时没有好的解决方案。一个保险的策略是，应该要将这个变换写成一个更复杂的函数， 确保它见过所有的特征， 也就是将所有可能出现的值硬编码到函数中，而不是从训练集中去学习。
 
-在MLJ中，模型调优是作为模型包装器实现的。在调优策略中包装模型并将包装的模型绑定到mach机器中的数据之后，调用fit!(mach)在指定的范围内搜索最优模型超参数，然后使用所有提供的数据来训练最佳模型。要使用该模型进行预测，可以调用predict(mach, Xnew)。通过这种方式，包装模型可以被视为未包装模型的“自调优”版本。也就是说，包装模型只是将某些超参数转换为学习参数。
-
-更多细节请看[这里](https://alan-turing-institute.github.io/MLJ.jl/dev/tuning_models/#Tuning-Models)
+	本质上来说，就是对类别型变量需要特别的对待。因此， 上面的流程最好是在做好数据预处理之后进行， 至少确保处理好所有可能的类别类型。
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1398,14 +1402,16 @@ version = "17.4.0+2"
 # ╠═253b6275-2017-48b1-b1a8-2e32de761fa0
 # ╟─95adaa6f-328b-4f4d-b727-7ffa4491b5e5
 # ╠═8d5d8ec9-c5cf-4058-a3ae-062286fdfde2
+# ╠═83d29c2d-09fc-4666-a26a-1f2e25e289b1
+# ╠═17c3ebca-a97b-4236-9acd-9fbe49219d0d
+# ╠═0661a0e4-e687-4725-ba30-b8ea8cd4494c
+# ╠═3cc509ee-e301-4331-8b34-bf387d6f410d
 # ╠═83aa9f6f-4686-42bb-8e27-f77747855fd0
-# ╠═1deeb477-0774-4b65-9960-819e94c42397
+# ╟─1deeb477-0774-4b65-9960-819e94c42397
 # ╠═99be23c4-7413-4cc4-af9a-317cdb3fe7c5
-# ╠═149bf25e-8008-41ef-8d69-bc458c9c035f
 # ╠═20db7374-d507-46b6-8cfa-3e80f44ce88f
-# ╠═ab3372ea-ee51-48df-9ba0-fdc3faa1b0a8
+# ╟─ab3372ea-ee51-48df-9ba0-fdc3faa1b0a8
 # ╠═0ae731d4-fd08-4536-b1f4-bd3c5dd51d33
-# ╠═146821f0-1ba3-43cf-a3f3-904cc897c4d7
-# ╠═75b774d4-769f-457a-897a-d1d77fb55986
+# ╟─5e75ebb3-5b73-45ca-8a7f-8efdf2d9d026
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
