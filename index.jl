@@ -10,21 +10,6 @@ using Box
 # ╔═╡ c053c944-c600-4d6c-9b10-b3af15eb4392
 maketoc()
 
-# ╔═╡ 6f509f57-9574-405a-9eaa-890249b603e3
-md"""
-设置仓库路径`DEPOT_PATH`， 主要通过`JULIA_DEPOT_PATH`环境变量设置 
-
-# 安装如下的包
-
-```julia
-add Plots, CSV , CategoricalArrays ,DataFrames ,DataFramesMeta ,FreqTables ,PlutoUI ,StatsBase ,StatsPlots ,AlgebraOfGraphics ,CairoMakie ,ScientificTypes ,Unicode ,MultivariateStats ,Clustering ,Distances ,MLBase ,DecisionTree ,MLJ ,MLJDecisionTreeInterface ,MLJModels ,BetaML ,Dates ,MLJNaiveBayesInterface ,MLJXGBoostInterface ,NearestNeighborModels , MLJModelInterface, MLJMultivariateStatsInterface ,ARules ,OutlierDetectionNeighbors,OutlierDetection
-
-
-using Pkg
-Pkg.Registry.add(RegistrySpec(url = "https://github.com/mathutopia/Wlreg.git"))
-```
-"""
-
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -68,8 +53,7 @@ version = "0.1.8"
 """
 
 # ╔═╡ Cell order:
-# ╠═85cba6b0-1078-495b-9888-6943353b034c
-# ╠═c053c944-c600-4d6c-9b10-b3af15eb4392
-# ╟─6f509f57-9574-405a-9eaa-890249b603e3
+# ╟─85cba6b0-1078-495b-9888-6943353b034c
+# ╟─c053c944-c600-4d6c-9b10-b3af15eb4392
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
