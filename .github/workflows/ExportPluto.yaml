@@ -50,7 +50,7 @@ jobs:
                   Pkg.add([
                     Pkg.PackageSpec(name="PlutoSliderServer", version="0.3.2-0.3"),
                   ])
-
+                  Pkg.Registry.add(RegistrySpec(url = "https://gitee.com/mathutopia/dplusreg.git"))
                   import PlutoSliderServer
 
                   PlutoSliderServer.github_action(".";
