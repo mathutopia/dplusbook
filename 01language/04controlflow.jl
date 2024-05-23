@@ -16,7 +16,7 @@ end
 
 # ╔═╡ e612a3ce-d970-467e-87e6-5b841e365b55
 begin
-using PlutoUI,Box
+using PlutoUI
 TableOfContents(title="目录")
 end
 
@@ -100,22 +100,24 @@ end
 
 # ╔═╡ 155db473-eb47-4716-83ce-d471e0abcd8a
 md"""
-不像C等语言，在Julia中， 要求**条件**求值的结果必须是bool值， 即true或者false。如果不是， 则程序会错误。（在C语言中， 不是0都当成是true, 0当成是false）
+!!! warn "注意"
+	不像C等语言，在Julia中， 要求**条件**求值的结果必须是bool值， 即true或者false。如果不是， 则程序会错误。（在C语言中， 不是0都当成是true, 0当成是false）
 
-```julia
-julia> if 1
-	println("你是1")
-end
+	```julia
+	julia> if 1
+		println("你是1")
+	end
 
-TypeError: non-boolean (Int64) used in boolean context
-```
-上面的类型错误（TypeError）表明， 我们在需要一个布尔值的地方输入了一个Int64类型的值(非布尔值non-boolean)。
-""" |> box(:red)
+	TypeError: non-boolean (Int64) used in boolean context
+	```
+	上面的类型错误（TypeError）表明， 我们在需要一个布尔值的地方输入了一个Int64类型的值(非布尔值non-boolean)。
+""" 
 
 # ╔═╡ bcc930fa-2af1-48f1-a311-4df58ed79970
 md"""
-`println`通常用于在控制台输出信息， 表示打印带换行符的元素。Pluto会自动捕捉控制台的输出，显示到下面。不过，在Pluto中， 我们可以直接看到表达式计算的结果， 这比控制台的输出更好看。
-""" |> box
+!!! info "补充"
+	`println`通常用于在控制台输出信息， 表示打印带换行符的元素。Pluto会自动捕捉控制台的输出，显示到下面。不过，在Pluto中， 我们可以直接看到表达式计算的结果， 这比控制台的输出更好看。
+""" 
 
 # ╔═╡ ba2af638-d545-4a7c-9f7b-612f341c09c9
 md"""
@@ -329,11 +331,9 @@ end
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-Box = "247ae7ab-d1b9-4f88-8529-b44b862cffa0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-Box = "~1.0.14"
 PlutoUI = "~0.7.59"
 """
 
@@ -341,15 +341,15 @@ PlutoUI = "~0.7.59"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.2"
+julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "72a9292ad3d0000381c02f99b5b280918f284dc2"
+project_hash = "6e7bcec4be6e95d1f85627422d78f10c0391f199"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
-git-tree-sha1 = "297b6b41b66ac7cbbebb4a740844310db9fd7b8c"
+git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.3.1"
+version = "1.3.2"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -361,12 +361,6 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
-[[deps.Box]]
-deps = ["HypertextLiteral", "Markdown"]
-git-tree-sha1 = "bee6dbf5fa690f991d4c3b018cbfbb206e59dc18"
-uuid = "247ae7ab-d1b9-4f88-8529-b44b862cffa0"
-version = "1.0.14"
-
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
 git-tree-sha1 = "b10d0b65641d57b8b4d5e234446582de5047050d"
@@ -376,7 +370,7 @@ version = "0.11.5"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.1.0+0"
+version = "1.1.1+0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -392,9 +386,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
-git-tree-sha1 = "335bfdceacc84c5cdf16aadc768aa5ddfc5383cc"
+git-tree-sha1 = "05882d6995ae5c12bb5f36dd2ed3f61c98cbb172"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
-version = "0.8.4"
+version = "0.8.5"
 
 [[deps.Hyperscript]]
 deps = ["Test"]

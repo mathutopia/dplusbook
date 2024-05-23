@@ -6,7 +6,7 @@ using InteractiveUtils
 
 # ╔═╡ 547d1aad-ede7-4584-b150-3cfbecbf90ec
 begin
-using PlutoUI, Box
+using PlutoUI
 TableOfContents(title="目录")
 end
 
@@ -28,8 +28,9 @@ md"""
 
 # ╔═╡ 111ce5cd-0535-41c0-96d8-ef85b409245a
 md"""
-在计算机资料中， 集合（set）和容器（collection）都被翻译为集合。 但在这两者在Julia里是不一样的。 首先，Julia中存在集合（set)类型， 它有明确的定义。 另一方面， Julia更符合数学规范， collection的性质明显是不符合集合的定义的。在数学上，集合的元素满足确定性、无序性、互异性等三个性质， 而这里的容器则定义的宽泛的多。
-""" |> box
+!!! info "集合还是容器？"
+    在计算机资料中， 集合（set）和容器（collection）都被翻译为集合。 但在这两者在Julia里是不一样的。 首先，Julia中存在集合（set)类型， 它有明确的定义。 另一方面， Julia更符合数学规范， collection的性质明显是不符合集合的定义的。在数学上，集合的元素满足确定性、无序性、互异性等三个性质， 而这里的容器则定义的宽泛的多。
+""" 
 
 # ╔═╡ aaa10bac-2268-4229-915b-6ddeb0bd9912
 md"""
@@ -108,8 +109,9 @@ md"""
 
 # ╔═╡ 8e8af379-66c1-4098-8120-493961aee4e7
 md"""
-注意， 定义iterate函数时， 前面的Base.是必须的， 这表示， 我们要给Base包中的iterate函数增加一个方法， 即增加一个能够处理（迭代）我们自定的类型的方法。 通常我们要给某个包的函数增加方法时， 需要首先import 这个包， 然后再定义包含包名的函数。 不过， 因为Base包是Julia自动加载的， 我们不需要import。
-""" |> box(:yellow)
+!!! warn "定义iterate函数"
+	注意， 定义iterate函数时， 前面的Base.是必须的， 这表示， 我们要给Base包中的iterate函数增加一个方法， 即增加一个能够处理（迭代）我们自定的类型的方法。 通常我们要给某个包的函数增加方法时， 需要首先import 这个包， 然后再定义包含包名的函数。 不过， 因为Base包是Julia自动加载的， 我们不需要import。
+""" 
 
 # ╔═╡ 943ca96b-a6b2-40a0-b912-edc0a51a4326
 md"""
@@ -482,12 +484,6 @@ pairs(IndexLinear(), A) pairs(IndexCartesian(), A) pairs(IndexStyle(A), A)
 pairs(collection)；可以获得key=>value形式的可迭代对象；
 
 
-
-
-
-
-
-
 """
 
 # ╔═╡ 72ddae71-fe1b-4cfb-904a-48d0708517aa
@@ -584,45 +580,12 @@ md"""
 
 """
 
-# ╔═╡ 63804be9-43c5-42ef-b2e2-24efbb0a9462
-for fl in readdir()
-	if isdir(fl) 
-		@show fl
-	end
-end
-
-# ╔═╡ fdcb4076-943d-4802-88de-76d406a154c7
-VERSION
-
-# ╔═╡ 7e0fb846-c7a4-4087-a698-bf9616f690f6
- A = fill(1, (5,6,7));
-
-# ╔═╡ 600eb644-b659-4189-9b38-f5f989a3897e
-axes(A,2) == 1:6
-
-# ╔═╡ 2afbcdd7-476d-4926-abbe-b99b022d6ce0
-Sys.BINDIR
-
-# ╔═╡ d8cb6ad3-82aa-4264-af47-cb17e1c9c00b
-md"""
-    <style>
-        .text-with-border {
-            border: 1px solid black; /* 设置边框为1像素宽度的黑色线条 */
-        }
-    </style>
-
-    <p class="text-with-border">这段文字有边框。</p>
-
-"""
-
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-Box = "247ae7ab-d1b9-4f88-8529-b44b862cffa0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-Box = "~1.0.14"
 PlutoUI = "~0.7.59"
 """
 
@@ -630,15 +593,15 @@ PlutoUI = "~0.7.59"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.2"
+julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "72a9292ad3d0000381c02f99b5b280918f284dc2"
+project_hash = "6e7bcec4be6e95d1f85627422d78f10c0391f199"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
-git-tree-sha1 = "297b6b41b66ac7cbbebb4a740844310db9fd7b8c"
+git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.3.1"
+version = "1.3.2"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -650,12 +613,6 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
-[[deps.Box]]
-deps = ["HypertextLiteral", "Markdown"]
-git-tree-sha1 = "bee6dbf5fa690f991d4c3b018cbfbb206e59dc18"
-uuid = "247ae7ab-d1b9-4f88-8529-b44b862cffa0"
-version = "1.0.14"
-
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
 git-tree-sha1 = "b10d0b65641d57b8b4d5e234446582de5047050d"
@@ -665,7 +622,7 @@ version = "0.11.5"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.1.0+0"
+version = "1.1.1+0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -681,9 +638,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
-git-tree-sha1 = "335bfdceacc84c5cdf16aadc768aa5ddfc5383cc"
+git-tree-sha1 = "05882d6995ae5c12bb5f36dd2ed3f61c98cbb172"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
-version = "0.8.4"
+version = "0.8.5"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -901,7 +858,7 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
-# ╟─547d1aad-ede7-4584-b150-3cfbecbf90ec
+# ╠═547d1aad-ede7-4584-b150-3cfbecbf90ec
 # ╟─d7f70e39-ca2e-41c6-b8ad-9c0fbe29e9a1
 # ╟─111ce5cd-0535-41c0-96d8-ef85b409245a
 # ╟─aaa10bac-2268-4229-915b-6ddeb0bd9912
@@ -945,11 +902,5 @@ version = "17.4.0+2"
 # ╟─72ddae71-fe1b-4cfb-904a-48d0708517aa
 # ╟─76396ef0-bfde-499b-8685-c0bad8d420bf
 # ╟─ff559581-ea9a-47cf-a028-a8ec54345c8e
-# ╠═63804be9-43c5-42ef-b2e2-24efbb0a9462
-# ╠═fdcb4076-943d-4802-88de-76d406a154c7
-# ╠═7e0fb846-c7a4-4087-a698-bf9616f690f6
-# ╠═600eb644-b659-4189-9b38-f5f989a3897e
-# ╠═2afbcdd7-476d-4926-abbe-b99b022d6ce0
-# ╠═d8cb6ad3-82aa-4264-af47-cb17e1c9c00b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

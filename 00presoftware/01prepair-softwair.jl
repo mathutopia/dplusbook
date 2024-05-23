@@ -10,6 +10,11 @@ using PlutoUI
 TableOfContents(title="目录")
 end
 
+# ╔═╡ 7de2e473-79be-4f2a-8fc0-b9b1a1712c03
+md"""
+# 准备工作
+"""
+
 # ╔═╡ 8cc0e920-a680-4b44-9d34-710a378f19dc
 md"""
 ## 安装REPL环境
@@ -378,6 +383,7 @@ version = "17.4.0+2"
 
 # ╔═╡ Cell order:
 # ╠═a37e7480-7e13-4c45-9dcd-8a6f0688d7f3
+# ╟─7de2e473-79be-4f2a-8fc0-b9b1a1712c03
 # ╟─8cc0e920-a680-4b44-9d34-710a378f19dc
 # ╠═a4781db0-1cbe-46f2-9c5a-3efe0329e902
 # ╟─4ca8ac78-fbc6-427c-9555-2a81cad221e2

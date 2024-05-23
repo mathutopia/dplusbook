@@ -91,7 +91,6 @@ function make_toc(dir = ".")
 	fls = readdir(dir)
 	chpnames = filter(startswith(r"\d+"), fls)
 	for chp in chpnames
-		println(chp)
 		chpnum, chpname = split_num_name(chp)
 		toc *= "第$(chpnum)章 $(chpname) \n <ul>"
 		fls = readdir(joinpath(dir, chp))
@@ -118,3 +117,4 @@ function make_toc(dir = ".")
 end
 
 write("index.html", make_toc());
+println("修改了文件")

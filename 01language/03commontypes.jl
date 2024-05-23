@@ -6,7 +6,7 @@ using InteractiveUtils
 
 # ╔═╡ da6e322b-cf26-4803-9b34-19bf4c6f00bc
 begin
-using PlutoUI,Box
+using PlutoUI
 TableOfContents(title="目录")
 end
 
@@ -57,13 +57,14 @@ Tuple{Int64, String, Int64}
 
 # ╔═╡ 4e6d9031-873e-49c1-9de5-79c88d186ecb
 md"""
-注意上面复合数据类型的表示形式。 一个重要的特征就是存在一对大括号。比如，`Tuple{Float64, String, Int64}`， 其中Tuple可以看成是主要类型的名字， 大括号中间的类型显示的是元素的类型。从这个类型表示可以看出很多东西， 比如由于大括号中间只有三个元素， 所以元组是由3个元素构成， 同时每一个元素类型也是给定的。  
+!!! info "复合数据类型的类型"
+	注意上面复合数据类型的表示形式。 一个重要的特征就是存在一对大括号。比如，`Tuple{Float64, String, Int64}`， 其中Tuple可以看成是主要类型的名字， 大括号中间的类型显示的是元素的类型。从这个类型表示可以看出很多东西， 比如由于大括号中间只有三个元素， 所以元组是由3个元素构成， 同时每一个元素类型也是给定的。  
+	
+	类型名字和大括号是一个整体, 所以变量x和y是不同的元组类型。 
+	
+	事实上， 类型后面的大括号表明这是一个**参数类型**。 所谓参数类型是指一个类型包含一些类型参数， 这些类型参数主要用于限定复合的元素的类型。  
 
-类型名字和大括号是一个整体, 所以变量x和y是不同的元组类型。 
-
-事实上， 类型后面的大括号表明这是一个**参数类型**。 所谓参数类型是指一个类型包含一些类型参数， 这些类型参数主要用于限定复合的元素的类型。  
-
-"""  |> box
+""" 
 
 # ╔═╡ 406811f6-0c24-4d75-b222-d581fe829d92
 md"""
@@ -85,35 +86,34 @@ julia> student1[:name]
 
 # ╔═╡ c0ab05eb-dcbb-42e9-8bca-32bcfb3c05ac
 md"""
-注意，上面命名元组的类型参数中有两个元组，一个是名字构成的元组， 其元素都是Symbol；另一个才是真正的元组Tuple。 
-"""  |> box
+!!! warn "注意"
+	上面命名元组的类型参数中有两个元组，一个是名字构成的元组， 其元素都是Symbol；另一个才是真正的元组Tuple。 
+""" 
 
 # ╔═╡ c95c7bef-f2bc-42fd-81d0-706c95b75eff
 md"""
-NTuple补充
-
-### NTuple元组
-NTuple是具有n个元素的元组的一种紧凑表示。其类型是`NTuple{N, T}`。 可以通过函数`ntuple(f::Function, n::Integer)`构建一个n元组。这个函数构建的n个元素分别是`f(i)`。 
-
-为什么需要n元组呢？主要是为了编写类型稳定的函数。 比如下面的函数， 用于计算数组沿某个维度的求和。下面的size(A)返回的是数组A的维度的普通元组， 进而，当我们构建数组B时， 其维度sz是一个向量。但向量的类型并不包含长度信息， 所以B的维度是无法在编译时确定。因此，编译器无法编译出高效的代码。
-
-```julia
-julia> function sumalongdims(A, dims)
-    sz = [size(A)...]
-    sz[[dims...]] .= 1
-    B = Array{eltype(A)}(undef, sz...)
-    sumalongdims!(B, A)
-end
-```
-一个补救的办法是：构建一个n元组。因为n元组带有长度（n)信息， 这样方便构建[类型稳定的函数](https://docs.julialang.org/en/v1/manual/faq/#man-type-stability)。
-```julia
-function sumalongdims(A, dims)
-    sz = ntuple(i->i ∈ dims ? 1 : size(A, i), Val(ndims(A)))
-    B = Array{eltype(A)}(undef, sz...)
-    sumalongdims!(B, A)
-end
-```
-""" |> fbox
+!!! info "NTuple补充" 
+	NTuple是具有n个元素的元组的一种紧凑表示。其类型是`NTuple{N, T}`。 可以通过函数`ntuple(f::Function, n::Integer)`构建一个n元组。这个函数构建的n个元素分别是`f(i)`。 
+	
+	为什么需要n元组呢？主要是为了编写类型稳定的函数。 比如下面的函数， 用于计算数组沿某个维度的求和。下面的size(A)返回的是数组A的维度的普通元组， 进而，当我们构建数组B时， 其维度sz是一个向量。但向量的类型并不包含长度信息， 所以B的维度是无法在编译时确定。因此，编译器无法编译出高效的代码。
+	
+	```julia
+	julia> function sumalongdims(A, dims)
+	    sz = [size(A)...]
+	    sz[[dims...]] .= 1
+	    B = Array{eltype(A)}(undef, sz...)
+	    sumalongdims!(B, A)
+	end
+	```
+	一个补救的办法是：构建一个n元组。因为n元组带有长度（n)信息， 这样方便构建[类型稳定的函数](https://docs.julialang.org/en/v1/manual/faq/#man-type-stability)。
+	```julia
+	function sumalongdims(A, dims)
+	    sz = ntuple(i->i ∈ dims ? 1 : size(A, i), Val(ndims(A)))
+	    B = Array{eltype(A)}(undef, sz...)
+	    sumalongdims!(B, A)
+	end
+	```
+""" 
 
 # ╔═╡ 1ed8d6b2-47e2-4920-918e-da5124e6140e
 md"""
@@ -313,19 +313,20 @@ Collect函数可以实现将一个范围内的所有数据都**收集**到一个
 
 # ╔═╡ 10bb3dd2-9301-4717-8c6d-88d5673bf6ee
 md"""
-**函数调用：**上面给出的range函数有四种调用方式，我们应该怎么去调用呢？或者Julia是怎么实现一个名字（range）可以实现多种不同功能的呢？
-
-在编程语言中， 一个名字（函数）在不同语境中可以表示不同含义（不同的调用方式，实现不同的功能），被称为多态。在C++、Python等语言中， 是通过对象实现多态的，即不同的对象调用相同的函数可能得到不同的结果。
-
-在Julia中， 通过**多重分派**实现多态。一个函数名只是给出了一个通用的功能(generic function)。然后对这个功能的不同实现表示该函数的方法（method）。上面就给出的range函数的四个方法。可以通过`methods`函数查看一个函数有多少个方法。
-
-Julia是怎么根据用户输入的参数去判断要调用哪个方法的呢？答案隐藏在Julia的多重分派（multiple dispatch）里。简单来说， 多重分派的意思是：一个函数在寻找匹配的方法时， 根据其多个参数的类型去确定要调用的方法。当然， 并非所有的参数都会用于多重分派。只有参数列表里，分号；前面的参数（称为**位置参数**）会起作用（也就是给出的位置参数类型及顺序不同， 调用的方法就不同）。这些参数在调用的时候， 不需要给出参数名， 直接按顺序给出参数值即可。分号后的参数通常被称为**关键字参数**， 关键字参数在赋值时， 需要给出关键字的名字。在函数调用时， 位置参数和关键字参数不需要用分号隔开。 所以， 你知道下面的代码的含义吗？
-```julia
-range(1,10, 2)
-range(1,10, length=2 )
-range(1,10, step=2 )
-```
-""" |> box
+!!! info "函数调用"
+	上面给出的range函数有四种调用方式，我们应该怎么去调用呢？或者Julia是怎么实现一个名字（range）可以实现多种不同功能的呢？
+	
+	在编程语言中， 一个名字（函数）在不同语境中可以表示不同含义（不同的调用方式，实现不同的功能），被称为多态。在C++、Python等语言中， 是通过对象实现多态的，即不同的对象调用相同的函数可能得到不同的结果。
+	
+	在Julia中， 通过**多重分派**实现多态。一个函数名只是给出了一个通用的功能(generic function)。然后对这个功能的不同实现表示该函数的方法（method）。上面就给出的range函数的四个方法。可以通过`methods`函数查看一个函数有多少个方法。
+	
+	Julia是怎么根据用户输入的参数去判断要调用哪个方法的呢？答案隐藏在Julia的多重分派（multiple dispatch）里。简单来说， 多重分派的意思是：一个函数在寻找匹配的方法时， 根据其多个参数的类型去确定要调用的方法。当然， 并非所有的参数都会用于多重分派。只有参数列表里，分号；前面的参数（称为**位置参数**）会起作用（也就是给出的位置参数类型及顺序不同， 调用的方法就不同）。这些参数在调用的时候， 不需要给出参数名， 直接按顺序给出参数值即可。分号后的参数通常被称为**关键字参数**， 关键字参数在赋值时， 需要给出关键字的名字。在函数调用时， 位置参数和关键字参数不需要用分号隔开。 所以， 你知道下面的代码的含义吗？
+	```julia
+	range(1,10, 2)
+	range(1,10, length=2 )
+	range(1,10, step=2 )
+	```
+""" 
 
 # ╔═╡ 6501554b-2576-42b4-a8cf-d572231486ca
 md"""
@@ -338,11 +339,9 @@ md"""
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-Box = "247ae7ab-d1b9-4f88-8529-b44b862cffa0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-Box = "~1.0.14"
 PlutoUI = "~0.7.59"
 """
 
@@ -350,15 +349,15 @@ PlutoUI = "~0.7.59"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.2"
+julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "72a9292ad3d0000381c02f99b5b280918f284dc2"
+project_hash = "6e7bcec4be6e95d1f85627422d78f10c0391f199"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
-git-tree-sha1 = "297b6b41b66ac7cbbebb4a740844310db9fd7b8c"
+git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.3.1"
+version = "1.3.2"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -370,12 +369,6 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
-[[deps.Box]]
-deps = ["HypertextLiteral", "Markdown"]
-git-tree-sha1 = "bee6dbf5fa690f991d4c3b018cbfbb206e59dc18"
-uuid = "247ae7ab-d1b9-4f88-8529-b44b862cffa0"
-version = "1.0.14"
-
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
 git-tree-sha1 = "b10d0b65641d57b8b4d5e234446582de5047050d"
@@ -385,7 +378,7 @@ version = "0.11.5"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.1.0+0"
+version = "1.1.1+0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -401,9 +394,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
-git-tree-sha1 = "335bfdceacc84c5cdf16aadc768aa5ddfc5383cc"
+git-tree-sha1 = "05882d6995ae5c12bb5f36dd2ed3f61c98cbb172"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
-version = "0.8.4"
+version = "0.8.5"
 
 [[deps.Hyperscript]]
 deps = ["Test"]

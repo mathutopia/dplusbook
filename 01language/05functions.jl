@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ d113eb95-cb54-4f6d-b175-bd011e9e2571
-using PlutoUI,Box
+using PlutoUI
 
 # ╔═╡ f75b03fb-ea9d-45db-9dde-a11787b9c667
 TableOfContents(title="目录")
@@ -92,8 +92,9 @@ julia> a
 
 # ╔═╡ bc894456-3d47-4285-9301-d536e1f2317e
 md"""
-在Julia中， 有一个关于函数的习惯，**如果一个函数会修改其输入参数，该函数名要以！结尾**。 反过来， 如果发现一个带惊叹号的函数， 那么这个函数会修改输入参数。
-""" |> box
+!!! info "带！的函数"
+	在Julia中， 有一个关于函数的习惯，**如果一个函数会修改其输入参数，该函数名要以！结尾**。 反过来， 如果发现一个带惊叹号的函数， 那么这个函数会修改输入参数。
+""" 
 
 # ╔═╡ f6d3f96e-6c9a-4d80-ba93-0152e0a072b5
 md"""
@@ -284,7 +285,7 @@ md"""
 # ╔═╡ 062b1e41-0040-4e85-91bb-27edde8179da
 md"""
 ##### Ex1. 编写一个函数，用于返回一个向量的2范数。
-""" |> timu
+""" 
 
 # ╔═╡ 6952d202-4865-4359-885a-ae9d6ca58bb3
 norm(v) = sqrt(sum(v.^2))
@@ -297,54 +298,52 @@ norm(ones(10), 2*ones(10))
 
 # ╔═╡ 31f0cfa6-b6cc-4bc7-8feb-974eb212e356
 md"""
-### Ex2. 编写一个函数， 用于实现对向量的最小-最大规范化。
+#### Ex2. 编写一个函数， 用于实现对向量的最小-最大规范化。
 在数据分析中， 因为不同的变量可能存在不同的量纲， 导致数据的大小分布情况是不一致的。 为了减少量纲的影响， 通常我们需要将数据转换到相同的尺度， 这称为数据的规范化。  最小-最大规范化是利用向量的最小-最大值将数据转换到给定的区间， 通常为[0,1]。 即
 $$z = \frac{x - min_x}{max_x - min_x}$$
-""" |> timu
+"""
 
 # ╔═╡ 43be64e3-94cb-4cb5-acfa-fddb04891bd0
 md"""
-参考答案
+!!! hint "参考答案"
 
-```julia
-function zminmax(v)
-	dn = minimum(v)
-	up = maximum(v)
+	```julia
+	function zminmax(v)
+		dn = minimum(v)
+		up = maximum(v)
 
-	(v .- dn) ./ (up - dn)
-end
-```
-""" |> fbox
+		(v .- dn) ./ (up - dn)
+	end
+	```
+""" 
 
 # ╔═╡ c6d1efb7-8429-4ce7-8745-877f40d6bca3
 md"""
-### Ex3. 编写一个函数， 输入参数是一个表示年龄的整数， 输出结果是年龄代表的类别：老中青三种之一。判断条件是：年龄>60岁为老， [40, 60]为中， <40为青。
-""" |> timu
+#### Ex3. 编写一个函数， 输入参数是一个表示年龄的整数， 输出结果是年龄代表的类别：老中青三种之一。判断条件是：年龄>60岁为老， [40, 60]为中， <40为青。
+"""
 
 # ╔═╡ db7d57e6-9eff-488c-8b74-ccb513715c21
 md"""
-参考答案
-```julia
-function getclass(age)
-	if age > 60
-		return "老"
-	elseif age >= 40
-		return "中"
-	else
-		return "青"
+!!! hint "参考答案"
+	```julia
+	function getclass(age)
+		if age > 60
+			return "老"
+		elseif age >= 40
+			return "中"
+		else
+			return "青"
+		end
 	end
-end
-```
-""" |> fbox
+	```
+""" 
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-Box = "247ae7ab-d1b9-4f88-8529-b44b862cffa0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-Box = "~1.0.14"
 PlutoUI = "~0.7.59"
 """
 
@@ -352,15 +351,15 @@ PlutoUI = "~0.7.59"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.2"
+julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "72a9292ad3d0000381c02f99b5b280918f284dc2"
+project_hash = "6e7bcec4be6e95d1f85627422d78f10c0391f199"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
-git-tree-sha1 = "297b6b41b66ac7cbbebb4a740844310db9fd7b8c"
+git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.3.1"
+version = "1.3.2"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -372,12 +371,6 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
-[[deps.Box]]
-deps = ["HypertextLiteral", "Markdown"]
-git-tree-sha1 = "bee6dbf5fa690f991d4c3b018cbfbb206e59dc18"
-uuid = "247ae7ab-d1b9-4f88-8529-b44b862cffa0"
-version = "1.0.14"
-
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
 git-tree-sha1 = "b10d0b65641d57b8b4d5e234446582de5047050d"
@@ -387,7 +380,7 @@ version = "0.11.5"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.1.0+0"
+version = "1.1.1+0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -403,9 +396,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
-git-tree-sha1 = "335bfdceacc84c5cdf16aadc768aa5ddfc5383cc"
+git-tree-sha1 = "05882d6995ae5c12bb5f36dd2ed3f61c98cbb172"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
-version = "0.8.4"
+version = "0.8.5"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -643,7 +636,7 @@ version = "17.4.0+2"
 # ╠═e0218467-9f70-493e-a506-bb9314b40f47
 # ╠═58acc135-3372-4232-8e44-77f0a9aca6a0
 # ╟─6f4dc741-7a17-4484-8b80-a58e28df7e86
-# ╠═ea520cd1-2970-4dbf-a5b7-6a3d01c83e06
+# ╟─ea520cd1-2970-4dbf-a5b7-6a3d01c83e06
 # ╟─062b1e41-0040-4e85-91bb-27edde8179da
 # ╠═6952d202-4865-4359-885a-ae9d6ca58bb3
 # ╠═9bf3dbcf-82cf-4e77-b816-daf990974ddd

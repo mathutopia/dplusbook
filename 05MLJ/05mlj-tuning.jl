@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.41
 
 using Markdown
 using InteractiveUtils
@@ -7,294 +7,46 @@ using InteractiveUtils
 # ╔═╡ dff9e5b0-959b-11ee-2223-419029c55758
 begin
 using CSV, DataFrames, MLJ,DataFramesMeta, MLJModels,PlutoUI
-include("funs.jl");# 加入通用函数
 PlutoUI.TableOfContents(title = "目录", indent = true, depth = 4, aside = true)
 end
 
 # ╔═╡ 95a98d49-137d-4394-9e0e-ca841181c4fd
 using MLJDecisionTreeInterface 
 
-# ╔═╡ 9f348928-ffc6-451f-a8bc-d197c4d8a611
- html"<font size=\"80\">实验5 模型寻优</font>"
-
-# ╔═╡ dc6658b0-e0f4-48d0-a58b-6ef2921998f6
-md"""
-**目的与要求**
-1. 掌握MLJ数据预处理模型
-2. 掌握模型评估与调优方法
-3。 掌握管道模型构建
-""" |> fenge
-
-# ╔═╡ 390aa058-7b07-4ec0-aacd-d43b43c2d61a
-md"""
-# 1 数据预处理模型
-"""
-
-# ╔═╡ 6ceb287c-fec1-43a3-9822-49bef5003607
-md"""
-很多时候， 我们更重要的工作是对数据做预处理， 比如做特征选择， 数据变换等等。这些操作可以看成是对数据做无监督的学习。MLJ提供了一些无监督学习的模型，可以方便的对数据做一些简单处理。
-
-在MLJ中， 提供了以下几种内置的数据变换模型：
-
-- MLJModels.Standardizer ： 数据标准化
-
-- MLJModels.OneHotEncoder ： 独热编码
-
-- MLJModels.ContinuousEncoder ： 连续编码
-
-- MLJModels.FillImputer ： 缺失值计算
-
-- MLJModels.UnivariateFillImputer ：单变量缺失值计算
-
-- MLJModels.FeatureSelector ： 特征选择
-
-- MLJModels.UnivariateBoxCoxTransformer ：BoxCox变换
-
-- MLJModels.UnivariateDiscretizer  ：单变量离散化
-
-- MLJModels.UnivariateTimeTypeToContinuous ：时间转连续变量
-
-下面对常用的无监督模型做简要介绍。 看[这里](https://alan-turing-institute.github.io/MLJ.jl/dev/transformers/#Transformers-and-Other-Unsupervised-Models)了解更多。
-"""
-
-# ╔═╡ 0da6aa89-d6d7-47fa-9cf1-7425d806ca8d
-md"""
-## 特征选择
-一个模型对输入的特征总是有要求的， 因此， 选择我们想要的特征是建模的第一步。 特征选择可以使用FeatureSelector模型。这个模型可以用于选择我们要的特征，或者不要的特征。由于这也是模型， 所以可以有类似的模型操作框架。
-1. 加载模型代码；
-2. 构建模型实例； 
-3. 构建机器； 
-4. 拟合模型；
-5. 转换数据； 
-
-具体细节可以参考[这里](https://alan-turing-institute.github.io/MLJ.jl/dev/transformers/#MLJModels.FeatureSelector)
-"""
-
-# ╔═╡ 5bc9dbcf-841b-4bb6-b438-6dcce5d662ab
-trains = CSV.read("data/trainbx.csv", DataFrame)
-
-# ╔═╡ 59ddc03e-b710-4848-bf94-6fd1d93086fb
-names(trains)
-
-# ╔═╡ 54dec9c9-31a9-42ce-98c3-bdce214415ed
-md"""
-### 加载模型代码
-这里要加载的模型都在MLJModels里面。
-"""
-
-# ╔═╡ a180eec7-1da4-4900-8be2-3dd7cc2cf24e
-FeatureSelector = @load FeatureSelector pkg=MLJModels # 加载模型代码
-
-# ╔═╡ 054f9a1d-1521-4131-8ed8-2e2b2179cca0
-md"""
-### 构建模型实例
-构建特征选择模型的实例时， 一个重要的参数是指定要选择的特征features, 通常是一个特征名字(Symbol）组成的向量。
-比如，下面的模型可以用于从数据集中选择两列:age, :customer_months。
-
-当然， 也可以使用一个函数， 请参考[这里](https://alan-turing-institute.github.io/MLJ.jl/dev/transformers/#MLJModels.FeatureSelector)了解更多。
-"""
-
-# ╔═╡ 80ab5f06-dec1-4eae-996f-397832d5a83f
-selector = FeatureSelector(features=[:age, :customer_months ])
-
-# ╔═╡ eca076c5-5dcd-4536-92d3-62ead66632eb
-md"""
-### 构建机器
-构建机器就是将模型跟数据绑定起来。 这里的模型只是从数据中选择列， 所有没有y（无监督学习）
-"""
-
-# ╔═╡ daef6a63-5eea-441c-ad66-6d4f11f885a0
-mach1 = machine(selector, trains)
-
-# ╔═╡ 05e3e86b-b61c-4c6f-8a0e-b9840c17d7e8
-md"""
-### 拟合模型
-这里拟合模型其实不需要做太多的工作。因为并没有太多参数需要学习。不过， 有些无监督学习时需要学习一些参数的， 比如标准化就需要学习均值和方差。
-
-同时请注意， 我们这里也没有指定训练集和测试集， 因为在特征选择里， 不需要区分这两者。
-"""
-
-# ╔═╡ 3b0ac5de-0c27-448b-8957-48f9347a3ddc
-MLJ.fit!(mach1)
-
-# ╔═╡ 769ce8e1-cf8c-47b7-b921-00c2329af64a
-md"""
-### 变换数据
-拟合机器之后， 就可以用机器去变换数据了。变换使用的函数是transform。 从下面的结果可以看到， 我们的悬链数据经过变换之后， 只剩下两列了。
-"""
-
-# ╔═╡ dcaf72e8-43f2-4e8c-b777-4818d4fd281d
-MLJ.transform(mach1, trains)
-
-# ╔═╡ 63049bd2-d1b2-4040-8c21-53f556e10b10
-md"""
-上面演示了一个简单的特征选择模型的作用过程。从上面可以看出， 这类模型显然比常规的监督学习模型要简单很多， 但在处理数据的框架上，还是有很多类似之处。 下面再演示几个例子。 
-
-由于我们可以会需要根据不同的特征建立多个相关模型， 因此， 我们可以建立多个特征选择模型。 这时候， 因为特征选择模型已经加载好了。 我们只需要构建不同的实例就可以了。
-
-比如， 下面的特征选择模型选择了另外的特征。
-"""
-
-# ╔═╡ 4b05e29d-f70b-4907-8b16-450d434828cb
-selector1 = FeatureSelector(features=[:age,	:customer_months,	:policy_bind_date ])
-
-# ╔═╡ cf7f5aeb-e198-458e-bb2d-697451ce01a2
-md"""
-为了演示方便， 下面把构建机器， 拟合机器， 数据变换写到了同一行里。 
-"""
-
-# ╔═╡ e3e3cd08-cc48-4a4f-b199-d860f0a659f1
-MLJ.transform(MLJ.fit!(machine(selector1, trains)),trains)
-
-# ╔═╡ 0561ca5d-7f5f-4e27-a33f-553458a0c70a
-md"""
-## 独热编码
-独热编码可以实现将类别变量或有序因子转换为独热变量。 因为在我们的数据集中，并没有这种类型的变量。 所以我们需要首先对数据做类型转化。 比如， 我们可以将文本类型的变量先转化为类别型变量。
-"""
-
-# ╔═╡ d9e87f1d-e1a7-4707-97ae-bfce36c9880d
-trainsn = coerce(trains, Textual => Multiclass)
-
-# ╔═╡ e6dbe3ed-7686-42c1-b6e4-f67e07747ee3
-OneHotEncoder = @load OneHotEncoder pkg=MLJModels
-
-# ╔═╡ cf1c3ee6-d0b1-4c24-8716-f28d193f4622
-OneHotEncoder()
-
-# ╔═╡ 492fc857-69d0-48ed-9d72-6cd280f4ab79
-machcode = MLJ.fit!(machine(OneHotEncoder(), trainsn))
-
-# ╔═╡ 2408cdbe-32ff-4703-9a7f-d019c021bd43
-MLJ.transform(machcode, trainsn)
-
-# ╔═╡ aa39c47e-7eb5-4295-9649-d95c040cc3e6
-md"""
-## 连续编码
-连续编码的作用是将所有可以数值化的特征全部数值化。 其使用方法跟上述模型是类似的。
-"""
-
-# ╔═╡ 2c2db3b4-b761-4c94-9aba-bbfb75fecde6
-ContinuousEncoder = @load ContinuousEncoder pkg=MLJModels
-
-# ╔═╡ b33efe80-feb3-4933-88ba-332bc8cb648a
-machcontinuous = MLJ.fit!(machine(ContinuousEncoder(), trains))
-
-# ╔═╡ 8566fb19-726a-4d3b-8171-2607ce74dbe5
-MLJ.transform(machcontinuous, trains)
-
-# ╔═╡ 66ef0379-d1af-4b3b-b2a7-144ee76f5424
-md"""
-# 2 模型串联（管道）
-MLJ中还有更多的数据变换模型， 但操作方式都基本相同。可以在需要的时候自己去看文档。这里介绍一个更重要的需求--将多个操作的串联在一起，形成一个整体。
-
-事实上， 数据处理的过程就像一个对数据的加工过程。 加工过程中的每一个环节都是对数据做模型类型的操作。
-我们希望将各种类型的操作合并在一起形成一个整体。 比如， 我们先选择某些特征， 然后对数据做合适的科学类型转换， 最后将其做连续编码。这可以通过将多个操作（模型）串联到一起实现， 其基本的语法是：
-```julia
-pipe = mode1 |> model2 |> model3 |> ... |> modeln
-```
-这里的模型（model）既可以是前面讲过的模型， 也可以是某个函数。 唯一需要注意的是：数据是依次通过各个模型处理， 然后再输出的。前一个模型的输出结果会输入后一个模型。
-"""
-
-# ╔═╡ 125eeff4-3204-4492-b68d-51354f4e7dd5
-pipe = FeatureSelector(features=[:age,	:customer_months ,:insured_sex, :insured_education_level]) |>  (X -> coerce(X, Textual => Multiclass)) |> ContinuousEncoder() 
-
-# ╔═╡ f81a805a-ab4a-4cb1-bff9-3db3f2cf2551
-machpip = machine(pipe, trains)
-
-# ╔═╡ e3fcaf6e-d1bd-41d4-8ac9-a1f1f7ff7b26
-MLJ.fit!(machpip)
-
-# ╔═╡ 23b28bfe-15b9-4eb1-8a17-252b2ae494ea
-MLJ.transform(machpip, trains)
-
-# ╔═╡ cac7a664-4fdf-4de4-96e5-14992586ebc1
-md"""
-# 3 MLJ建模回顾
-简单来说， 用MLJ建模可以划分为以下7个步骤，
-1. 加载合适模型
-2. 构建模型实例
-3. 构造机器
-4. 划分训练集、测试集
-5. 模型拟合
-6. 模型预测
-7. 模型评估
-
-不过， 要建立一个合理的模型， 需要更多的操作。比如， 如何更好的评估模型？如何找到更优的模型参数？ 如何整合数据预处理与模型的整个过程？如何整合更多的模型等等。
-"""
-
-# ╔═╡ 83a87a73-e5a0-459a-a7e5-d0da95abc7dd
-train = select(trains, Not(:fraud))
-
-# ╔═╡ e3e579f6-4df1-4e1e-a4bc-42579521871a
-X = @select train :age :mon = :customer_months  :claim = :property_claim
-
-# ╔═╡ 69516ebe-ad2c-4bdd-8d09-f612fc4eff68
-schema(X)
-
-# ╔═╡ a33a1c89-823d-48d5-b5a8-376a144c346a
-y = categorical(trains.fraud)
-
-# ╔═╡ 6068432b-9d44-4828-b117-3186ddcc23e9
-models(matching(X,y))
-
-# ╔═╡ 4f13dff3-9d90-458c-8d4d-e97f4f33206a
-rfm = (@load RandomForestClassifier pkg = DecisionTree)()
-
-# ╔═╡ d7a2e839-bc72-449e-8018-e241d2c19ca8
-machrfm = machine(rfm, X, y)
-
-# ╔═╡ 024ef752-157a-4c75-a77d-16fd8a0fc884
-trainid, testid = MLJ.partition(eachindex(y), 0.7, shuffle = true)
-
-# ╔═╡ aff69643-b08f-45c3-a79f-a046d7c95263
-MLJ.fit!(machrfm,rows = trainid)
-
-# ╔═╡ eb28592b-d1db-420d-b888-1a75a2b56382
-ŷ =  MLJ.predict(machrfm, X[testid, :])
-
-# ╔═╡ 30af5722-139b-4949-92f8-cd05b64ee430
-MLJ.auc(ŷ, y[testid])
-
-# ╔═╡ 3c3b607a-bdb0-48c1-86e9-23ad39d3d253
-MLJ.accuracy( MLJ.mode.(ŷ), y[testid])
-
-# ╔═╡ ddd9ec16-ebf0-433f-a100-39963da74a47
-md"""
-# 4 更好的评估模型
-从上面可以看得出来， 每一次评估模型，我们需要划分训练集、测试集， 绑定机器， 同时需要指定评估的指标。 但实际上， 对每一个可能的模型。 上面的过程是重复的。 因此， 我们可以将其纳入一个函数， 实现更好的评估模型。
-
-evaluate函数可以实现只要给定模型实例、数据、抽样策略（用于生成训练集、测试集）、评估函数，就可以方便测试模型。
-"""
-
-# ╔═╡ fac7ec8c-1e36-476c-a95a-a72953f2b7c7
-eres = evaluate(rfm, X, y, resampling=CV(nfolds=5), measure=[auc])
-
-# ╔═╡ d248536a-48fe-487d-bc41-7ba54ec9c39f
-eres.per_fold[1]
-
-# ╔═╡ 3bbcf0f5-0c7c-4c7a-9151-1d43f878da27
-md"""
-上面的measurement是每一折检验的评估函数的取值的均值。SE表示标准误（Stand Error）。反映的是估计的均值跟真实的均值之间的偏离程度。1.96\*SE是95%置信区间的大小， 即真正的均值以95%概率
-分布在 [ measurement \- 1.96\*SE, measurement + 1.96\*SE]之间。
-
-
-"""
-
-# ╔═╡ 86fb646b-616b-4df8-ac4c-e4f08082e947
-1.96*std(eres.per_fold[1])/sqrt(5-1)
-
-# ╔═╡ 1e033c2f-9c78-41ab-aaa9-8422296ca8b3
-evaluate(rfm, X, y)
-
 # ╔═╡ 364d5f97-9775-44fe-8af2-7681cd9fdd47
 md"""
-# 5 模型调优*
+# 模型调优
 一个模型包含了很多的参数， 通常必要的参数都会有默认的值， 但默认的参数值不见得是最适合数据的。 因此， 需要通过一定的方法找到最合适的模型参数。 这个过程被称为**模型调优**。 简单来说， 模型调优就是要遍历所有可能的参数组合， 找到最合适的那个模型。 然而， 对连续取值的参数来说， 遍历所有可能的取值是不现实的。 因此， 调优的过程必然涉及到调优策略的问题。 
 
 在MLJ中，模型调优是作为模型包装器实现的。在调优策略中包装模型并将包装的模型绑定到mach机器中的数据之后，调用fit!(mach)在指定的范围内搜索最优模型超参数，然后使用所有提供的数据来训练最佳模型。要使用该模型进行预测，可以调用predict(mach, Xnew)。通过这种方式，包装模型可以被视为未包装模型的“自调优”版本。也就是说，包装模型只是将某些超参数转换为学习参数。
 
 更多细节请看[这里](https://alan-turing-institute.github.io/MLJ.jl/dev/tuning_models/#Tuning-Models)
 """
+
+# ╔═╡ 3e4f47dd-00e8-45cf-8438-ad4f2190f390
+md"""
+## 准备数据
+"""
+
+# ╔═╡ 5bc9dbcf-841b-4bb6-b438-6dcce5d662ab
+trains = CSV.read("../data/trainbx.csv", DataFrame)
+
+# ╔═╡ ebf6837e-be4a-4120-ad90-d520e3e0a77f
+names(trains, Int)
+
+# ╔═╡ 9096a3d6-7473-49bf-b019-1d5f478858aa
+y = categorical(trains.fraud)
+
+# ╔═╡ 407f1cc4-a2bd-42b2-b518-b0622c546e3b
+X = select(trains, [:age, :customer_months,:witnesses,:bodily_injuries])
+
+# ╔═╡ df16d0ea-a49a-4ee5-99b9-baec4937137d
+md"""
+## 构建模型实例
+"""
+
+# ╔═╡ 4f13dff3-9d90-458c-8d4d-e97f4f33206a
+rfm = (@load RandomForestClassifier pkg = DecisionTree)()
 
 # ╔═╡ 6c3cf0e1-6668-44cf-893e-0d5f239f8bfa
 rfm
@@ -433,7 +185,7 @@ PlutoUI = "~0.7.54"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.9.3"
+julia_version = "1.10.3"
 manifest_format = "2.0"
 project_hash = "d019a10f4fa9da7ff1980bab191a26b3ea35d7bb"
 
@@ -607,7 +359,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.0.5+0"
+version = "1.1.1+0"
 
 [[deps.CompositionsBase]]
 git-tree-sha1 = "802bb88cd69dfd1509f6670416bd4434015693ad"
@@ -951,21 +703,26 @@ version = "0.1.0"
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
-version = "0.6.3"
+version = "0.6.4"
 
 [[deps.LibCURL_jll]]
 deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "7.84.0+0"
+version = "8.4.0+0"
 
 [[deps.LibGit2]]
-deps = ["Base64", "NetworkOptions", "Printf", "SHA"]
+deps = ["Base64", "LibGit2_jll", "NetworkOptions", "Printf", "SHA"]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
+
+[[deps.LibGit2_jll]]
+deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll"]
+uuid = "e37daf67-58a4-590a-8e99-b0245dd2ffc5"
+version = "1.6.4+0"
 
 [[deps.LibSSH2_jll]]
 deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
-version = "1.10.2+0"
+version = "1.11.0+1"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -1104,7 +861,7 @@ version = "1.1.8"
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.2+0"
+version = "2.28.2+1"
 
 [[deps.MicroCollections]]
 deps = ["BangBang", "InitialValues", "Setfield"]
@@ -1123,7 +880,7 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2022.10.11"
+version = "2023.1.10"
 
 [[deps.NNlib]]
 deps = ["Adapt", "Atomix", "ChainRulesCore", "GPUArraysCore", "KernelAbstractions", "LinearAlgebra", "Pkg", "Random", "Requires", "Statistics"]
@@ -1162,12 +919,12 @@ version = "1.2.0"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.21+4"
+version = "0.3.23+4"
 
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+0"
+version = "0.8.1+2"
 
 [[deps.OpenML]]
 deps = ["ARFFFiles", "HTTP", "JSON", "Markdown", "Pkg", "Scratch"]
@@ -1219,7 +976,7 @@ version = "2.8.0"
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.9.2"
+version = "1.10.0"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -1282,7 +1039,7 @@ deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [[deps.Random]]
-deps = ["SHA", "Serialization"]
+deps = ["SHA"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [[deps.RecipesBase]]
@@ -1390,6 +1147,7 @@ version = "1.2.0"
 [[deps.SparseArrays]]
 deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+version = "1.10.0"
 
 [[deps.SpecialFunctions]]
 deps = ["IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_jll"]
@@ -1457,7 +1215,7 @@ version = "3.2.0"
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-version = "1.9.0"
+version = "1.10.0"
 
 [[deps.StatsAPI]]
 deps = ["LinearAlgebra"]
@@ -1496,9 +1254,9 @@ deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[deps.SuiteSparse_jll]]
-deps = ["Artifacts", "Libdl", "Pkg", "libblastrampoline_jll"]
+deps = ["Artifacts", "Libdl", "libblastrampoline_jll"]
 uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
-version = "5.10.1+6"
+version = "7.2.1+1"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -1602,83 +1360,35 @@ version = "1.6.1"
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.13+0"
+version = "1.2.13+1"
 
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.8.0+0"
+version = "5.8.0+1"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.48.0+0"
+version = "1.52.0+1"
 
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
-version = "17.4.0+0"
+version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
 # ╠═dff9e5b0-959b-11ee-2223-419029c55758
-# ╟─9f348928-ffc6-451f-a8bc-d197c4d8a611
-# ╟─dc6658b0-e0f4-48d0-a58b-6ef2921998f6
-# ╟─390aa058-7b07-4ec0-aacd-d43b43c2d61a
-# ╟─6ceb287c-fec1-43a3-9822-49bef5003607
-# ╟─0da6aa89-d6d7-47fa-9cf1-7425d806ca8d
+# ╟─364d5f97-9775-44fe-8af2-7681cd9fdd47
+# ╟─3e4f47dd-00e8-45cf-8438-ad4f2190f390
 # ╠═5bc9dbcf-841b-4bb6-b438-6dcce5d662ab
-# ╠═59ddc03e-b710-4848-bf94-6fd1d93086fb
-# ╟─54dec9c9-31a9-42ce-98c3-bdce214415ed
-# ╠═a180eec7-1da4-4900-8be2-3dd7cc2cf24e
-# ╟─054f9a1d-1521-4131-8ed8-2e2b2179cca0
-# ╠═80ab5f06-dec1-4eae-996f-397832d5a83f
-# ╟─eca076c5-5dcd-4536-92d3-62ead66632eb
-# ╠═daef6a63-5eea-441c-ad66-6d4f11f885a0
-# ╟─05e3e86b-b61c-4c6f-8a0e-b9840c17d7e8
-# ╠═3b0ac5de-0c27-448b-8957-48f9347a3ddc
-# ╟─769ce8e1-cf8c-47b7-b921-00c2329af64a
-# ╠═dcaf72e8-43f2-4e8c-b777-4818d4fd281d
-# ╟─63049bd2-d1b2-4040-8c21-53f556e10b10
-# ╠═4b05e29d-f70b-4907-8b16-450d434828cb
-# ╟─cf7f5aeb-e198-458e-bb2d-697451ce01a2
-# ╠═e3e3cd08-cc48-4a4f-b199-d860f0a659f1
-# ╠═0561ca5d-7f5f-4e27-a33f-553458a0c70a
-# ╠═d9e87f1d-e1a7-4707-97ae-bfce36c9880d
-# ╠═e6dbe3ed-7686-42c1-b6e4-f67e07747ee3
-# ╠═cf1c3ee6-d0b1-4c24-8716-f28d193f4622
-# ╠═492fc857-69d0-48ed-9d72-6cd280f4ab79
-# ╠═2408cdbe-32ff-4703-9a7f-d019c021bd43
-# ╟─aa39c47e-7eb5-4295-9649-d95c040cc3e6
-# ╠═2c2db3b4-b761-4c94-9aba-bbfb75fecde6
-# ╠═b33efe80-feb3-4933-88ba-332bc8cb648a
-# ╠═8566fb19-726a-4d3b-8171-2607ce74dbe5
-# ╟─66ef0379-d1af-4b3b-b2a7-144ee76f5424
-# ╠═125eeff4-3204-4492-b68d-51354f4e7dd5
-# ╠═f81a805a-ab4a-4cb1-bff9-3db3f2cf2551
-# ╠═e3fcaf6e-d1bd-41d4-8ac9-a1f1f7ff7b26
-# ╠═23b28bfe-15b9-4eb1-8a17-252b2ae494ea
-# ╟─cac7a664-4fdf-4de4-96e5-14992586ebc1
-# ╠═83a87a73-e5a0-459a-a7e5-d0da95abc7dd
-# ╠═e3e579f6-4df1-4e1e-a4bc-42579521871a
-# ╠═69516ebe-ad2c-4bdd-8d09-f612fc4eff68
-# ╠═a33a1c89-823d-48d5-b5a8-376a144c346a
-# ╠═6068432b-9d44-4828-b117-3186ddcc23e9
+# ╠═ebf6837e-be4a-4120-ad90-d520e3e0a77f
+# ╠═9096a3d6-7473-49bf-b019-1d5f478858aa
+# ╠═407f1cc4-a2bd-42b2-b518-b0622c546e3b
+# ╟─df16d0ea-a49a-4ee5-99b9-baec4937137d
 # ╠═95a98d49-137d-4394-9e0e-ca841181c4fd
 # ╠═4f13dff3-9d90-458c-8d4d-e97f4f33206a
-# ╠═d7a2e839-bc72-449e-8018-e241d2c19ca8
-# ╠═024ef752-157a-4c75-a77d-16fd8a0fc884
-# ╠═aff69643-b08f-45c3-a79f-a046d7c95263
-# ╠═eb28592b-d1db-420d-b888-1a75a2b56382
-# ╠═30af5722-139b-4949-92f8-cd05b64ee430
-# ╠═3c3b607a-bdb0-48c1-86e9-23ad39d3d253
-# ╟─ddd9ec16-ebf0-433f-a100-39963da74a47
-# ╠═fac7ec8c-1e36-476c-a95a-a72953f2b7c7
-# ╠═d248536a-48fe-487d-bc41-7ba54ec9c39f
-# ╠═3bbcf0f5-0c7c-4c7a-9151-1d43f878da27
-# ╠═86fb646b-616b-4df8-ac4c-e4f08082e947
-# ╠═1e033c2f-9c78-41ab-aaa9-8422296ca8b3
-# ╟─364d5f97-9775-44fe-8af2-7681cd9fdd47
 # ╠═6c3cf0e1-6668-44cf-893e-0d5f239f8bfa
 # ╟─a1d2b19e-8a88-4591-a518-cea603ff3063
 # ╠═12f7dfbc-b709-49a6-92c5-d0f4911d1eeb

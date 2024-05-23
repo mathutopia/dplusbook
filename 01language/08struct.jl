@@ -5,8 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ 983f9c7e-4ce5-4975-ba80-fbc50f148a61
-using PlutoUI,Box
-
+using PlutoUI
 # ╔═╡ f86101a1-6391-4b9a-bb17-dca64b6f8632
 TableOfContents(title="目录")
 
@@ -47,8 +46,9 @@ end
 
 # ╔═╡ 30aeb721-c5de-4011-9159-ca8b0b1a5f1b
 md"""
-在Julia中， 如果我们定义类型的话， 习惯上， 使用大写字母开头的名字，涉及多个单词时， 每个单词首字母大写
-""" |> box
+!!! info "注意"
+	在Julia中， 如果我们定义类型的话， 习惯上， 使用大写字母开头的名字，涉及多个单词时， 每个单词首字母大写
+""" 
 
 # ╔═╡ 3d39117c-7011-497c-914e-5043c0aa08a2
 struct Point
