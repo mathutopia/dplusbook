@@ -15,7 +15,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ 9c49e120-70d0-11ee-08d1-f10dcde223be
-using StatsPlots,CSV, DataFrames,DataFramesMeta,CategoricalArrays,StatsBase,Box,PlutoUI
+using StatsPlots,CSV, DataFrames,DataFramesMeta,CategoricalArrays,StatsBase,PlutoUI
 
 # ╔═╡ 748be8cd-5fa8-4b8f-b243-87c3afd57d9e
 using FreqTables
@@ -196,11 +196,12 @@ md"""
 
 # ╔═╡ 76491dbc-d65c-40e1-b82a-a99a644c216a
 md"""
-上面函数中的`seriestype = :scatter`表示序列的类型是散点图。 在Plots里， 作者担心大家记不住参数的名字， 或者参数的名字太长， 通常给参数设置了一些“缩写”， 比如， `seriestype`，也可以写成`linetype, lt, seriestypes, st, t, typ`中的任何一种。 想了解每个参数有哪些缩写， 可以参考[**参数列表中**](https://docs.juliaplots.org/stable/generated/attributes_series/)alias字段。
+!!! info "参数名缩写"
+    上面函数中的`seriestype = :scatter`表示序列的类型是散点图。 在Plots里， 作者担心大家记不住参数的名字， 或者参数的名字太长， 通常给参数设置了一些“缩写”， 比如， `seriestype`，也可以写成`linetype, lt, seriestypes, st, t, typ`中的任何一种。 想了解每个参数有哪些缩写， 可以参考[**参数列表中**](https://docs.juliaplots.org/stable/generated/attributes_series/)alias字段。
 
-对于常见的序列类型， Plots都提供了一个对应的函数， 用于直接画相应的图形。 比如要画散点图， 除了在plot函数中使用参数设置seriestype = :scatter， 也可以直接用scatter函数画出一样的图形来。
+    对于常见的序列类型， Plots都提供了一个对应的函数， 用于直接画相应的图形。 比如要画散点图， 除了在plot函数中使用参数设置seriestype = :scatter， 也可以直接用scatter函数画出一样的图形来。
 
-""" |> box()
+""" 
 
 # ╔═╡ a29a23fe-6641-4f94-bfb1-e5217830f3ce
 @df train scatter(:total_claim_amount,:policy_annual_premium)

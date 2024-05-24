@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ 7bb24acd-3c7c-48dc-b0fc-1484a26f6319
-using Gadfly, PlutoUI, CSV, DataFrames, DataFramesMeta,CategoricalArrays,Box
+using Gadfly, PlutoUI, CSV, DataFrames, DataFramesMeta,CategoricalArrays
 
 # ╔═╡ cb57e090-a665-4071-bf63-9fa467f3d7f2
 train = CSV.read("../data/trainbx.csv", DataFrame)
