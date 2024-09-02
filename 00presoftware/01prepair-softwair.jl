@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.41
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -103,6 +103,9 @@ md"""
 !!! info "更简洁的启动"
 	上面介绍的是Pluto启动的一般方法。在这个文件夹中， 有一个`run_julia_pluto.bat`文件， 如果你是windows系统， 并且按上面的要求安装了Julia，设置了路径， 只要点击这个文件， 就可以自动打开Pluto了（不需要启动Julia）。 如果你启动了Julia， 只要执行include本目录下的"start.jl"文件也是可以的。
 """
+
+# ╔═╡ 4eba4ca5-df74-40d1-8a23-2c6c23433ccc
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -394,5 +397,6 @@ version = "17.4.0+2"
 # ╠═7fe6300f-72c4-4ce3-ac1e-6c2cf2e9579f
 # ╟─2f91e247-0ecd-411c-852f-ba1bbc229813
 # ╟─4f968683-efca-4d27-8952-7a02ba9c09a0
+# ╟─4eba4ca5-df74-40d1-8a23-2c6c23433ccc
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
