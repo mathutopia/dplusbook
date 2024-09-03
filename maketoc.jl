@@ -19,6 +19,8 @@ function generate_html_index()
     </head>\n<body>\n<div class=\"container\">\n
     <h1>数据分析与挖掘：基于Julia语言</h1>\n$intro_content\n"""
 
+    github = "https://mathutopia.github.io/dplusbook/"
+
     # 遍历子目录
     for subdir in subdirs
         # 获取子目录下的所有 `.jl` 文件并排序
@@ -31,8 +33,9 @@ function generate_html_index()
 
             # 为每个 `.jl` 文件创建超链接
             for jl_file in jl_files
+                jl_file = jl_file[1:end-3]
                 # 创建相对路径链接
-                relative_path = "$(basename(subdir))/$(jl_file)"
+                relative_path = github*"$(basename(subdir))/$(jl_file)"
                 # 添加超链接到 HTML 内容
                 html_content *= "<li><a href=\"$(relative_path)\">$(jl_file)</a></li>\n"
             end
