@@ -1,120 +1,55 @@
 
-function split_num_name(str)
-	m = match(r"(\d+)(.*)", str)
-	if isnothing(m)
-		return nothing
-	else
-		return m.captures[1], m.captures[2]
-    end
-end
+function generate_html_index()
+    # 读取 CSS 文件内容
+    css_content = read("styles.css", String)
 
-	
-render_row(chpn, secn, title, url) = """
-      <li class="level-2"> <a href=$(url)> $(chpn).$(secn)  $title </a> </li>
-    """
+    # 读取简介文件内容
+    intro_content = read("intro.md", String)
 
+    # 获取当前目录下的所有项
+    items = readdir(".")
 
-	"""
-    is_pluto_file
-判断一个文件是否是一个pluto写的文件
-"""
+    # 过滤出所有子目录并排序
+    subdirs = sort(filter(item -> isdir(item) && item != "." && item != "..", items))
 
-function is_pluto_file(fl)
-    firstline = readline(fl)
-    return occursin("Pluto.jl", firstline)
-end
+    # 开始构建 HTML 内容
+    html_content = """<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n
+    <title>Julia数据分析与挖掘</title>\n
+    <style>\n$css_content\n</style>\n
+    </head>\n<body>\n<div class=\"container\">\n
+    <h1>数据分析与挖掘：基于Julia语言</h1>\n$intro_content\n"""
 
+    # 遍历子目录
+    for subdir in subdirs
+        # 获取子目录下的所有 `.jl` 文件并排序
+        jl_files = sort(filter(file -> endswith(file, ".jl"), readdir(subdir)))
 
-"""
-    extract_title->title
-从一个pluto写的文件中提取其标题。默认情况下， 把正文的第一个md字符串中第一个#符号之后的内容当成是标题
-"""
-function extract_title(fl)
-    @assert is_pluto_file(fl) "这不是一个Pluto写的jl文件"
-    mdfind = false
-    poundfind = false
-    for line in eachline(fl)
-        if !mdfind && startswith( line, "md\"\"\"")
-            mdfind = true
-            continue
-        end
-        
-        if mdfind && !poundfind
-            poundfind = startswith(line, "# ")
-            if poundfind
-                # 为什么会匹配到空格， 暂时没明白
-               m = match(r"^\s*(?:#\s*(.*?)\s*$|$)", line)
-               if m === nothing || m.match === ""  
-                    ### 应该还要判断是否一个md结束了，结束的话要重新设置mdfind。
-                    continue
-               else
-                    return m.captures[1]
-               end
+        # 如果子目录中有 `.jl` 文件，添加到 HTML 内容中
+        if !isempty(jl_files)
+            # 添加子目录标题
+            html_content *= "<h2>$(basename(subdir))</h2>\n<ul>\n"
+
+            # 为每个 `.jl` 文件创建超链接
+            for jl_file in jl_files
+                # 创建相对路径链接
+                relative_path = "$(basename(subdir))/$(jl_file)"
+                # 添加超链接到 HTML 内容
+                html_content *= "<li><a href=\"$(relative_path)\">$(jl_file)</a></li>\n"
             end
+            html_content *= "</ul>\n"
         end
-    end    
+    end
+
+    # 结束 HTML 内容
+    html_content *= "</div>\n</body>\n</html>"
+
+    # 写入到 HTML 文件
+    open("index.html", "w") do file
+        write(file, html_content)
+    end
+
+    println("HTML index generated: index.html")
 end
 
-function make_toc(dir = ".")
-	git = "https://mathutopia.github.io/dplusbook/"
-	toc="""
-	<!DOCTYPE html>
-    <html lang="zh-CN">
-    <head>
-    <meta charset="UTF-8">
-    <title>书籍目录</title>
-	<style>
-        /* 简单的样式，用于区分一级和二级目录 */
-        #toc ul {
-            list-style-type: none; /* 移除默认的列表符号 */
-            padding-left: 0;
-        }
-        #toc li {
-            margin-bottom: 5px;
-        }
-        #toc .level-1 {
-            font-weight: bold;
-        }
-        #toc .level-2 {
-            margin-left: 20px;
-            font-weight: normal;
-        }
-    </style>
-    </head>
-    <body>
-	<h1>数据挖掘</h1>
-    <h2>目录</h2>
-	<div id="toc">
-        <ul>
-            <li class="level-1">
-	"""
-	fls = readdir(dir)
-	chpnames = filter(startswith(r"\d+"), fls)
-	for chp in chpnames
-		chpnum, chpname = split_num_name(chp)
-		toc *= "第$(chpnum)章 $(chpname) \n <ul>"
-		fls = readdir(joinpath(dir, chp))
-		for file in fls 
-			if is_pluto_file(joinpath(dir, chp, file))
-				fn = file[1:end-3]
-				secnum, secname = split_num_name(fn)
-				title = extract_title(joinpath(dir, chp, file))
-				url = joinpath(git, chp, fn)
-				toc *= render_row(chpnum, secnum, title, url)
-			end
-		end
-		toc *="""</ul>
-            </li>""" # 结束每一章
-	end
-	
-	toc *= """
-		</ul>
-	    </div>
-	</body>
-</html>
-	"""
-	toc
-end
-
-write("index.html", make_toc());
-println("修改了文件")
+# 调用函数
+generate_html_index()
