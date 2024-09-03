@@ -12,9 +12,9 @@ end;
 
 # ╔═╡ 92fee91c-4b48-4670-8309-909942f5d707
 html"""
-	<h1 style="text-align:center">
+	<p style="font-weight:bold; font-size: 60px;text-align:center">
 		Julia数据挖掘
-	</h1>
+	</p>
 	<div style="text-align:center">
 		<p style="font-weight:bold; font-size: 35px; font-variant: small-caps; margin: 0px">
 			软件安装与环境准备
@@ -31,9 +31,9 @@ html"""
 # ╔═╡ 6a742774-752f-4a59-9a4d-e1f2301d56bf
 TableOfContents(title="目录")
 
-# ╔═╡ 7de2e473-79be-4f2a-8fc0-b9b1a1712c03
+# ╔═╡ 3eac144d-2a5f-4ed9-91a4-84fa622955e5
 md"""
-# 准备工作
+# 软件安装
 """
 
 # ╔═╡ 8cc0e920-a680-4b44-9d34-710a378f19dc
@@ -106,6 +106,11 @@ md"""
 整个过程结束后的界面应该是下面的图片的样子。 注意这个网址， http://localhost:1235/?secret=auGzZKwc, 如果系统没有自动打开浏览器的话，你可以将该网址复制进你喜欢的浏览器，接下来就可以用Pluto写代码了。Pluto启动，每次的网址都会不同。
 
 [![pluto-started.png](https://free2.yunpng.top/2024/09/03/66d72614ba33a.png)](https://free2.yunpng.top/2024/09/03/66d72614ba33a.png)
+"""
+
+# ╔═╡ 28760fc8-bce3-4927-b05d-daa0d70e2874
+md"""
+# Pluto使用
 """
 
 # ╔═╡ c376ce27-cdd1-409e-9158-d304213f5197
@@ -588,10 +593,10 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
-# ╠═a37e7480-7e13-4c45-9dcd-8a6f0688d7f3
+# ╟─a37e7480-7e13-4c45-9dcd-8a6f0688d7f3
 # ╟─92fee91c-4b48-4670-8309-909942f5d707
 # ╟─6a742774-752f-4a59-9a4d-e1f2301d56bf
-# ╟─7de2e473-79be-4f2a-8fc0-b9b1a1712c03
+# ╟─3eac144d-2a5f-4ed9-91a4-84fa622955e5
 # ╟─8cc0e920-a680-4b44-9d34-710a378f19dc
 # ╟─46613937-81af-41dc-a1a0-d43acfa3e6f5
 # ╟─4ca8ac78-fbc6-427c-9555-2a81cad221e2
@@ -600,6 +605,7 @@ version = "17.4.0+2"
 # ╟─5111c260-d62e-42c2-ad96-4e724d36bc8c
 # ╟─938c5d8b-fffb-4d05-a470-4b56755e7459
 # ╟─094e337e-46f0-4161-b192-b97b9be0da6b
+# ╟─28760fc8-bce3-4927-b05d-daa0d70e2874
 # ╟─c376ce27-cdd1-409e-9158-d304213f5197
 # ╟─4459b362-f2d4-4270-93aa-a515886cf2ef
 # ╟─f714460d-c92e-4201-b5a7-20770861bd9f
