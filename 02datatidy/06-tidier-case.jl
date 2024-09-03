@@ -7,12 +7,8 @@ using InteractiveUtils
 # ╔═╡ b97f0670-3606-4dd9-b221-36042913bb2c
 using PlutoTeachingTools, PlutoUI, Tidier
 
-# ╔═╡ 980dde7f-bdce-4e35-824b-b3ba98858b58
-begin
-	Temp = @ingredients "../chinese.jl" # provided by PlutoLinks.jl
-	PlutoTeachingTools.register_language!("chinese", Temp.PTTChinese.China())
-	set_language!( PlutoTeachingTools.get_language("chinese") )
-end;
+# ╔═╡ e23ed5cc-7614-4898-9dd8-862f3a07285d
+@ingredients "../chinese.jl" 
 
 # ╔═╡ 98b8b941-c9be-41ee-9a68-2b257523f838
 TableOfContents()
@@ -2395,7 +2391,7 @@ version = "3.5.0+0"
 
 # ╔═╡ Cell order:
 # ╠═b97f0670-3606-4dd9-b221-36042913bb2c
-# ╠═980dde7f-bdce-4e35-824b-b3ba98858b58
+# ╠═e23ed5cc-7614-4898-9dd8-862f3a07285d
 # ╠═98b8b941-c9be-41ee-9a68-2b257523f838
 # ╠═b93c8356-1125-4c78-96d6-d65d008824cf
 # ╟─b4b21281-2ee7-4b91-b33d-1e1138215f66

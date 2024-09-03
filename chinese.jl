@@ -1,5 +1,3 @@
-module PTTChinese
-
 using Markdown
 using PlutoTeachingTools
 abstract type Chinese  <: AbstractLanguage end
@@ -55,4 +53,6 @@ PlutoTeachingTools.full_width_mode_str(lang::Lang) where {Lang <: Chinese} = "�
 PlutoTeachingTools.present_str(lang::Lang) where {Lang <: Chinese} = "演示"
 PlutoTeachingTools.present_mode_str(lang::Lang) where {Lang <: Chinese} = "演示模式"
 
-end
+
+PlutoTeachingTools.register_language!("chinese", China())
+set_language!( PlutoTeachingTools.get_language("chinese") );
