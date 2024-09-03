@@ -7,8 +7,10 @@ using InteractiveUtils
 # ╔═╡ a37e7480-7e13-4c45-9dcd-8a6f0688d7f3
 begin
 using PlutoUI,PlutoTeachingTools
-@ingredients("../chinese.jl")
 end;
+
+# ╔═╡ 6a742774-752f-4a59-9a4d-e1f2301d56bf
+TableOfContents(title="目录")
 
 # ╔═╡ 92fee91c-4b48-4670-8309-909942f5d707
 html"""
@@ -27,9 +29,6 @@ html"""
 		</p>
 	</div>
 """
-
-# ╔═╡ 6a742774-752f-4a59-9a4d-e1f2301d56bf
-TableOfContents(title="目录")
 
 # ╔═╡ 3eac144d-2a5f-4ed9-91a4-84fa622955e5
 md"""
@@ -221,8 +220,12 @@ md'''
 - Pluto文件中， 每一个变量名只能定义一次（这是一个跟写Jupyer Notebook 有显著差异的地方）。
 """
 
-# ╔═╡ 4eba4ca5-df74-40d1-8a23-2c6c23433ccc
-
+# ╔═╡ d51befa8-8455-4016-b1d7-4eeb93d691e0
+begin
+	Temp = @ingredients "../chinese.jl" # provided by PlutoLinks.jl
+	PlutoTeachingTools.register_language!("chinese", Temp.PTTChinese.China())
+	set_language!( PlutoTeachingTools.get_language("chinese") )
+end;
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -593,9 +596,9 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
-# ╟─a37e7480-7e13-4c45-9dcd-8a6f0688d7f3
+# ╠═a37e7480-7e13-4c45-9dcd-8a6f0688d7f3
+# ╠═6a742774-752f-4a59-9a4d-e1f2301d56bf
 # ╟─92fee91c-4b48-4670-8309-909942f5d707
-# ╟─6a742774-752f-4a59-9a4d-e1f2301d56bf
 # ╟─3eac144d-2a5f-4ed9-91a4-84fa622955e5
 # ╟─8cc0e920-a680-4b44-9d34-710a378f19dc
 # ╟─46613937-81af-41dc-a1a0-d43acfa3e6f5
@@ -620,6 +623,6 @@ version = "17.4.0+2"
 # ╟─357f5116-3a19-4591-a5c5-6efc1165b63a
 # ╠═7fe6300f-72c4-4ce3-ac1e-6c2cf2e9579f
 # ╟─2f91e247-0ecd-411c-852f-ba1bbc229813
-# ╟─4eba4ca5-df74-40d1-8a23-2c6c23433ccc
+# ╠═d51befa8-8455-4016-b1d7-4eeb93d691e0
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
