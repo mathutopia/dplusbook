@@ -1,22 +1,139 @@
 ### A Pluto.jl notebook ###
-# v0.19.41
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ da6e322b-cf26-4803-9b34-19bf4c6f00bc
+# ╔═╡ 79eab523-738c-4469-81ab-cc0530733ac0
 begin
-using PlutoUI
-TableOfContents(title="目录")
-end
+using PlutoUI,PlutoTeachingTools
+end;
 
+# ╔═╡ d91a9d5f-8050-4754-9bc0-f379621fe1bf
+TableOfContents(title="目录")
+
+# ╔═╡ 5905fc1b-3281-41b1-9ffc-10e173bc0759
+present_button()
+
+# ╔═╡ ced691c0-298e-4f44-8f16-661f95ff760c
+html"""
+	<p style="font-weight:bold; font-size: 60px;text-align:center">
+		Julia数据挖掘
+	</p>
+	<div style="text-align:center">
+		<p style="font-weight:bold; font-size: 35px; font-variant: small-caps; margin: 0px">
+			Julia简短教程
+		</p>
+		<p style="font-size: 30px; font-variant: small-caps; margin: 0px">
+			Weili Chen
+		</p>
+		<p style="font-size: 20px;">
+			GDUFS
+		</p>
+	</div>
+"""
+
+# ╔═╡ a15e0e4b-9cb8-4c29-bc16-b015672c0c29
+md"""
+
+## 字符串类型
+在Julia中，字符串常量可以通过直接在代码中赋值来定义。字符串常量一旦定义，其值就不能被改变，因为Julia中的字符串是不可变的。下面举例说明如何定义字符串常量：
+
+### 字符串类型定义
+
+1. **双引号基本字符串类型**：Julia中的基本字符串类型是`String`，它支持完整的Unicode字符集，通过UTF-8编码。
+
+   ```julia
+   str = "Hello, world!"  # 普通字符串
+   ```
+
+2. **三引号定义多行字符串常量**：
+
+   ```julia
+   # 定义一个多行字符串常量
+   MULTILINE_STRING = \"\"\"
+   Hello,
+   World!
+   \"\"\"
+   ```
+
+3. **字符类型**：Julia中表示单个字符的类型是`Char`，它是32位原始类型，可以表示任何Unicode字符。
+
+   ```julia
+   c = 'A'  # Char类型
+   ```
+
+### 常见字符串操作
+
+1. **字符串连接**：使用`*`运算符或`string`函数来连接字符串。
+
+   ```julia
+   greet = "Hello"
+   whom = "world"
+   println(greet * ", " * whom * ".\n")  # 使用*连接
+   println(string(greet, ", ", whom, ".\n"))  # 使用string函数
+   ```
+
+2. **字符串插值**：使用`$`符号将变量或表达式嵌入到字符串中。
+
+   ```julia
+   name = "Julia"
+   println("Hello, $name!")  # 字符串插值
+   ```
+
+3. **字符串索引**：使用方括号来访问字符串中的特定字符。
+
+   ```julia
+   str = "Hello"
+   println(str[1])  # 输出 'H'
+   ```
+
+4. **切片和子字符串**：使用范围索引来获取字符串的一部分。
+
+   ```julia
+   str = "Hello, world!"
+   println(str[1:5])  # 输出 "Hello"
+   println(str[7:end])  # 输出 "world!"
+   ```
+
+5. **Unicode和UTF-8支持**：Julia完全支持Unicode字符和字符串。
+
+   ```julia
+   s = "\u2200 x \u2203 y"  # Unicode字符
+   println(s)  # 输出 "∀ x ∃ y"
+   ```
+
+6. **字符串比较**：使用比较运算符来比较字符串。
+
+   ```julia
+   str1 = "apple"
+   str2 = "banana"
+   println(str1 < str2)  # 按字典顺序比较
+   ```
+
+7. **搜索和替换**：使用`findfirst`, `findnext`, `occursin`, `replace`等函数进行搜索和替换。
+
+   ```julia
+   str = "Hello, world!"
+   println(findfirst('w', str))  # 查找字符'w'的位置
+   println(occursin("world", str))  # 检查子字符串是否存在
+   println(replace(str, "world" => "Julia"))  # 替换子字符串
+   ```
+
+8. **大小写转换**：使用`uppercase`和`lowercase`函数转换字符串的大小写。
+
+   ```julia
+   str = "Hello, World!"
+   println(uppercase(str))  # 全部大写
+   println(lowercase(str))  # 全部小写
+   ```
+
+这些是Julia中字符串类型定义和常见操作的概述。Julia的字符串处理功能非常强大，支持复杂的Unicode操作，并且与其他编程语言相比，提供了一些独特的功能和操作符。
+"""
 
 # ╔═╡ 6c6e3068-406c-4c8a-b28c-ef1fa33cfe72
 md"""
-# 常见复合数据类型
-数值和字符（串）是基本的数据类型。 Julia中实现了多种复合类型的数据。复合数据类型可以看成是基本类型组合到一起之后形成的数据类型。 不同的复合类型组合方式不一样，支持的操作也会不一样。下面介绍几种常用的复合数据类型。
-
-## 元组(tuple)
+## 元组(Tuple)
 **元组(tuple)**是由括号和逗号构建的不可变对象，其中元素可以是任意类型：
 ```julia
 (e1,e2,e3,...)
@@ -52,7 +169,7 @@ julia> typeof(y)
 Tuple{Int64, String, Int64}
 ```
 
-注： 对于单个元素构成的元组， 只有一个括号是不行的， 通常需要在元组后加一个逗号， 以表明这是一个元组。 
+
 """
 
 # ╔═╡ 4e6d9031-873e-49c1-9de5-79c88d186ecb
@@ -115,10 +232,69 @@ md"""
 	```
 """ 
 
-# ╔═╡ 1ed8d6b2-47e2-4920-918e-da5124e6140e
+# ╔═╡ 8a07fd51-e1d1-4cc4-bee8-ebde1026d073
 md"""
-### 元组创建
+在Julia语言中，元组（Tuple）和命名元组（Named Tuple）是两种有用的数据结构，它们在函数参数传递、返回值以及数据存储等方面发挥着重要作用。
 
+### 元组（Tuple）
+
+元组是Julia中一种基本的复合数据类型，用于存储不同数据类型的有序集合。元组一旦创建，其内容就是不可变的，即不能修改元组中的元素。
+
+**特点：**
+- 有序集合
+- 内容不可变
+- 可以包含不同类型的元素
+
+**创建元组：**
+```julia
+julia> t = (1, "hello", 3.0)
+(1, "hello", 3.0)
+```
+
+**访问元组元素：**
+```julia
+julia> t[1]
+1
+
+julia> t[2]
+"hello"
+```
+
+**使用场景：**
+- 作为函数的返回值，一次性返回多个值。
+- 作为不可变数据的存储，保证数据的安全性。
+
+### 命名元组（Named Tuple）
+
+命名元组是元组的一种扩展，其中的元素可以通过名称来访问，而不仅仅是通过索引。
+
+**特点：**
+- 有序集合
+- 内容不可变
+- 元素可以通过名称访问
+
+**创建命名元组：**
+```julia
+julia> nt = (a=1, b="hello", c=3.0)
+(a = 1, b = "hello", c = 3.0)
+```
+
+**访问命名元组元素：**
+```julia
+julia> nt.a
+1
+
+julia> nt.b
+"hello"
+```
+
+**使用场景：**
+- 需要明确标识符来访问元素的场景，比如函数参数的配置选项。
+- 作为字典的轻量级替代，当只需要少量键值对时。
+"""
+
+# ╔═╡ 830d93fe-e238-40ee-a477-348e1576db36
+md"""
 在构建命名元组时， 经常在括号的前面加上一个分号；， 这是为了避免元组只有一个元素时产生错误。没有分号， 一个元素放进括号还是这个元素， 并不会变成元组。
 
 构建元组时， 最后一个元素后面加一个逗号，不会影响最终的结果。但如果整个元组只有一个元素， 这个逗号就必须要添加了。
@@ -137,10 +313,7 @@ julia> (xt)
 3
 ```
 换句话说，括号前面的分号或者括号后面的逗号。用于表示元组，尤其是当元素只有一个时。
-""" 
-
-# ╔═╡ 84fb76fd-7f94-4b81-9b36-210df016a2c8
-(x = 1)
+""" |> danger
 
 # ╔═╡ e2c49ef4-191b-423c-9342-5c254278d032
 md"""
@@ -211,76 +384,359 @@ julia> b
 ```
 """
 
-# ╔═╡ 6dbfaa98-7bae-4b59-b4e9-f61248e5aa30
+# ╔═╡ cd4a41d8-22c8-4d0e-b8d2-065cd73ae268
 md"""
-## Pair对象
+## 向量Vector
+在Julia语言中，向量（Vector）是最基本的一维数组类型，用于存储同类型数据的有序集合。向量是可变的，这意味着可以修改向量中的元素。
 
-用推出符号 => 可以构建pair对象。 当然， 也可以用Pair构造： 
+**特点：**
+- 有序集合
+- 内容可变
+- 通常包含相同类型的元素，但也可以包含不同类型的元素（称为异质向量）
+### 向量的创建
+在 Julia 中，创建向量（Vector）有多种方法，以下是一些常见的创建向量的方式，每种方式都有其特定的应用场景：
+当然，我们可以将 Julia 中创建向量的方法归类为以下几种主要类别：
+
+#### 1. 直接定义
+- **列表初始化**：直接在方括号中列出元素。
+  ```julia
+  v = [1, 2, 3, 4, 5]
+  ```
+
+#### 2. 函数构造
+- **`zeros`**：创建元素全为 0 的向量。
+  ```julia
+  v = zeros(5)
+  ```
+- **`ones`**：创建元素全为 1 的向量。
+  ```julia
+  v = ones(4)
+  ```
+- **`fill`**：创建元素全为指定值的向量。
+  ```julia
+  v = fill(7, 6)
+  ```
+
+#### 3. 范围和序列
+- **范围表示**：使用 `:` 运算符创建连续整数的向量。
+  ```julia
+  v = 1:10
+  ```
+- **生成器表达式**：通过表达式生成元素。
+  ```julia
+  v = [x^2 for x in 1:5]
+  ```
+
+#### 4. 集合转换
+- **`collect`**：将任何可迭代对象转换为向量。
+  ```julia
+  v = collect(1:2:11)
+  ```
+
+#### 5. 动态修改
+- **`push!`**：向向量末尾添加一个或多个元素。
+  ```julia
+  push!(v, 4)
+  ```
+- **`append!`**：向向量末尾添加另一个向量的元素。
+  ```julia
+  append!(v, [4, 5])
+  ```
+
+#### 6. 重塑和变换
+- **`reshape`**：将一维向量或数组重新排列成新的维度。
+  ```julia
+  v = reshape(1:6, 2, 3)
+  ```
+
+这些方法提供了灵活的方式来创建向量，以满足不同的需求和场景。
+
+
+与元组和命名元组相比，向量的主要区别在于它们的可变性和元素类型的一致性。元组和命名元组通常用于存储不应改变的数据，而向量则更适用于需要动态修改的场景。此外，向量在数学和科学计算中非常常用，因为它们提供了丰富的数组操作和广播功能。
+"""
+
+# ╔═╡ a0fff9a7-b61e-443c-bc22-5e99595d8627
+md"""
+### 向量的访问
+在 Julia 中，向量（Vector）和元组（Tuple）是两种常用的有序集合类型，它们都支持通过索引访问其中的元素。**Julia 的索引是从 1 开始的**，这与其他一些编程语言（如 C、Python 等，它们的索引从 0 开始）不同。此外，Julia 提供了 `begin` 和 `end` 这两个关键字，用于在索引操作中表示序列的开始和结束。
+
+#### 1. 索引访问
+
+在 Julia 中，你可以通过在方括号 `[]` 中提供索引来访问向量或元组中的元素。
+
+**向量示例**：
 ```julia
-Pair(x, y)
-x => y
+v = [10, 20, 30, 40, 50]
+println(v[1])  # 输出第一个元素，结果为 10
+println(v[end])  # 输出最后一个元素，结果为 50
 ```
-一个pair对象包含一个first元素， 和second元素。 看上去有点像命名元组,或者像一个字典。但在迭代时， 一个pair对象是一个整体。
+
+**元组示例**：
+```julia
+t = ('a', 'b', 'c', 'd')
+println(t[2])  # 输出第二个元素，结果为 'b'
+println(t[end])  # 输出最后一个元素，结果为 'd'
+```
+
+#### 2. 使用 `begin` 和 `end` 访问
+
+`begin` 和 `end` 在 Julia 中用作表示序列开始和结束的特殊关键字。它们经常用于切片操作，即获取序列的一部分。
+
+- `begin`：表示序列的第一个元素。
+- `end`：表示序列的最后一个元素。
+
+**向量切片示例**：
+```julia
+v = [10, 20, 30, 40, 50]
+# 获取从第一个元素到第三个元素的切片
+println(v[begin:3])  # 输出: [10, 20, 30]
+# 获取从第三个元素到最后一个元素的切片
+println(v[3:end])  # 输出: [30, 40, 50]
+```
+
+**元组切片示例**：
+```julia
+t = ('a', 'b', 'c', 'd')
+# 获取从第一个元素到第二个元素的切片
+println(t[begin:2])  # 输出: ('a', 'b')
+# 获取从第二个元素到最后一个元素的切片
+println(t[2:end])  # 输出: ('b', 'c', 'd')
+```
+
+在这些例子中，使用 `begin` 和 `end` 可以方便地表示序列的一部分，而不需要明确指出切片的起始和结束索引。这种用法在处理不确定长度的序列或者在需要动态确定切片范围时特别有用。
+
 """
 
-# ╔═╡ 87af3a4e-2c03-48ac-9263-ed2d2cf00cc4
-p1 = "name"=>7
-
-# ╔═╡ 8d0b07f1-d1c6-4645-988d-3ab502bc1a1c
-p1.first
-
-# ╔═╡ ea895254-2d2d-4d40-bf79-a1dafe5bc000
-p1.second
-
-# ╔═╡ 11198d9c-f7cf-4e7b-8926-c4254c721a03
+# ╔═╡ 4f99e34a-01cb-457e-8e0c-246da1f3919d
 md"""
-## 字典Dict
-字典也是常用的数据结构。字典中有键-值对， 通过键可以方便的获得值。可以用键值对元组向量构建字典， 也可以用键值对Pair构建字典。
+
+## Pair类型
+
+
+Pair类型在编程中是一种常见的数据结构，用于将两个相关的值组合成一个单一的对象。在Julia语言中，Pair是一个内置的类型，它存储了两个元素，通常称为“键”和“值”。
+
+### 什么是Pair类型？
+Pair类型是一个用于表示键值对的数据结构，它允许将两个相关的值组合成一个对象。这种结构在很多场景下都非常有用，比如在字典中存储数据或者在迭代过程中生成键值对。
+
+### 如何构建Pair？
+用推出符号 => 或者Pair类型构造函数可以构建Pair对象： 
+```julia
+Pair(key， value)
+key => value
+```
+这里，`key`是Pair的第一个元素，通常用于标识或查找值，而`value`是第二个元素，是与键相关联的数据。
+
+
+Pair类型在多种场景中发挥作用，主要包括：
+1. **字典存储**：在字典中，每个键值对都是一个Pair对象，其中键用于唯一标识一个值。
+2. **数据关联**：在迭代或数据处理过程中，Pair可以用来关联数据，比如在迭代过程中生成索引和值的对应关系。
+3. **简便的数据打包**：Pair可以简洁地打包两个相关的数据项，使得数据的传递和操作更加方便。
+
+"""
+
+# ╔═╡ e077f43f-dc44-4594-ad3a-2bd225f78709
+md"""
+### 访问Pair元素
+在Julia中，`Pair`对象的两个元素构成了一个整体，它们被存储在`Pair`的两个字段中：`first`和`second`。这两个字段分别对应于`Pair`的键（key）和值（value）。尽管它们是作为一个整体存储的，但可以分别使用`.first`和`.second`属性来访问。
 
 ```julia
-Dict([(key1, value1), (key2, value2),...])
-Dict(key1=>value1, key2=>value2,...)
+# 创建一个Pair对象
+p = "key" => 123
+
+# 访问Pair的键和值
+key = p.first
+value = p.second
+
+println("Key: $key, Value: $value")
 ```
-对于字典， 可以使用keys，values函数分别获取由key和value构成的可迭代集。
 
-### 字典相关操作
-- haskey(collection, key) -> Bool 判断是否存在某个key
-- get(collection, key, default) 获取某个key的值， 如果不存在这个key，返回default。对于字典， 可以直接使用中括号给定的key的方式获取key对应的值，即 **D[key]**, 但如果key不存在， 这种操作方法会出错。
-- get!(collection, key, default) 获取某个key的值， 如果不存在这个key， 增加key=>default对，返回default
-- delete!(collection, key) 删掉给定的key， 如果存在的话，并返回collectio。
-- pop!(collection, key[, default]) 删掉给定的Key， 返回对应的值， 如果key不存在，返回默认值default， 这时候不指定默认值会出错。
-- merge(d::AbstractDict, others::AbstractDict...)合并两个字典， 如果字典中具有相同的key，最后的字典中的对应值会被保留。
+输出将会是：
+```
+Key: key, Value: 123
+```
+
+除了直接访问`.first`和`.second`属性，还可以使用解构（destructuring）来同时获取键和值：
+
+```julia
+# 创建一个Pair对象
+p = "key" => 123
+
+# 使用解构获取键和值
+key, value = p
+
+println("Key: $key, Value: $value")
+```
+
+这也是一种非常简洁和常用的访问`Pair`元素的方法，输出同样会是：
+```
+Key: key, Value: 123
+```
+通过这些方式，可以方便地访问和操作`Pair`对象中的元素，无论是单独处理键或值，还是同时处理两者。
 """
 
-# ╔═╡ b18bd2c2-56ad-4cf1-aaa8-b2b4936eebb1
-D = Dict('a'=>2, 'b'=>3)
-
-# ╔═╡ b0c34d32-1490-4070-a90e-cc76cf8f0019
-keys(D), values(D)
-
-# ╔═╡ 66e5e71c-85ac-45dd-9962-adb345907e45
-haskey(D, 'a'), haskey(D, 'c')
-
-# ╔═╡ 463d85eb-ca9b-4285-8756-d57f1e125560
-D['a']
-
-# ╔═╡ 4f9433bc-f6d2-4717-acfa-91a149e59ef6
-get(D, 'a', 1), get(D, 'c', 1)
-
-# ╔═╡ 0ad902f4-dd65-4929-b533-db3532b0ae25
+# ╔═╡ 35ea0a67-7ce8-4dad-a7b9-c326f265712d
 md"""
-## 集合set
-Julia中实现了数学上集合的概念， 即集合包含的元素具有：互异性、无序性、确定性。集合常见的操作是：
-- 判断元素是否在集合中（确定性） in
-- 结合求并 union
-- 求交 intersect
-- 求差 setdiff
-- 对称差 symdiff
-具体请参考[集合相关文档](https://docs.julialang.org/en/v1/base/collections/#Set-Like-Collections)
+## 字典类型（Dict）
+字典（Dict）是 Julia 语言中的一种数据结构，用于存储键值对（key-value pairs），其中每个键（key）映射到一个特定的值（value）。字典在编程中非常有用，因为它们允许你快速检索、更新和删除具有特定键的数据项。
+
+### 什么是字典（Dict）？
+
+- 字典是一种关联数组，其中的元素是键值对。
+- 键和值可以是任何类型的对象，但键必须是可哈希的，以便字典能够高效地检索它们。
+- 字典是无序的，这意味着元素的顺序并不是固定的。
+
+### 字典的用途
+
+- 快速查找：通过键快速访问值。
+- 动态数据存储：在运行时动态添加、删除或修改数据项。
+- 唯一性保证：每个键在字典中是唯一的，不会出现重复的键。
+
+### 如何构造字典
+
+1. **直接构造**：使用字面量语法或 `Dict` 函数直接创建字典。
+   ```julia
+   d = Dict("a" => 1, "b" => 2)  # 使用字面量语法
+   d = Dict([("a", 1), ("b", 2)])  # 使用元组列表
+   ```
+
+2. **通过迭代器构造**：从一个键值对的迭代器创建字典。
+   ```julia
+   keys = ["a", "b"]
+   vals = [1, 2]
+   d = Dict(zip(keys, vals))  # 使用 zip 函数将键和值的列表组合起来
+   ```
+
+3. **空字典**：创建一个空字典，然后添加键值对。
+   ```julia
+   d = Dict{String, Int}()
+   d["a"] = 1  # 添加键值对
+   ```
+
+### 如何访问字典
+
+1. **通过键访问**：使用键来检索对应的值。
+   ```julia
+   val = d["a"]  # 获取键 "a" 对应的值
+   ```
+
+2. **使用 `get` 函数**：安全地访问字典，如果键不存在，则返回默认值。
+   ```julia
+   val = get(d, "a", 0)  # 如果 "a" 不存在，则返回 0
+   ```
+
+3. **使用 `get!` 函数**：如果键不存在，则插入默认值并返回该值。
+   ```julia
+   val = get!(d, "c", 3)  # 如果 "c" 不存在，则插入 "c" => 3 并返回 3
+   ```
+
+4. **遍历字典**：通过迭代键值对来处理字典中的每个元素。
+   ```julia
+   for (key, value) in d
+       println("Key: $key, Value: $value")
+   end
+   ```
+
+5. **查询操作**：检查键是否存在于字典中。
+   ```julia
+   haskey(d, "a")  # 检查键 "a" 是否存在
+   ```
+
+### 字典的方法和操作
+
+- **更新值**：通过键来更新字典中的值。
+  ```julia
+  d["a"] = 10  # 更新键 "a" 对应的值为 10
+  ```
+
+- **删除键值对**：使用 `delete!` 函数删除字典中的键值对。
+  ```julia
+  delete!(d, "b")  # 删除键 "b" 及其对应的值
+  ```
+
+- **合并字典**：使用 `merge` 或 `merge!` 函数合并两个或多个字典。
+  ```julia
+  d1 = Dict("a" => 1, "b" => 2)
+  d2 = Dict("b" => 3, "c" => 4)
+  merged_d = merge(d1, d2)  # 合并 d1 和 d2
+  ```
+
+- **字典视图**：使用 `keys`、`values` 和 `pairs` 函数获取字典的键、值和键值对视图。
+  ```julia
+  keys(d)  # 获取所有键
+  values(d)  # 获取所有值
+  pairs(d)  # 获取所有键值对, 每一个键值对就是一个Pair对象。
+  ```
+
+字典是 Julia 中非常灵活和强大的数据结构，适用于各种需要快速查找和存储键值对的场景。
 """
 
-# ╔═╡ c92c9533-ad4d-4678-a8a5-22202200ca3d
-5 in Set([1,2,3])
+# ╔═╡ e7dcaaa8-a66f-4a0a-8e19-f57190d19228
+md"""
+## 集合类型（Set）
+
+在计算机科学和数学中，集合是一个无序的、不重复的元素序列。集合内的元素是唯一的，即不允许有重复的元素。集合的概念在许多编程语言和数据结构中都有广泛的应用，用于表示一组唯一的项。
+
+### 集合的构造
+
+在Julia语言中，可以使用`Set`类型来创建集合。 使用`Set()`可以创建一个空的集合，而`Set{T}()`可以创建一个特定类型的空集合。也可以直接传入一个可迭代对象来创建集合， 例如：
+   ```julia
+   s1 = Set()  # 创建一个空集合
+   s2 = Set{Int}()  # 创建一个空的整数集合
+   s3 = Set([1, 2, 3])  # 创建一个包含1, 2, 3的集合
+   ```
+
+2. **使用字面量语法**：
+   Julia 允许使用大括号来创建集合，例如：
+   ```julia
+   s = Set([1, 2, 3])  # 等同于 Set(1, 2, 3)
+   ```
+
+### 集合的应用
+
+集合在编程中有着广泛的应用，以下是一些主要的应用场景：
+
+1. **成员资格测试**：
+   集合提供了快速的成员资格测试功能，可以快速检查一个元素是否存在于集合中：
+   ```julia
+   s = Set([1, 2, 3])
+   println(2 in s)  # 输出 true
+   println(4 in s)  # 输出 false
+   ```
+
+2. **集合操作**：
+   集合支持多种数学上的集合操作，如并集、交集、差集等：
+   - **并集**：合并两个或多个集合中的所有元素，重复元素只保留一次。
+     ```julia
+     s1 = Set([1, 2, 3])
+     s2 = Set([3, 4, 5])
+     union_s = union(s1, s2)  # 输出 Set([1, 2, 3, 4, 5])
+     ```
+   - **交集**：返回两个或多个集合中共有的元素。
+     ```julia
+     intersect_s = intersect(s1, s2)  # 输出 Set([3])
+     ```
+   - **差集**：返回存在于第一个集合但不在第二个集合中的元素。
+     ```julia
+     setdiff_s = setdiff(s1, s2)  # 输出 Set([1, 2])
+     ```
+
+3. **去重**：
+   集合天生具有去重的特性，可以用于去除数据中的重复项：
+   ```julia
+   data = [1, 2, 2, 3, 4, 4, 5]
+   unique_data = Set(data)  # 输出 Set([1, 2, 3, 4, 5])
+   ```
+
+4. **集合的转换和迭代**：
+   可以将集合转换为数组或其他数据结构，也可以迭代集合中的元素：
+   ```julia
+   s = Set([1, 2, 3])
+   for element in s
+       println(element)
+   end
+   ```
+集合（Set）是Julia中一种基本的数据结构，它提供了一种有效的方式来存储不重复的元素集合，并支持快速的成员资格测试和各种集合操作。集合的构造简单，应用广泛，是处理数据去重和集合运算时的理想选择。
+"""
 
 # ╔═╡ 21b613ce-fa2b-4fd4-b1df-973e81d47c4a
 md"""
@@ -336,12 +792,91 @@ md"""
 为什么要单独提容器类型呢？因为Julia中， 很多的操作对容器类型都是有效的。具体可以参考其[文档](https://docs.julialang.org/en/v1/base/collections/)。 在Julia中， 上述所有的数据类型，包括后续讲到的数组类型等都是容器类型。因此， 有很多的函数（操作）同时适用于上述所有类型。
 """
 
+# ╔═╡ 5b197c18-c8e1-4084-9731-316f7ca047ed
+md"""
+在 Julia 语言中，可迭代类型（Iterable Types）是那些能够被迭代器迭代的对象。迭代器是一个遵循迭代协议的对象，它能够逐个返回集合中的元素。了解可迭代类型对于编写高效且灵活的代码非常重要，因为它们允许你使用简洁的循环结构来处理集合中的数据。
+
+### 什么是可迭代类型？
+
+可迭代类型是指那些可以被 `iterate` 函数遍历的对象类型。在 Julia 中，迭代是实现集合遍历的一种机制，它通过 `iterate` 函数来实现。`iterate` 函数接收一个可迭代对象（iterable）和一个可选的初始状态（state），并返回一个包含元素和新状态的元组，或者在没有更多元素时返回 `nothing`。
+
+### 为什么需要可迭代类型？
+
+可迭代类型使得对集合的遍历变得简单和统一。它们允许开发者使用 `for` 循环来遍历集合，而无需关心集合内部的数据结构。此外，可迭代类型也使得编写泛型代码成为可能，因为许多 Julia 标准库函数都依赖于迭代来处理数据。
+
+### 有哪些类型是可迭代的？
+
+在 Julia 中，许多内置的集合类型都是可迭代的，包括：
+
+- 数组（Arrays）
+- 元组（Tuples）
+- 范围（Ranges）如 `1:10`
+- 字典的键（Keys）和值（Values）
+- 集合（Sets）
+- 字符串（Strings）
+
+### 可迭代类型有哪些同样的迭代方法？
+
+所有可迭代类型都遵循相同的迭代协议，主要通过 `iterate` 函数实现。以下是一些通用的迭代方法：
+
+- `iterate(iter)`：从可迭代对象 `iter` 中获取第一个元素和状态。
+- `iterate(iter, state)`：使用给定的状态从可迭代对象 `iter` 中获取下一个元素和状态。
+
+### 代码示例
+
+以下是一些使用可迭代类型的例子：
+
+```julia
+# 数组是可迭代的
+array = [1, 2, 3, 4, 5]
+for element in array
+    println(element)
+end
+
+# 元组也是可迭代的
+tuple = ("a", "b", "c")
+for item in tuple
+    println(item)
+end
+
+# 范围同样可迭代
+range = 1:3
+for num in range
+    println(num)
+end
+
+# 字典的键和值可以通过迭代获取
+dict = Dict("one" => 1, "two" => 2, "three" => 3)
+for key in keys(dict)
+    println("Key: ", key)
+end
+
+for value in values(dict)
+    println("Value: ", value)
+end
+```
+
+### 总结
+
+可迭代类型在 Julia 中扮演着重要的角色，它们提供了一种统一的方式来处理集合数据。通过实现 `iterate` 函数，任何类型都可以变得可迭代，这使得编写泛型代码和处理数据集合变得非常灵活和强大。无论是内置的集合类型还是自定义类型，只要它们遵循迭代协议，就可以使用 `for` 循环和其他依赖于迭代的函数进行处理。
+
+"""
+
+# ╔═╡ a6e61f23-0399-45ab-8759-54bb5febb689
+begin
+	Temp = @ingredients "../chinese.jl" # provided by PlutoLinks.jl
+	PlutoTeachingTools.register_language!("chinese", Temp.PTTChinese.China())
+	set_language!( PlutoTeachingTools.get_language("chinese") )
+end;
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
+PlutoTeachingTools = "~0.2.15"
 PlutoUI = "~0.7.59"
 """
 
@@ -349,9 +884,9 @@ PlutoUI = "~0.7.59"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.3"
+julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "6e7bcec4be6e95d1f85627422d78f10c0391f199"
+project_hash = "f1c3cad4185de8dfdbe7a2e313cedba3766fbc3f"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -369,6 +904,12 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
+[[deps.CodeTracking]]
+deps = ["InteractiveUtils", "UUIDs"]
+git-tree-sha1 = "7eee164f122511d3e4e1ebadb7956939ea7e1c77"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "1.3.6"
+
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
 git-tree-sha1 = "b10d0b65641d57b8b4d5e234446582de5047050d"
@@ -384,6 +925,10 @@ version = "1.1.1+0"
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
+[[deps.Distributed]]
+deps = ["Random", "Serialization", "Sockets"]
+uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
@@ -397,6 +942,11 @@ deps = ["Statistics"]
 git-tree-sha1 = "05882d6995ae5c12bb5f36dd2ed3f61c98cbb172"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.8.5"
+
+[[deps.Format]]
+git-tree-sha1 = "9c68794ef81b08086aeb32eeaf33531668d5f5fc"
+uuid = "1fa38f19-a742-5d3f-a2b9-30dd87b9d5f8"
+version = "1.3.7"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -425,6 +975,33 @@ deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.4"
+
+[[deps.JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "4b415b6cccb9ab61fec78a621572c82ac7fa5776"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.9.35"
+
+[[deps.LaTeXStrings]]
+git-tree-sha1 = "50901ebc375ed41dbf8058da26f9de442febbbec"
+uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+version = "1.3.1"
+
+[[deps.Latexify]]
+deps = ["Format", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Requires"]
+git-tree-sha1 = "ce5f5621cac23a86011836badfedf664a612cee4"
+uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+version = "0.16.5"
+
+    [deps.Latexify.extensions]
+    DataFramesExt = "DataFrames"
+    SparseArraysExt = "SparseArrays"
+    SymEngineExt = "SymEngine"
+
+    [deps.Latexify.weakdeps]
+    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -460,10 +1037,22 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
+[[deps.LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "1ce1834f9644a8f7c011eb0592b7fd6c42c90653"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "3.0.1"
+
 [[deps.MIMEs]]
 git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
 version = "0.1.4"
+
+[[deps.MacroTools]]
+deps = ["Markdown", "Random"]
+git-tree-sha1 = "2fa9ee3e63fd3a4f7a9a4f4744a52f4856de82df"
+uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+version = "0.5.13"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -490,6 +1079,11 @@ deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
 version = "0.3.23+4"
 
+[[deps.OrderedCollections]]
+git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
+uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+version = "1.6.3"
+
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
 git-tree-sha1 = "8489905bcdbcfac64d1daa51ca07c0d8f0283821"
@@ -500,6 +1094,24 @@ version = "2.8.1"
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 version = "1.10.0"
+
+[[deps.PlutoHooks]]
+deps = ["InteractiveUtils", "Markdown", "UUIDs"]
+git-tree-sha1 = "072cdf20c9b0507fdd977d7d246d90030609674b"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0774"
+version = "0.0.5"
+
+[[deps.PlutoLinks]]
+deps = ["FileWatching", "InteractiveUtils", "Markdown", "PlutoHooks", "Revise", "UUIDs"]
+git-tree-sha1 = "8f5fa7056e6dcfb23ac5211de38e6c03f6367794"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0420"
+version = "0.1.6"
+
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "LaTeXStrings", "Latexify", "Markdown", "PlutoLinks", "PlutoUI", "Random"]
+git-tree-sha1 = "5d9ab1a4faf25a62bb9d07ef0003396ac258ef1c"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.2.15"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -535,6 +1147,18 @@ uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
+
+[[deps.Requires]]
+deps = ["UUIDs"]
+git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
+uuid = "ae029012-a4dd-5104-9daa-d747884805df"
+version = "1.3.0"
+
+[[deps.Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "REPL", "Requires", "UUIDs", "Unicode"]
+git-tree-sha1 = "7b7850bb94f75762d567834d7e9802fc22d62f9c"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.5.18"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -614,29 +1238,29 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
-# ╠═da6e322b-cf26-4803-9b34-19bf4c6f00bc
-# ╟─6c6e3068-406c-4c8a-b28c-ef1fa33cfe72
+# ╠═79eab523-738c-4469-81ab-cc0530733ac0
+# ╠═d91a9d5f-8050-4754-9bc0-f379621fe1bf
+# ╠═5905fc1b-3281-41b1-9ffc-10e173bc0759
+# ╟─ced691c0-298e-4f44-8f16-661f95ff760c
+# ╟─a15e0e4b-9cb8-4c29-bc16-b015672c0c29
+# ╠═6c6e3068-406c-4c8a-b28c-ef1fa33cfe72
 # ╟─4e6d9031-873e-49c1-9de5-79c88d186ecb
 # ╟─406811f6-0c24-4d75-b222-d581fe829d92
 # ╟─c0ab05eb-dcbb-42e9-8bca-32bcfb3c05ac
 # ╟─c95c7bef-f2bc-42fd-81d0-706c95b75eff
-# ╟─1ed8d6b2-47e2-4920-918e-da5124e6140e
-# ╠═84fb76fd-7f94-4b81-9b36-210df016a2c8
+# ╟─8a07fd51-e1d1-4cc4-bee8-ebde1026d073
+# ╟─830d93fe-e238-40ee-a477-348e1576db36
 # ╟─e2c49ef4-191b-423c-9342-5c254278d032
-# ╟─6dbfaa98-7bae-4b59-b4e9-f61248e5aa30
-# ╠═87af3a4e-2c03-48ac-9263-ed2d2cf00cc4
-# ╠═8d0b07f1-d1c6-4645-988d-3ab502bc1a1c
-# ╠═ea895254-2d2d-4d40-bf79-a1dafe5bc000
-# ╟─11198d9c-f7cf-4e7b-8926-c4254c721a03
-# ╠═b18bd2c2-56ad-4cf1-aaa8-b2b4936eebb1
-# ╠═b0c34d32-1490-4070-a90e-cc76cf8f0019
-# ╠═66e5e71c-85ac-45dd-9962-adb345907e45
-# ╠═463d85eb-ca9b-4285-8756-d57f1e125560
-# ╠═4f9433bc-f6d2-4717-acfa-91a149e59ef6
-# ╟─0ad902f4-dd65-4929-b533-db3532b0ae25
-# ╠═c92c9533-ad4d-4678-a8a5-22202200ca3d
+# ╟─cd4a41d8-22c8-4d0e-b8d2-065cd73ae268
+# ╟─a0fff9a7-b61e-443c-bc22-5e99595d8627
+# ╟─4f99e34a-01cb-457e-8e0c-246da1f3919d
+# ╟─e077f43f-dc44-4594-ad3a-2bd225f78709
+# ╟─35ea0a67-7ce8-4dad-a7b9-c326f265712d
+# ╟─e7dcaaa8-a66f-4a0a-8e19-f57190d19228
 # ╟─21b613ce-fa2b-4fd4-b1df-973e81d47c4a
 # ╟─10bb3dd2-9301-4717-8c6d-88d5673bf6ee
 # ╟─6501554b-2576-42b4-a8cf-d572231486ca
+# ╟─5b197c18-c8e1-4084-9731-316f7ca047ed
+# ╠═a6e61f23-0399-45ab-8759-54bb5febb689
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
