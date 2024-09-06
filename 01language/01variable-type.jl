@@ -22,7 +22,7 @@ html"""
 	</p>
 	<div style="text-align:center">
 		<p style="font-weight:bold; font-size: 35px; font-variant: small-caps; margin: 0px">
-			变量与类型
+			变量、值与基本类型
 		</p>
 		<p style="font-size: 30px; font-variant: small-caps; margin: 0px">
 			Weili Chen
@@ -31,15 +31,6 @@ html"""
 			GDUFS
 		</p>
 	</div>
-"""
-
-# ╔═╡ 5f8ae6a2-0bc0-4f50-a144-6c52281ce834
-md"""
-该教程粗略的摘录了 Julia 的基本语法，不熟悉 Julia 的同学可以先粗略地通读该教程，以大致熟悉基本操作。
-
-如果想要了解详细内容可以查阅[官方文档](https://docs.julialang.org/en/v1/)。
-
-如果想比较全面的学一下Julia, 可以看看Github上面的这种本[Julia编程基础](https://github.com/hyper0x/JuliaBasics/tree/master/book)
 """
 
 # ╔═╡ 09d1789b-243f-4008-a6a7-d25fe570abf7
@@ -789,6 +780,47 @@ md"""
 这些是Julia中字符串类型定义和常见操作的概述。Julia的字符串处理功能非常强大，支持复杂的Unicode操作，并且与其他编程语言相比，提供了一些独特的功能和操作符。
 """
 
+# ╔═╡ dd10a23b-02c4-44e2-93b6-4b81e3a4a50f
+md"""
+# Symbol类型
+
+`Symbol` 类型是 Julia 中的一个基本类型，用于**唯一地表示一个名称或标识符**。当你在 Julia 中创建一个 `Symbol` 时，实际上是在创建一个指向该名称字符串的引用。`Symbol` 的一个关键特性是它们是唯一的，即对于任何给定的字符串，Julia 中的 `Symbol` 都是唯一的。
+
+
+1. **Symbol的创建**：
+   `Symbol` 可以通过冒号 `:` 加上有效的标识符来创建。这种方式创建的`Symbol`在Julia中是唯一的。
+   ```julia
+   sym = :my_symbol  # 创建一个Symbol
+   typeof(sym)        # Symbol
+   ```
+
+2. **Symbol的作用**：
+   `Symbol` 主要用于表示变量名、函数名和其他标识符，它们在内部表示中作为编译时的常量。
+   ```julia
+   x = 10
+   eval(:(x = 20))  # 使用Symbol来动态赋值，此时变量x指向20
+   ```
+
+3. **Symbol与字符串的关系**：
+   - `Symbol` 和字符串看似相似，但它们在Julia中有本质的不同。
+   - `Symbol` 是不可变的，且在Julia的整个运行时期间是唯一的，而字符串是可变的。
+   - `Symbol` 通常用于内部表示和元编程，而字符串用于表示文本数据。
+
+   ```julia
+   str = "my_symbol"  # 字符串
+   sym = Symbol(str)   # 将字符串转换为Symbol
+   ```
+4. **Symbol的不可变性**：
+   由于 `Symbol` 的不可变性，它们在Julia中用于确保变量名和函数名的唯一性，这对于性能优化和内部表示至关重要。
+
+   ```julia
+   sym1 = :my_symbol
+   sym2 = :my_symbol
+   sym1 === sym2  # true，表明两个Symbol是同一个对象
+   ```
+
+"""
+
 # ╔═╡ 44ec34ec-804c-43ab-b6a2-be4d99617a9d
 begin
 	Temp = @ingredients "../chinese.jl" # provided by PlutoLinks.jl
@@ -1169,7 +1201,6 @@ version = "17.4.0+2"
 # ╠═e739b947-91ae-4163-9dc7-9588787383c4
 # ╟─6cbffbbc-af94-4b0c-836e-da4b2e2fb8d4
 # ╟─84b5832e-562c-4ebd-8e91-838a0f445a00
-# ╠═5f8ae6a2-0bc0-4f50-a144-6c52281ce834
 # ╟─09d1789b-243f-4008-a6a7-d25fe570abf7
 # ╟─e01b58a6-6950-4146-9357-3b38fd572309
 # ╟─c9103ca5-3c6e-43f5-b9c7-0626ea26d53d
@@ -1191,6 +1222,7 @@ version = "17.4.0+2"
 # ╟─3fb389f8-b091-4007-b23e-d6a83d8a7e7e
 # ╟─b84cb44d-0e2f-4b64-b312-6ee7725e61c7
 # ╟─87883261-7484-48a8-8ed5-d710318ac317
+# ╟─dd10a23b-02c4-44e2-93b6-4b81e3a4a50f
 # ╠═44ec34ec-804c-43ab-b6a2-be4d99617a9d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
