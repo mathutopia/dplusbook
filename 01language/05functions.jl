@@ -1,163 +1,179 @@
 ### A Pluto.jl notebook ###
-# v0.19.41
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ d113eb95-cb54-4f6d-b175-bd011e9e2571
-using PlutoUI
+# ╔═╡ ad023817-e8f8-4dc9-9e14-e2ee24a57b2f
+begin
+using PlutoUI,PlutoTeachingTools
+end;
 
-# ╔═╡ f75b03fb-ea9d-45db-9dde-a11787b9c667
+# ╔═╡ 1fc39b77-54ce-4f56-9100-3e259a64dc6e
 TableOfContents(title="目录")
+
+# ╔═╡ 88c10e46-5b8d-4844-b61a-090cad7b67d7
+present_button()
+
+# ╔═╡ 6b4549fe-1587-4a20-ba90-b153498564dc
+html"""
+	<p style="font-weight:bold; font-size: 60px;text-align:center">
+		Julia数据挖掘
+	</p>
+	<div style="text-align:center">
+		<p style="font-weight:bold; font-size: 35px; font-variant: small-caps; margin: 0px">
+			Julia简短教程—函数
+		</p>
+		<p style="font-size: 30px; font-variant: small-caps; margin: 0px">
+			Weili Chen
+		</p>
+		<p style="font-size: 20px;">
+			GDUFS
+		</p>
+	</div>
+"""
 
 # ╔═╡ 203e0107-b2cf-4311-800d-9e108fca8197
 md"""
-# 函数function
-在数学上， 一个函数是一个映射``f:x\rightarrow y``, 它将自变量x映射到因变量y。 在编程语言中， 函数的内涵更丰富。 简单来说， 一个函数就是一个功能function， 这个功能可以将一定的**输入**（可以没有），转化为**某种输出**。 
-
-输入也称为**参数列表**， 一般用括号形成的元组表示。 函数的输出是函数的返回值（return），默认情况下是函数的最后一条语句的计算结果。 
-
-函数编写是一门编程语言非常重要的内容， 有了上述流程控制的内容， 编写函数就容易多了。 在Julia中， 有多种定义函数的方法。
+在数学上， 一个函数是一个映射``f:x\rightarrow y``, 它将自变量x映射到因变量y。在编程语言中，函数（Function）是一段可以重复使用的代码，它接受输入参数，执行一系列操作，并产生输出结果。编程中的函数与数学中的函数概念相似，都描述了输入与输出之间的映射关系，但编程中的函数更加灵活和复杂，因为它们可以执行各种类型的计算，并且可以有副作用（如修改全局变量或与用户交互）。
 
 """
 
-# ╔═╡ 7c2dfe32-f55f-4ba3-b2a0-c30b63ccfa10
+# ╔═╡ 9ac2160e-96c5-4fe9-98cf-d9d92dc0204e
 md"""
-## 函数定义
-定义函数很简单， 用关键词`function`， 给出函数名， 参数列表， 和函数体（函数的计算过程）即可。例如：
+# 函数定义
+在 Julia 语言中，有几种定义函数的方法，每种方法都适用于不同的场景。以下是一些常见的定义函数的方法，以及相应的代码示例：
+
+"""
+
+# ╔═╡ fea66c84-6a4e-4c8e-a8b4-363333136682
+md"""
+## 基本方式
+在 Julia 中， 基本的函数定义遵循以下语法规范：
+
 ```julia
-function f(x,y)
- 	return x^2 + y^2
+function 函数名(参数1[::类型1], 参数2[::类型2], ...)
+    函数体
+    return 返回值
 end
 ```
-一个函数有四个组成部分： 1）关键词对function ... end； 2)函数名； 3） 参数列表; 4) 函数体。 其中， 函数名类似变量名， 只是一个名字。 参数列表由括号表示，如果没有参数， 括号也不能省略。
 
-上面的函数定义中， `f`是函数名。之后紧跟的是参数列表`(x,y)`。这里x和y是两个参数名。其下一行`x^2 + y^2`是函数体。 这个函数很简单， 只是返回这两个参数的平方和。`return`是表示返回的关键字， 当函数执行到return语句时， 不管其后是否还存在语句，它都会返回return语句后面的表达式的值。当然return可以省略。这是函数返回的时期最后一条语句的值。
+- **函数名**：是一个有效的 Julia 标识符（跟变量命名方式类似），用来标识函数。
+- **参数**：是传递给函数的变量，可以指定类型，也可以不指定。
+- **类型**：是 Julia 中的类型注解，用于指明参数的类型。**类型注解是可选的**。
+- **函数体**：是函数内部执行的代码块。
+- **return**：是 Julia 中的一个关键字，用于从函数返回一个值。**如果不使用 `return` 关键字，函数将返回函数体中最后一个表达式的值。**
 
-函数名和变量名几乎是一样的。 从命名规则上来说， 函数名跟变量名一样。 从作用上来说， 函数名也是“绑定”到了一个对象上， 只是这个对象是函数对象而已。 因此， 可以方便我的将函数重新命名。比如执行语句`g = f`之后， `g`也可以像函数名`f`一样使用。
 
-"""
-
-# ╔═╡ 184811a8-3326-43db-ae30-c85bd57b06e7
-md"""
-## 一句话函数
-上面的函数很简单（只有一句话）， 像上面那样去定义会显得啰嗦。这时候可以使用赋值直接定义。 赋值定义的方式是将函数名和参数列表写在赋值符号的左边。将函数体写在赋值符号的右边。如下所示：
-```julia
-f(par1, par2, ...) = 表达式
-```
-上面的函数很简单，用赋值方式定义，可以简单的写成：
+下面是一个具体的示例，定义了一个计算两个数相加的函数：
 
 ```julia
-julia> f(x,y) = x^2 + y^2;
+function add(x::Int, y::Int)
+    result = x + y
+    return result
+end
 ```
 
-赋值定义的函数写法类似于数学函数的写法， 比如二次函数$f(x) = 3x^2 + 2x + 1$， 写成一个Julia函数，几乎是一样的。注意在下面，数字和字母x之间可以没有乘号*， Julia自己能判断这种情况是省略乘号的乘法（是不是很数学？）， 因为变量不能以数字开头去命名。
-```
-f(x) = 3x^2 + 2x + 1
-```
-当然， 这里的“一句话”可以是复合语句， 比如：`begin ... end`包裹的多句话， 或者元组形式的多句话 `(语句1；语句2；语句3)`。
-"""
+在这个例子中：
 
-# ╔═╡ f6299698-0e82-4744-9929-fb43410148a0
-md"""
-## 函数调用
-函数调用很简单，只要给相应参数赋予相应的值即可。
-```julia
-julia> f(x,y) = x^2 + y^2;
+- `add` 是函数名。
+- `x` 和 `y` 是参数名，后面跟着的是类型注解 `::Int`，指明这两个参数应该接收整数类型的值。
+- `result = x + y` 是函数体中的一行代码，计算两个数的和。
+- `return result` 表示返回计算结果。虽然在这个例子中即使不写 `return` 也会返回 `result` 的值，但使用 `return` 可以更清晰地表示函数的返回值。
 
-julia> f(3,4) 
-25
-
-julia> g = f; #将g绑定到f绑定的对象， g也可以像函数f一样使用了
-
-julia> g(3,4)
-25
-
-```
-这里3和4两个值是按照**顺序**分别赋值给参数x和y。在Julia里面， 在函数调用过程中，值跟参数名之间的关系是： 参数名只是值的一个别名。也就是值被绑定在了参数名上（类似赋值）。因此如果一个值是可以修改的，那么在函数里对参数的修改会改变传递进来的值。
-
-```julia
-julia> f!(x) = (x[1] = 10;)
-
-julia> a = [1,2]
-[1,2]
-
-julia> f!(a);
-
-julia> a
-[10, 2]
-```
-上面的函数`f!`很简单，只是将参数的第一个下标对应的元素修改为10。当我们用一个向量a调用完这个函数之后，我们会发现向量a变了。所以函数对参数的修改反应到了被调用的值上。像这种会修改参数值的函数。在Julia语言里通常都用一个**惊叹号做结尾**, 以提醒这个函数会修改参数。
-"""
-
-# ╔═╡ bc894456-3d47-4285-9301-d536e1f2317e
-md"""
-!!! info "带！的函数"
+!!! tip "带！的函数"
 	在Julia中， 有一个关于函数的习惯，**如果一个函数会修改其输入参数，该函数名要以！结尾**。 反过来， 如果发现一个带惊叹号的函数， 那么这个函数会修改输入参数。
-""" 
 
-# ╔═╡ f6d3f96e-6c9a-4d80-ba93-0152e0a072b5
+"""
+
+# ╔═╡ f862d8e0-898f-438a-8720-81969d4a4f31
 md"""
-
-## 函数参数
-函数在定义时可以有多种类型的参数，如下所示的函数f， 就包括了两类参数。其中分号之前的是**位置参数**（包括a,m); 分号之后的是**关键字参数**（key1,key2）。
-
-在函数调用时，位置参数必须按照顺序依次赋予相应的值。而关键字参数在调用传递值时时，必须带有关键字。参数里`m=x1, key2 = xk`表示参数`m，key2`具有默认值， 也就是如果调用函数时不传递相应的参数值。那么参数的取值就是给出的默认值。**如果一个参数没有默认值，在调用时就必须赋值。**
+## 紧凑方式
+在 Julia 中，紧凑的函数定义方式是一种简洁的语法，允许你直接将函数体写成一个表达式，而不需要显式的 `return` 语句或 `function` 关键字。这种定义方式适用于那些只包含单个表达式的函数。紧凑的函数定义语法如下：
 
 ```julia
-function f(a,m=x1; key1, key2 = x2)
-#函数体省略
-end
-
+函数名(参数1, 参数2, ...) = 表达式
 ```
 
-下面都是上述函数的合理的调用方法
-```julia
-f(1, 2; key1 = 3, key2 = 4) # a=1,m=2，key1 = 3, key2=4;
-f(1, 2, key1 = 3, key2 = 4) # 同上， 位置参数和关键字参数之间用逗号分隔。
-f(1, 2, key2 = 4, key1 = 3) # 同上， 交换关键字参数的顺序无关紧要。
-f(1; key1 = 3) # a=1,m=x1， key1 = 3, key2=x2; m,key2都采用了默认值。
-```
-下面的调用方式都不对：
+- **函数名**：是函数的名称，遵循 Julia 的命名规则。
+- **参数**：是函数接受的变量名，可以有多个。
+- **表达式**：是计算并返回的单个表达式。函数的返回值是这个表达式的结果。
+
+假设我们需要定义一个函数来计算两个数的和， 用紧凑方式可以：
 
 ```julia
-f(key1 = 3, key2 = 4) # 没有给没有默认值的位置字参赋值。
-f(1, 2, key2 = 4) # 没有给没有默认值的关键字参数赋值。
-f(1, 2, 3, 4) #关键字参数赋值时必须要带参数的名字。
-f(a=1,m=2,key1=3, key2=4) # 位置参数赋值时，不需要参数名字。
+add(x, y) = x + y
 ```
 
+在这个例子中：
 
-总结一下： 在定义时， 函数参数有两种类型： 位置参数和关键字参数， 每一种又分**可选**和**必选**， 位置参数和关键字参数在定义时用**分号(；)分隔**, 分号之前的是位置参数，分号之后的是关键字参数。 在调用时， 位置参数必须按顺序传值， 不需要参数名。 关键字参数可以不按顺序， 但必须要参数名。 有默认值的参数可以不传值， 但没有默认值的参数必须要传值。 位置参数和关键字参数之间可以用逗号分隔。
+- `add` 是函数名。
+- `x` 和 `y` 是参数。
+- `x + y` 是表达式，它计算两个参数的和并作为函数的返回值。
 
 
 """
 
-# ╔═╡ d71ab211-8c83-444c-93d9-e3137f06ee69
+# ╔═╡ 210066a8-a284-4156-b227-4aa2775279ce
 md"""
-## 参数类型限定
-上面在定义函数时都没有限定参数应该是某种类型， 这也是Julia推荐的方式， 通常你不需要关注参数的类型。 但你也可以用类型注释符号(::)， 限制参数可以接受的值的类型。比如下面的。求斐波拉契数列的函数就把参数限定在了整数类型上（::Integer）。
+## 匿名函数（Anonymous Functions）
+
+在Julia编程语言中，匿名函数是一种无需命名即可定义的函数对象，它们可以被赋值给变量或直接作为参数传递给其他函数。匿名函数在Julia中通过使用`->`操作符来定义，提供了一种简洁且直观的语法。
+
+
+匿名函数的基本定义格式如下：
+
 ```julia
-julia> fib(n::Integer) = n ≤ 2 ? one(n) : fib(n-1) + fib(n-2)
-fib (generic function with 1 method)
-
-julia> fib(10)
-55
-
-julia> fib(3.5)
-MethodError: no method matching fib(::Float64)
-
-Closest candidates are:
-
-fib(!Matched::Integer)
-
+(parameters) -> expression
 ```
-当我们用整数调用这个函数的时候(比如10），他能够正确的返回相应的值。但如果不是一个整数， 这时候会出现方法错误的提示（MethodError)。
 
-通常我们不需要对参数的类型做限定， 除非：
- 1. 你是想获得Julia的多重分派能力（后面解释）
-2. 为了在输入参数类型不对时，返回更好的错误提示。
-3. 让你的代码更清晰（因为你明确告诉用户你需要的参数是什么类型。）。
+在上述语法中，`parameters`代表参数列表。当只有一个参数时，可以省略括号；但在没有参数的情况下，括号是必需的。由于匿名函数没有名称，它们不能被直接调用。通常，匿名函数作为值传递给需要函数参数的其他函数。例如，Julia中的`map`函数，其签名定义如下：
+
+```julia
+map(f, collection...) -> collection
+```
+
+`map`函数将函数`f`应用于容器中的每个元素，其中`f`必须是函数类型的参数。
+
+以下是为了批量计算1到5的所有整数的平方， 通过定义一个求平方的匿名函数作为第一个参数放进`map`里。
+
+```julia
+julia> map(x -> x^2, 1:5)
+5-element Array{Int64,1}:
+ 1
+ 4
+ 9
+ 16
+ 25
+```
+
+### 使用do...end块
+
+当匿名函数较为复杂时，可以使用`do...end`块来定义。以下是一个使用`do...end`块的示例：
+
+```julia
+julia> map(1:5) do x
+       x^2
+     end
+5-element Array{Int64,1}:
+ 1
+ 4
+ 9
+ 16
+ 25
+```
+
+
+匿名函数也可以被赋值给变量，从而可以通过变量名来调用。例如，以下代码将匿名函数赋值给`square`变量，之后可以像调用普通函数一样使用它：
+
+```julia
+julia> square = x -> x^2
+```
+
+现在，`square`变量可以作为一个函数被调用，例如`square(4)`将返回`16`。
+
+
+
 """
 
 # ╔═╡ e73ca1c6-a56d-4dfa-b745-0d29602ebd70
@@ -179,50 +195,177 @@ julia> f = +;
 julia> f(1,2,3)
 6
 ```
-除了短路求值运算符外（｜｜， ＆＆）， 其他的算术运算符（＋－＊/等），比较运算（<,>等）都是函数。 
+除了短路求值运算符外（`｜｜， ＆＆`）， 其他的算术运算符（`＋－＊/`等），比较运算（`<,>`等）都是函数。 
 """
 
-# ╔═╡ 2db36183-01f7-4b65-bde3-4b7de6cef342
+# ╔═╡ d8bc5b7a-5457-4bc7-a153-c417264f01a6
 md"""
-## 匿名函数
-Julia中的函数是**一等公民(first-class object)**： 这意味着， 它们可以被赋值给变量，并使用标准的函数调用语法从变量中调用。它们可以用作参数，也可以作为值返回。
+## Julia中函数是一等公民
+在编程语言理论中，**一等公民（First-class citizen）**是指在语言中被视为与其他数据类型（如整数、浮点数、字符串等）同等地位的实体。具体来说，一个数据类型如果满足以下条件，就可以被认为是语言中的一等公民：
 
-函数既然可以作为一个值， 那它不见得需要名字。没有名字的函数就叫**匿名函数**。可以使用如下的方式定义匿名函数。
+1. **可赋值给变量**：可以将其存储在变量中。
+2. **可作为参数传递**：可以作为函数调用的参数。
+3. **可作为返回值**：可以作为函数调用的结果返回。
+4. **可存储在数据结构中**：可以作为数组、列表、字典等数据结构的元素。
+
+Julia语言中的函数是一等公民，因为它们满足上述所有条件。以下是Julia中函数作为一等公民的几个具体体现：
+
+1. **可赋值给变量**：
+   Julia允许将函数赋值给变量，这意味着函数可以像其他数据类型一样被存储和操作。
+
+   ```julia
+   add = (x, y) -> x + y
+   ```
+
+   在这个例子中，`add`变量存储了一个匿名函数，该函数接受两个参数并返回它们的和。
+
+2. **可作为参数传递**：
+   Julia中的函数可以作为参数传递给其他函数。这使得高阶函数（接受函数作为参数的函数）成为可能。
+
+   ```julia
+   function apply_function(f, x)
+       return f(x)
+   end
+
+   result = apply_function(add, 3)  # 调用 apply_function 函数，传递 add 函数和参数 3
+   ```
+
+   在这个例子中，`apply_function`是一个高阶函数，它接受一个函数`f`和一个参数`x`，然后调用`f`。
+
+3. **可作为返回值**：
+   Julia中的函数可以作为其他函数的返回值。
+
+   ```julia
+   function create_adder(y)
+       return (x) -> x + y
+   end
+
+   add_five = create_adder(5)
+   ```
+
+   在这个例子中，`create_adder`函数返回一个新的匿名函数，该函数将一个参数与`y`相加。
+
+4. **可存储在数据结构中**：
+   Julia中的函数可以存储在数组、字典或其他数据结构中。
+
+   ```julia
+   functions = [(x) -> x^2, (x) -> x^3]
+   square = functions[1]
+   cube = functions[2]
+   ```
+
+Julia语言中的函数作为一等公民，提供了极大的灵活性和表达力。这种特性使得Julia非常适合进行函数式编程，同时也支持其他编程范式，如命令式和面向对象编程。通过将函数视为一等公民，Julia能够支持高阶函数、闭包、函数组合等高级编程技术，从而提供了强大的编程能力。
+
+""" |> tip |> aside
+
+# ╔═╡ 9c46ff2a-0298-46ef-8cbd-c5adba4e139e
+md"""
+# 函数参数
+
+## 参数分类
+
+在Julia语言中，函数参数有两种类型： **位置参数**和**关键字参数**， 每一种又分**可选**和**必选**。
+
+在函数定义时位置参数和关键字参数要用**分号(；)分隔**, 分号之前的是位置参数，分号之后的是关键字参数。 
+参数的分类及其调用时的赋值方式是该语言多态性和灵活性的重要体现。以下是Julia中函数参数的分类以及调用时如何赋值的详细说明和示例。
+
+#### 1. 位置参数（Positional Arguments）
+
+位置参数是函数定义中最基本的参数类型，调用函数时必须按照定义的顺序提供相应的值。
+
+**代码示例：**
 
 ```julia
-(parlist) -> 表达式
-```
-上面parlist是参数列表。如果只有一个参数， 括号可以省略。 匿名函数没有名字， 所以我们没法直接调用它。 一般匿名函数都是作为值， 传入一个需要函数参数的函数。 比如，在Julia中，有一个函数map， 其签名为
-```julia 
-map(f, c...) -> collection
-``` 
-该函数可以将一个函数`f`作用到容器中的每一个元素， 其第一个参数f就必须是函数。
-
-```julia
-julia> map(x -> x^2, 1:5)
-[1,4,9,16,25]
-```
-上面的代码中， `x->x^2`就是一个将`x`变为`x^2`的匿名函数。 当匿名函数可能很复杂时， 可以使用do...end形式。 下面的`do ... end`之间的部分是一个匿名函数， 函数的参数是x。 这个函数将作为map的第一个参数。这种写法也被称为do代码块。
-
-```julia  
-julia> map(1:5) do x
-    x^2
+function calculate_sum(a, b)
+    return a + b
 end
-[1,4,9,16,25]
 
+# 调用函数
+calculate_sum(5, 3)  # 输出：8
 ```
+
+在此示例中，`a` 和 `b` 是必选位置参数。调用函数时，必须按照定义顺序提供这两个参数的值。
+
+#### 2. 可选位置参数（Optional Positional Arguments）
+
+可选位置参数在定义时可以指定默认值，如果调用时未提供值，则自动采用默认值。
+
+**代码示例：**
+
+```julia
+function greet(name, message="Hello")
+    println("$message, $name!")
+end
+
+# 调用函数
+greet("Alice")          # 输出："Hello, Alice!"
+greet("Bob", "Hi")      # 输出："Hi, Bob!"
+```
+
+在这个示例中，`name` 是必选位置参数，而 `message` 是可选位置参数，其默认值为 `"Hello"`。
+
+#### 3. 关键字参数（Keyword Arguments）
+
+关键字参数在调用时必须使用参数名，这提供了更高的可读性和灵活性。
+
+**代码示例：**
+
+```julia
+function setup(options; host="localhost", port=8080)
+    println("Setting up server at $host:$port")
+end
+
+# 调用函数
+setup(; host="192.168.1.1", port=9000)  # 输出："Setting up server at 192.168.1.1:9000"
+```
+
+在此示例中，`host` 和 `port` 是关键字参数，它们都有默认值。调用时必须使用参数名来指定这些参数的值。
+
+#### 4. 必选关键字参数（Required Keyword Arguments）
+
+必选关键字参数在定义时没有默认值，调用时必须显式提供。
+
+**代码示例：**
+
+```julia
+function create_user(name; age)
+    println("Creating user $name who is $age years old.")
+end
+
+# 调用函数
+create_user("Alice"; age=30)  # 输出："Creating user Alice who is 30 years old."
+```
+
+在这个示例中，`name` 是位置参数，而 `age` 是必选关键字参数。
+
+#### 5. 可变参数（Varargs）
+
+可变参数允许函数接受任意数量的参数，这些参数在函数体内作为一个元组处理。
+
+**代码示例：**
+
+```julia
+function sum_numbers(nums...)
+    total = 0
+    for num in nums
+        total += num
+    end
+    return total
+end
+
+# 调用函数
+sum_numbers(1, 2, 3, 4)  # 输出：10
+```
+
+在此示例中，`nums...` 表示函数可以接收任意数量的数字，这些数字在函数体内作为一个元组处理。
+
 """
 
-# ╔═╡ 55775e04-eb2a-407e-b91e-f7141cac8357
+# ╔═╡ 165fc5e7-1f2f-4075-a622-fe6dc78ba33f
 md"""
-## ...操作符
-"""
+可变参数后面的三个点是Julia中一个特殊的操作符， 在Julia中有两种作用，可以参考[`...文档`](https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?)了解更多。在函数定义的场景中， 可以表示“卷入”操作：把多个参数卷到一个参数上（多个参数构成元组）。
 
-# ╔═╡ 41927f03-eb46-42a7-871a-abeda1777351
-md"""
-这个三点操作符是Julia中一个特殊的操作符， 在Julia中有两种作用，可以参考[`...文档`](https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?)了解更多。
-
-在函数定义的场景中， 可以表示“卷入”操作：把多个参数卷到一个参数上。比如在下面的函数定义， 只有一个参数，args，但args后面有三个点，他表示不管你输入多少个参数， 都将被卷入args这个变量里。当然这个变量会是一个元组，包含你给的所有参数。
+比如在下面的函数定义， 只有一个参数，args，但args后面有三个点，他表示不管你输入多少个参数， 都将被卷入args这个变量里。当然这个变量会是一个元组，包含你给的所有参数。
 ```julia
 
 function printargs(args...)
@@ -231,33 +374,156 @@ function printargs(args...)
             println("Arg #$i = $arg")
         end
 end
+
+julia> printargs(1, 2, 3,4)
+NTuple{4, Int64}
+Arg #1 = 1
+Arg #2 = 2
+Arg #3 = 3
+Arg #4 = 4
+```
+""" |> tip
+
+# ╔═╡ d71ab211-8c83-444c-93d9-e3137f06ee69
+md"""
+## 类型限定
+### 参数类型限定
+在Julia语言中，函数参数的类型通常不作硬性规定，这种设计哲学旨在提高代码的通用性和灵活性。然而，在某些特定情况下，通过使用类型注释符号（`::`），我们可以明确指定参数应当遵循的类型约束。以下是一个计算斐波那契数列的函数，它明确要求参数 `n` 必须为整数类型（`Integer`）：
+
+```julia
+function fib(n::Integer)
+    if n ≤ 2
+        return one(n)
+    else
+        return fib(n-1) + fib(n-2)
+    end
+end
+
+# 调用函数
+fib(10)  # 返回 55
+```
+
+在这个例子中，函数 `fib` 通过类型注解 `(n::Integer)` 明确指出参数 `n` 必须是整数类型。如果尝试传递一个非整数类型的参数，如浮点数，将引发 `MethodError`，提示没有匹配该类型参数的方法：
+
+```julia
+fib(3.5)  # 引发 MethodError
 ```
 """
 
-# ╔═╡ c0f33bf0-4cff-4654-85c8-a5b630590f7a
-function printargs(args...)
-        println(typeof(args))
-        for (i, arg) in enumerate(args)
-            println("Arg #$i = $arg")
-        end
-end
+# ╔═╡ 1eedc7b1-0bb9-4bc3-a889-8f75b9c2cda0
+md"""
+尽管Julia鼓励使用动态类型，但在以下情况下，对参数类型进行限定是有益的：
 
-# ╔═╡ ffbd139c-3c51-4b1f-bc57-714bfe4c645c
-printargs(1, 2, 3,4)
+1. **多重分派**：当你希望利用Julia的多重分派特性，为不同类型的参数提供不同的函数实现时。类型限定使得你可以定义一个函数的多个版本，每个版本针对不同的参数类型进行优化。
+
+2. **错误提示**：在参数类型不符时，类型限定可以提供更明确的错误提示，帮助调用者快速定位和解决问题。
+
+3. **代码清晰性**：通过明确指定参数类型，你为函数的使用者提供了清晰的指导，说明了函数期望的输入类型，从而增强了代码的可读性和可维护性。
+""" |> tip |> aside
+
+# ╔═╡ de36cffc-9b4e-4ab8-803f-bed68f85f77e
+md"""
+### 返回类型限定
+除了输入的参数可以限定类型， 在 Julia 中， 函数的返回值类型也可以通过在函数声明的末尾使用 `::` 符号后跟类型名称来限定。这种方式称为返回类型注解（return type annotation），它告诉 Julia 期望函数返回特定类型的值。
+
+假设我们有一个计算圆面积的函数，我们希望确保返回值类型为 `Float64`：
+
+```julia
+function area_of_circle(radius::Float64)::Float64
+    return π * radius^2
+end
+```
+
+在这个例子中，我们限定了 `radius` 参数和返回值都是 `Float64` 类型。这样做的好处是，即使传入的 `radius` 是一个整数，Julia 也会将其转换为 `Float64` 类型来计算，确保计算的准确性和返回值类型的一致性。
+
+返回类型注解的好处是：
+
+1. **类型安全**：通过明确指定返回类型，可以使得函数的行为更加明确和可预测，有助于避免类型错误。
+2. **性能优化**：Julia 编译器可以利用返回类型注解来优化代码，比如可以预先分配特定类型的内存空间，避免不必要的类型转换。
+3. **代码清晰**：为函数返回值指定类型可以作为文档的一部分，使得其他开发者更容易理解函数的预期行为。
+4. **错误检查**：如果在运行时函数返回了一个非注解类型的值，Julia 会抛出一个错误，这有助于及时发现和修复潜在的问题。
+"""
 
 # ╔═╡ 86920356-7427-4732-a6bb-64521e1cd425
 md"""
 三点操作符的另一个用法是展开， 通常，它可以将其前面的对象展开成一个一个元素组成的元组。这个用法经常出现在函数调用的场景， 我们给函数的参数，看上去可能只有一个， 但我们可以将这个参数展开， 得到多个值，分配给多个参数。
 """
 
-# ╔═╡ ca73a92d-86b7-488e-9de4-68aee3e30482
-tx = [1,2,3]
+# ╔═╡ c053e037-53b5-4024-b02b-1a4f8eea1951
+md"""
 
-# ╔═╡ e0218467-9f70-493e-a506-bb9314b40f47
-(tx...,)
+# 函数拼接与函数复合
+## 函数拼接
+在 Julia 中，操作符 `|>` 被称为“管道”操作符，它允许你将一个函数的输出直接作为另一个函数的输入（函数拼接到一起）。这种用法非常类似于 Unix 命令行中的管道，其中每个命令的输出成为下一个命令的输入。在 Julia 中，这使得代码更加简洁和易于阅读，特别是在处理数据流和链式操作时。
 
-# ╔═╡ 58acc135-3372-4232-8e44-77f0a9aca6a0
-printargs(tx...)
+下面两个例子演示了管道操作的使用方法。
+
+1. **数据处理**：
+   假设我们有一个数组，我们想要先对其进行排序，然后取最大值：
+
+   ```julia
+   function max_value(xs)
+       return maximum(xs)
+   end
+
+   array = [3, 1, 4, 1, 5, 9, 2, 6]
+   result = array |> sort |> max_value
+   ```
+
+   这里，数组首先被排序，然后 `max_value` 函数计算排序后数组的最大值。
+
+2. **字符串处理**：
+   对字符串进行转换，先转为大写，然后计算长度：
+
+   ```julia
+   function length_of_uppercase(s)
+       return length(uppercase(s))
+   end
+
+   greeting = "hello, world!"
+   length = greeting |> uppercase |> length_of_uppercase
+   ```
+
+   这里，字符串首先被转换为大写，然后计算其长度。
+
+
+
+## 函数复合
+类似函数拼接， 在Julia语言中，提供了复合操作符  `∘`  模拟数学中的复合函数。它将两个函数组合成一个新函数。新函数首先应用第二个函数，然后将结果传递给第一个函数。
+
+```julia
+f(x) = x + 3
+g(x) = x * 2
+h = f ∘ g
+```
+
+#### 具体案例
+1. **数学运算**：
+   ```julia
+   add_five(x) = x + 5
+   square(x) = x^2
+   process = add_five ∘ square
+   result = process(4)  # (4^2) + 5 = 21
+   ```
+
+2. **数据处理**：
+   ```julia
+   data_transform(x) = x / 100
+   scale_data(x) = x * 10
+   process_data = scale_data ∘ data_transform
+   result = process_data(50)  # (50 / 100) * 10 = 5
+   ```
+
+## 优点与注意事项
+**优点**：
+- **增加代码可读性**：管道操作符使得函数调用的顺序清晰，易于理解数据流。
+- **减少中间变量**：不需要为每个中间步骤定义变量，使得代码更加简洁。
+**注意事项**：
+- 确保每个函数的输出类型与下一个函数的输入类型兼容。
+- 管道操作符和复合操作符可以嵌套使用，但过多的嵌套可能会降低代码的可读性。
+
+函数的复合和管道拼接都是 Julia 中强大的功能，它们提供了一种优雅的方式来组合函数和处理数据。函数复合通过 `∘` 操作符实现，强调函数之间的直接组合，而管道拼接通过 `|>` 实现，强调数据流的直观表达。两者都有助于编写更简洁、更模块化的代码，但也需要开发者注意保持代码的清晰和可维护性。在实际使用中，选择哪种方式取决于具体的应用场景和个人偏好。
+"""
 
 # ╔═╡ 6f4dc741-7a17-4484-8b80-a58e28df7e86
 md"""
@@ -338,22 +604,31 @@ md"""
 	```
 """ 
 
+# ╔═╡ 9b58826e-0113-4af6-b583-55169e462a55
+begin
+	Temp = @ingredients "../chinese.jl" # provided by PlutoLinks.jl
+	PlutoTeachingTools.register_language!("chinese", Temp.PTTChinese.China())
+	set_language!( PlutoTeachingTools.get_language("chinese") )
+end;
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-PlutoUI = "~0.7.59"
+PlutoTeachingTools = "~0.2.15"
+PlutoUI = "~0.7.60"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.3"
+julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "6e7bcec4be6e95d1f85627422d78f10c0391f199"
+project_hash = "d237efa23f529a17c7ea590fcc4b3b8aec765612"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -371,6 +646,12 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
+[[deps.CodeTracking]]
+deps = ["InteractiveUtils", "UUIDs"]
+git-tree-sha1 = "7eee164f122511d3e4e1ebadb7956939ea7e1c77"
+uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
+version = "1.3.6"
+
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
 git-tree-sha1 = "b10d0b65641d57b8b4d5e234446582de5047050d"
@@ -386,6 +667,10 @@ version = "1.1.1+0"
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
+[[deps.Distributed]]
+deps = ["Random", "Serialization", "Sockets"]
+uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
@@ -399,6 +684,11 @@ deps = ["Statistics"]
 git-tree-sha1 = "05882d6995ae5c12bb5f36dd2ed3f61c98cbb172"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.8.5"
+
+[[deps.Format]]
+git-tree-sha1 = "9c68794ef81b08086aeb32eeaf33531668d5f5fc"
+uuid = "1fa38f19-a742-5d3f-a2b9-30dd87b9d5f8"
+version = "1.3.7"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -414,9 +704,9 @@ version = "0.9.5"
 
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
-git-tree-sha1 = "8b72179abc660bfab5e28472e019392b97d0985c"
+git-tree-sha1 = "b6d6bfdd7ce25b0f9b2f6b3dd56b2673a66c8770"
 uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
-version = "0.2.4"
+version = "0.2.5"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -427,6 +717,33 @@ deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.4"
+
+[[deps.JuliaInterpreter]]
+deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
+git-tree-sha1 = "4b415b6cccb9ab61fec78a621572c82ac7fa5776"
+uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
+version = "0.9.35"
+
+[[deps.LaTeXStrings]]
+git-tree-sha1 = "50901ebc375ed41dbf8058da26f9de442febbbec"
+uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+version = "1.3.1"
+
+[[deps.Latexify]]
+deps = ["Format", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Requires"]
+git-tree-sha1 = "ce5f5621cac23a86011836badfedf664a612cee4"
+uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+version = "0.16.5"
+
+    [deps.Latexify.extensions]
+    DataFramesExt = "DataFrames"
+    SparseArraysExt = "SparseArrays"
+    SymEngineExt = "SymEngine"
+
+    [deps.Latexify.weakdeps]
+    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -462,10 +779,22 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
+[[deps.LoweredCodeUtils]]
+deps = ["JuliaInterpreter"]
+git-tree-sha1 = "1ce1834f9644a8f7c011eb0592b7fd6c42c90653"
+uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
+version = "3.0.1"
+
 [[deps.MIMEs]]
 git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
 version = "0.1.4"
+
+[[deps.MacroTools]]
+deps = ["Markdown", "Random"]
+git-tree-sha1 = "2fa9ee3e63fd3a4f7a9a4f4744a52f4856de82df"
+uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+version = "0.5.13"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -492,6 +821,11 @@ deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
 version = "0.3.23+4"
 
+[[deps.OrderedCollections]]
+git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
+uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+version = "1.6.3"
+
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
 git-tree-sha1 = "8489905bcdbcfac64d1daa51ca07c0d8f0283821"
@@ -503,11 +837,29 @@ deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 version = "1.10.0"
 
+[[deps.PlutoHooks]]
+deps = ["InteractiveUtils", "Markdown", "UUIDs"]
+git-tree-sha1 = "072cdf20c9b0507fdd977d7d246d90030609674b"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0774"
+version = "0.0.5"
+
+[[deps.PlutoLinks]]
+deps = ["FileWatching", "InteractiveUtils", "Markdown", "PlutoHooks", "Revise", "UUIDs"]
+git-tree-sha1 = "8f5fa7056e6dcfb23ac5211de38e6c03f6367794"
+uuid = "0ff47ea0-7a50-410d-8455-4348d5de0420"
+version = "0.1.6"
+
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "LaTeXStrings", "Latexify", "Markdown", "PlutoLinks", "PlutoUI", "Random"]
+git-tree-sha1 = "5d9ab1a4faf25a62bb9d07ef0003396ac258ef1c"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.2.15"
+
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "ab55ee1510ad2af0ff674dbcced5e94921f867a9"
+git-tree-sha1 = "eba4810d5e6a01f612b948c9fa94f905b49087b0"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.59"
+version = "0.7.60"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -537,6 +889,18 @@ uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
+
+[[deps.Requires]]
+deps = ["UUIDs"]
+git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
+uuid = "ae029012-a4dd-5104-9daa-d747884805df"
+version = "1.3.0"
+
+[[deps.Revise]]
+deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "REPL", "Requires", "UUIDs", "Unicode"]
+git-tree-sha1 = "7b7850bb94f75762d567834d7e9802fc22d62f9c"
+uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
+version = "3.5.18"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -578,9 +942,9 @@ deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.Tricks]]
-git-tree-sha1 = "eae1bb484cd63b36999ee58be2de6c178105112f"
+git-tree-sha1 = "7822b97e99a1672bfb1b49b668a6d46d58d8cbcb"
 uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
-version = "0.1.8"
+version = "0.1.9"
 
 [[deps.URIs]]
 git-tree-sha1 = "67db6cc7b3821e19ebe75791a9dd19c9b1188f2b"
@@ -616,25 +980,24 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
-# ╠═d113eb95-cb54-4f6d-b175-bd011e9e2571
-# ╠═f75b03fb-ea9d-45db-9dde-a11787b9c667
+# ╠═ad023817-e8f8-4dc9-9e14-e2ee24a57b2f
+# ╠═1fc39b77-54ce-4f56-9100-3e259a64dc6e
+# ╠═88c10e46-5b8d-4844-b61a-090cad7b67d7
+# ╟─6b4549fe-1587-4a20-ba90-b153498564dc
 # ╟─203e0107-b2cf-4311-800d-9e108fca8197
-# ╟─7c2dfe32-f55f-4ba3-b2a0-c30b63ccfa10
-# ╟─184811a8-3326-43db-ae30-c85bd57b06e7
-# ╟─f6299698-0e82-4744-9929-fb43410148a0
-# ╟─bc894456-3d47-4285-9301-d536e1f2317e
-# ╟─f6d3f96e-6c9a-4d80-ba93-0152e0a072b5
-# ╟─d71ab211-8c83-444c-93d9-e3137f06ee69
+# ╟─9ac2160e-96c5-4fe9-98cf-d9d92dc0204e
+# ╟─fea66c84-6a4e-4c8e-a8b4-363333136682
+# ╟─f862d8e0-898f-438a-8720-81969d4a4f31
+# ╟─210066a8-a284-4156-b227-4aa2775279ce
 # ╟─e73ca1c6-a56d-4dfa-b745-0d29602ebd70
-# ╟─2db36183-01f7-4b65-bde3-4b7de6cef342
-# ╠═55775e04-eb2a-407e-b91e-f7141cac8357
-# ╟─41927f03-eb46-42a7-871a-abeda1777351
-# ╠═c0f33bf0-4cff-4654-85c8-a5b630590f7a
-# ╠═ffbd139c-3c51-4b1f-bc57-714bfe4c645c
+# ╟─d8bc5b7a-5457-4bc7-a153-c417264f01a6
+# ╟─9c46ff2a-0298-46ef-8cbd-c5adba4e139e
+# ╟─165fc5e7-1f2f-4075-a622-fe6dc78ba33f
+# ╟─d71ab211-8c83-444c-93d9-e3137f06ee69
+# ╟─1eedc7b1-0bb9-4bc3-a889-8f75b9c2cda0
+# ╟─de36cffc-9b4e-4ab8-803f-bed68f85f77e
 # ╟─86920356-7427-4732-a6bb-64521e1cd425
-# ╠═ca73a92d-86b7-488e-9de4-68aee3e30482
-# ╠═e0218467-9f70-493e-a506-bb9314b40f47
-# ╠═58acc135-3372-4232-8e44-77f0a9aca6a0
+# ╟─c053e037-53b5-4024-b02b-1a4f8eea1951
 # ╟─6f4dc741-7a17-4484-8b80-a58e28df7e86
 # ╟─ea520cd1-2970-4dbf-a5b7-6a3d01c83e06
 # ╟─062b1e41-0040-4e85-91bb-27edde8179da
@@ -645,5 +1008,6 @@ version = "17.4.0+2"
 # ╟─43be64e3-94cb-4cb5-acfa-fddb04891bd0
 # ╟─c6d1efb7-8429-4ce7-8745-877f40d6bca3
 # ╟─db7d57e6-9eff-488c-8b74-ccb513715c21
+# ╠═9b58826e-0113-4af6-b583-55169e462a55
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

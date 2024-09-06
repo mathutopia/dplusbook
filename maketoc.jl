@@ -1,10 +1,12 @@
-
+using Markdown
 function generate_html_index()
     # 读取 CSS 文件内容
     css_content = read("styles.css", String)
 
     # 读取简介文件内容
     intro_content = read("intro.md", String)
+    intro_content = Markdown.parse(intro_content)
+    intro_content = Markdown.html(intro_content)
 
     # 获取当前目录下的所有项
     items = readdir(".")

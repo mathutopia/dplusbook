@@ -18,11 +18,11 @@ present_button()
 # ╔═╡ 1520aa51-41a7-401b-9944-0f7cf44f64c0
 html"""
 	<p style="font-weight:bold; font-size: 60px;text-align:center">
-		Julia数据挖掘
+		Julia简短教程
 	</p>
 	<div style="text-align:center">
 		<p style="font-weight:bold; font-size: 35px; font-variant: small-caps; margin: 0px">
-			Julia简短教程
+			运算符与表达式
 		</p>
 		<p style="font-size: 30px; font-variant: small-caps; margin: 0px">
 			Weili Chen
@@ -33,9 +33,26 @@ html"""
 	</div>
 """
 
-# ╔═╡ 2a8c33ba-c2b0-4986-ac63-f9d588d153cc
+# ╔═╡ b45bea93-b175-4c58-a76b-29edb3b6e56b
 md"""
-# 运算符与表达式
+<h3>简介:</h3>
+
+这是一份Julia做数据挖掘的一些笔记，参考资料。后续会不断修改。
+
+第一部分Julia教程粗略的摘录了 Julia 的基本语法，不熟悉 Julia 的同学可以先粗略地通读该教程，以大致熟悉基本操作。
+
+如果想要了解详细内容可以查阅[官方文档](https://docs.julialang.org/en/v1/)。
+
+如果想比较全面的学一下Julia, 可以看看Github上面的这种本[Julia编程基础](https://github.com/hyper0x/JuliaBasics/tree/master/book)
+
+"""
+
+# ╔═╡ 85b21e86-0211-4e07-b250-db19a75687f4
+md"""
+在Julia语言中，运算符是执行操作的特殊符号，而表达式则是由运算符、操作数（变量、字面量等）和函数调用组成的代码片段，它们共同构成了程序中用于计算和数据处理的基本单元。Julia提供了丰富的内置运算符，支持常见的数学运算、逻辑判断、位操作等，同时也允许开发者定义自己的运算符，以适应特定的计算需求。
+
+表达式是Julia中实现算法和逻辑的核心。它们可以是简单的，如对两个数字的加法，也可以是复杂的，如嵌套函数调用和条件判断。在本章中，我们将简单总结Julia语言中的运算符和表达式，包括它们的类型、用法和实际例子。
+
 """
 
 # ╔═╡ 62b3aba7-c9d9-4df8-b7a3-1638d5a14225
@@ -293,6 +310,9 @@ md"""
 10. 赋值运算符（`=`, `+=`, `-=`, `*=`, `/=`, `\=`, `÷=`, `%=`, `^=`, `&=`, `|=`, `⊻=`, `>>>=`, `>>=`, `<<=`）
 
 """
+
+# ╔═╡ fc8fa999-b45d-44d0-92dd-af00a0974018
+
 
 # ╔═╡ dc7e7157-3ce8-4bda-abdd-fc6f475b54ed
 begin
@@ -674,13 +694,15 @@ version = "17.4.0+2"
 # ╠═52171e5d-55b4-42f2-80bf-ca2456262b61
 # ╟─7dfe8c00-83c0-463a-8bc7-10dafd514b55
 # ╟─1520aa51-41a7-401b-9944-0f7cf44f64c0
-# ╟─2a8c33ba-c2b0-4986-ac63-f9d588d153cc
+# ╠═b45bea93-b175-4c58-a76b-29edb3b6e56b
+# ╟─85b21e86-0211-4e07-b250-db19a75687f4
 # ╟─62b3aba7-c9d9-4df8-b7a3-1638d5a14225
 # ╟─9585e9b8-0e96-46b6-89f6-65841691c1b7
 # ╟─7d49a10c-4f05-45c6-97a7-8c914bebe3a1
 # ╟─591fecdc-7a73-4fc3-a2a1-7d83ad8c5d19
 # ╟─c3f0d6a1-acff-4781-a4df-c00f475069f1
 # ╟─e2d1e847-bf0e-4e80-af4e-2e84fd3fa4a9
+# ╠═fc8fa999-b45d-44d0-92dd-af00a0974018
 # ╠═dc7e7157-3ce8-4bda-abdd-fc6f475b54ed
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

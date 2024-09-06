@@ -7,6 +7,24 @@ using InteractiveUtils
 # ╔═╡ 54d48980-e50b-11ee-01ff-833f16130cde
 using CSV,DataFrames,PlutoUI,ScientificTypes,CategoricalArrays
 
+# ╔═╡ c56f10e8-a112-40be-a6ab-8f1f7d16e6ee
+html"""
+	<p style="font-weight:bold; font-size: 60px;text-align:center">
+		Julia数据分析与挖掘
+	</p>
+	<div style="text-align:center">
+		<p style="font-weight:bold; font-size: 35px; font-variant: small-caps; margin: 0px">
+			数据读写
+		</p>
+		<p style="font-size: 30px; font-variant: small-caps; margin: 0px">
+			Weili Chen
+		</p>
+		<p style="font-size: 20px;">
+			GDUFS
+		</p>
+	</div>
+"""
+
 # ╔═╡ f67e2900-c720-44cb-8988-800f6b8e5389
 TableOfContents(title="目录")
 
@@ -492,7 +510,7 @@ ScientificTypes = "~3.0.2"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.2"
+julia_version = "1.10.4"
 manifest_format = "2.0"
 project_hash = "7116913cea764426299d1b215f8768436addef40"
 
@@ -567,7 +585,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.1.0+0"
+version = "1.1.1+0"
 
 [[deps.Crayons]]
 git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
@@ -1113,6 +1131,7 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
+# ╠═c56f10e8-a112-40be-a6ab-8f1f7d16e6ee
 # ╠═54d48980-e50b-11ee-01ff-833f16130cde
 # ╠═f67e2900-c720-44cb-8988-800f6b8e5389
 # ╟─f750d333-b7c0-4925-b224-582a488d36e9
