@@ -1,856 +1,442 @@
 ### A Pluto.jl notebook ###
-# v0.19.45
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ bff5f244-66de-11ef-1248-cf917f18d161
-using PlutoTeachingTools, PlutoUI, Tidier
+# ╔═╡ a6682dc0-501e-4a1a-aa26-2f4ff59cc8cb
+begin
+using PlutoUI,PlutoTeachingTools
+end;
 
-# ╔═╡ d213aa7d-abff-4948-8ad8-52409716b1c7
+# ╔═╡ 71a16c11-c1e4-45f2-9e39-35632757f443
+using Tidier
+
+# ╔═╡ 2a640a85-5c23-438d-b262-4287ab372d7c
+TableOfContents(title="目录")
+
+# ╔═╡ 74ece9db-0a67-4b5c-9693-482c1bca0ba0
+present_button()
+
+# ╔═╡ 245a7c5f-fd01-4386-93c9-e39a4b6c26ab
+html"""
+	<p style="font-weight:bold; font-size: 60px;text-align:center">
+		Julia数据分析与挖掘
+	</p>
+	<div style="text-align:center">
+		<p style="font-weight:bold; font-size: 35px; font-variant: small-caps; margin: 0px">
+			数据分析案例
+		</p>
+		<p style="font-size: 30px; font-variant: small-caps; margin: 0px">
+			Weili Chen
+		</p>
+		<p style="font-size: 20px;">
+			GDUFS
+		</p>
+	</div>
+"""
+
+# ╔═╡ b93c8356-1125-4c78-96d6-d65d008824cf
+train = read_csv("../data/train1w.csv")
+
+# ╔═╡ b4b21281-2ee7-4b91-b33d-1e1138215f66
+md"""
+## 字段含义
+了解字段含义含义是简单的， 可以直接从文档中去了解， 我将其罗列如下：
+
+以下是您提供的内容转化为Markdown表格的格式：
+
+| Field | Description |
+| --- | --- |
+| id | 为贷款清单分配的唯一信用证标识 |
+| loanAmnt | 贷款金额 |
+| term | 贷款期限（年） |
+| interestRate | 贷款利率 |
+| installment | 分期付款金额 |
+| grade | 贷款等级 |
+| subGrade | 贷款等级之子级 |
+| employmentTitle | 就业职称 |
+| employmentLength | 就业年限（年） |
+| homeOwnership | 借款人在登记时提供的房屋所有权状况 |
+| annualIncome | 年收入 |
+| verificationStatus | 验证状态 |
+| issueDate | 贷款发放的月份 |
+| purpose | 借款人在贷款申请时的贷款用途类别 |
+| postCode | 借款人在贷款申请中提供的邮政编码的前3位数字 |
+| regionCode | 地区编码 |
+| dti | 债务收入比 |
+| delinquency_2years | 借款人过去2年信用档案中逾期30天以上的违约事件数 |
+| ficoRangeLow | 借款人在贷款发放时的fico所属的下限范围 |
+| ficoRangeHigh | 借款人在贷款发放时的fico所属的上限范围 |
+| openAcc | 借款人信用档案中未结信用额度的数量 |
+| pubRec | 贬损公共记录的数量 |
+| pubRecBankruptcies | 公开记录清除的数量 |
+| revolBal | 信贷周转余额合计 |
+| revolUtil | 循环额度利用率，或借款人使用的相对于所有可用循环信贷的信贷金额 |
+| totalAcc | 借款人信用档案中当前的信用额度总数 |
+| initialListStatus | 贷款的初始列表状态 |
+| applicationType | 表明贷款是个人申请还是与两个共同借款人的联合申请 |
+| earliestCreditLine | 借款人最早报告的信用额度开立的月份 |
+| title | 借款人提供的贷款名称 |
+| policyCode | 公开可用的策略_代码=1新产品不公开可用的策略_代码=2 |
+| n系列匿名特征 | 匿名特征n0-n14，为一些贷款人行为计数特征的处理 |
+
+
+请注意，表格中的 "n系列匿名特征" 描述可能需要进一步明确化，因为它提到了 "n0-n14" 但并未详细说明每个特征。如果需要为每个特征提供单独的行，请提供更多具体信息。
+
+"""
+
+# ╔═╡ 9e29a561-bda1-46c2-a66f-4bde0b91731a
+md"""
+# 总结了解数据
+## 查看数据的行列数
+"""
+
+# ╔═╡ 0e783777-c3bd-41c2-b130-48eba04c2758
+size(train)
+
+# ╔═╡ 6fd78a3a-63ea-4832-800f-dfc4a718fade
+md"""
+## 查看列名
+"""
+
+# ╔═╡ 3e6e4a80-4931-4efa-9a2d-cb070b708ae7
+names(train)
+
+# ╔═╡ 13678a02-3664-4a52-83b3-7bf93b2f34bd
+md"""
+## 偷瞄数据
+"""
+
+# ╔═╡ 8fa82962-7e00-4551-be97-9c7e883cd420
+@glimpse(train)
+
+# ╔═╡ a89e1f03-b9bf-468e-ba42-2983405dd5f7
+md"""
+在across环境中，所有的函数都不会被向量化。 所以， 在上面的匿名函数中， `ismissing`后面有一个`点号`， 以确保缺失值判断施加到向量的每一个元素上， 最后统计一下为`true`的数量。
+""" |> danger |> aside
+
+# ╔═╡ bd89c6b8-6af6-4660-bbdb-a48aef9191f6
+md"""
+## 谁有缺失值？
+下面的代码统计了一下每一列的缺失值数量， 你可以转化为比例。
+"""
+
+# ╔═╡ d67ee67a-ebc1-4a49-9bb0-59b59c210428
+@chain train begin
+	@summarise(across(everything(), x->count(ismissing.(x))))
+	@pivot_longer(everything())
+	@arrange(desc(value))
+	@filter(value>0) #只要有缺失值的
+end
+
+# ╔═╡ e7e24ee0-cd32-46cf-a8b9-cade27de9d8c
+md"""
+## 唯一值情况
+下面是每一列的唯一值情况
+"""
+
+# ╔═╡ cdb4e909-5f17-42a7-91f0-f10fc05d36a2
+md"""
+通常， 一个字段如何唯一值太多（大多数样本都不一样），或者唯一值太少（大部分样本都相同）都是不理想的。 请计算每一个数字和字符列中有多少唯一值?将结果按升序排列。
+""" |> question_box
+
+# ╔═╡ dcd068bc-e09a-49c3-9ab0-ffbd7304c0dc
+@chain train begin 
+	@summarise(across(everything(),(length ∘ unique )))
+	@pivot_longer(everything())
+	@arrange(value)
+	@filter(value <10) 
+end
+
+# ╔═╡ 2142e85a-8a0d-49c3-ac20-6fb92fb99026
+md"""
+## 找出唯一值较少的列名
+"""
+
+# ╔═╡ 8b6e2a66-358d-4903-a3cc-a627cf76c421
+@select(train, where(x -> is_number(x) && length(unique(x)) < 10)) |> names
+
+# ╔═╡ 71872557-459a-4f17-8865-ed5b22a0715c
+md"""
+# 数据的属性
+数据的属性通常指的是数据所具有的特征和性质，它们定义了数据的类型、格式以及如何被处理和分析。 数据可以按具体的特征和性质分为如下4类。
+
+1. **名义属性（Nominal Attributes）**：
+   - 描述：没有固定顺序的定性属性。
+   - 例子：性别（男、女），国家（中国、美国、加拿大）。
+
+2. **序数属性（Ordinal Attributes）**：
+   - 描述：定性属性值之间存在逻辑顺序或等级。
+   - 例子：教育水平（高中、学士、硕士、博士），满意度评分（不满意、一般、满意、非常满意）。
+
+3. **区间属性（Interval Attributes）**：
+   - 描述：定量属性，其中值之间的差异是重要的，但没有真正的零点。
+   - 例子：年份（2021、2022、2023），温度（摄氏或华氏）。
+
+4. **比率属性（Ratio Attributes）**：
+   - 描述：定量属性，存在真正的零点，可以进行比率和百分比计算。
+   - 例子：身高（160厘米），体重（50公斤）。
+
+了解数据的属性对于选择合适的数据分析方法和数据预处理技术至关重要。例如，连续属性可能需要归一化处理， 区间属性通常需要被分割成不同的区间或桶（binning），以便进行分类或分组分析。而序数和名义属性可能需要编码转换才能被机器学习算法有效处理。
+
+
+从存储的角度看： 名义属性和序数属性是类别变量， 可能以整数或字符串的形式存在，但在建模中，一般要转化为整数。 区间属性和比率属性一般以数值形式存在（可能是整数也可能是浮点数）。
+
+
+"""
+
+# ╔═╡ a63ad11b-d2d5-4dba-8856-532130b6eeb7
+md"""
+分析上面数据的类型？
+""" |> question_box
+
+# ╔═╡ a9a8705e-de36-4175-af86-4c064a108b69
+md"""
+以下是一个参考分类。 
+
+| 字段              | 描述                               | 类别       | 理由                                                         |
+|-------------------|-----------------------------------|------------|--------------------------------------------------------------|
+| id                | 唯一信用证标识                     | 名义属性   | 标识符通常作为分类标签使用                                   |
+| loanAmnt          | 贷款金额                           | 比率属性   | 具体的金额数值，存在绝对的零点                              |
+| term              | 贷款期限（年）                     | 序数属性   | 表示时间跨度的顺序，但每个单位并非等距                       |
+| interestRate       | 贷款利率                           | 区间属性   | 利率之间的差异有意义，但没有绝对的零点                       |
+| installment        | 分期付款金额                       | 比率属性   | 具体的付款金额，存在绝对的零点                              |
+| grade             | 贷款等级                           | 名义属性   | 贷款等级作为分类标识                                        |
+| subGrade          | 贷款等级之子级                     | 名义属性   | 子等级作为进一步的分类标识                                  |
+| employmentTitle   | 就业职称                            | 名义属性   | 职称作为职业的分类标识                                      |
+| employmentLength  | 就业年限（年）                     | 序数属性   | 表示就业经验的顺序，但年数不等距                              |
+| homeOwnership      | 房屋所有权状况                     | 名义属性   | 表示所有权的分类                                             |
+| annualIncome      | 年收入                             | 比率属性   | 具体的收入数值，存在绝对的零点                              |
+| verificationStatus | 验证状态                         | 名义属性   | 表示验证的分类                                               |
+| issueDate         | 贷款发放的月份                     | 名义属性   | 发放月份作为时间标识                                        |
+| purpose           | 贷款用途类别                     | 名义属性   | 用途类别作为分类标识                                        |
+| postCode          | 邮政编码的前3位数字               | 名义属性   | 编码作为地区分类标识                                        |
+| regionCode        | 地区编码                           | 名义属性   | 编码作为地区分类标识                                        |
+| dti               | 债务收入比                         | 比率属性   | 比率，存在绝对的零点                                        |
+| delinquency_2years| 逾期30天以上的违约事件数           | 比率属性   | 表示违约频率，存在绝对的零点                              |
+| ficoRangeLow      | FICO得分下限范围                 | 区间属性   | 得分范围，没有绝对的零点                                   |
+| ficoRangeHigh     | FICO得分上限范围                 | 区间属性   | 得分范围，没有绝对的零点                                   |
+| openAcc           | 未结信用额度的数量                | 比率属性   | 具体的信用额度数量，存在绝对的零点                         |
+| pubRec            | 贬损公共记录的数量                | 比率属性   | 记录的数量，存在绝对的零点                                |
+| pubRecBankruptcies | 公开记录清除的数量              | 比率属性   | 清除记录的数量，存在绝对的零点                            |
+| revolBal          | 信贷周转余额合计                  | 比率属性   | 具体的余额数值，存在绝对的零点                            |
+| revolUtil         | 循环额度利用率                     | 比率属性   | 利用率，存在绝对的零点                                    |
+| totalAcc          | 信用档案中当前的信用额度总数      | 比率属性   | 具体的信用额度数量，存在绝对的零点                         |
+| initialListStatus  | 贷款的初始列表状态                | 名义属性   | 状态作为分类标识                                          |
+| applicationType    | 贷款申请类型                       | 名义属性   | 申请类型作为分类标识                                      |
+| earliestCreditLine | 信用额度开立的月份            | 名义属性   | 开立月份作为时间标识                                      |
+| title             | 贷款名称                           | 名义属性   | 名称用作标识                                               |
+| policyCode        | 策略代码                           | 名义属性   | 代码用作策略的分类标识                                      |
+| n系列匿名特征     | 贷款人行为计数特征                | 比率属性   | 通常为数值特征，存在绝对的零点                            |
+
+
+这个表格提供了每个字段的分类和理由，帮助理解为什么每个字段被归入特定的数据类型类别。
+
+""" |> answer_box
+
+# ╔═╡ 824eca64-ff9a-48af-99dc-a832196313e0
+md"""
+## 存储结构分析
+一般字段会存储为数值（number）或字符串（string）， 可以通过函数`is_number`， `is_string`找到所有的相应的列。
+
+比如下面的代码找到了所有的文本列
+"""
+
+# ╔═╡ 3b9e3dc1-bf16-49b8-bf94-a9af8d808993
+@select(train, where(is_string)) |> names
+
+# ╔═╡ 45e168f6-1b2b-4560-b33d-c66999456a41
+@select(train, where(is_number)) |> names
+
+# ╔═╡ 2c4dbc16-4b22-4ae7-9ba0-26ffba47c9cb
+md"""
+那么， 除了数字和文本外， 数据集中还有其他类型的字段吗？ 下面的代码告诉我们，还有一列日期数据。
+"""
+
+# ╔═╡ ab80de21-15c0-48a6-b286-e2dbf1b9ead3
+md"""
+## 特征分类
+"""
+
+# ╔═╡ 84a645f6-8c85-45b9-8e03-3b381e26511e
+md"""
+### 数值特征
+被存储为数据的特征， 其中，如果唯一值比10个都少， 那么将当成是被存储为数字的类别特征。
+"""
+
+# ╔═╡ ba548abf-44f3-41ad-a2a2-28286a3efeb2
+num_feats = @select(train, where(is_number)) |> names # 数值特征
+
+# ╔═╡ 677003c9-7911-4ba2-8f3d-baabf2bf7341
+num_cate_feats = @select(train, where(x-> is_number(x) && length(unique(x)) <= 10)) |> names 
+
+# ╔═╡ dfc21c69-5fba-4f28-91fe-fa445be7abd8
+num_cont_feats = @select(train, where(x-> is_number(x) && length(unique(x)) > 10)) |> names 
+
+# ╔═╡ 733e3e89-338c-4153-ba6d-fbda29d6fd72
+md"""
+### 文本特征
+文本特征一般当成类别变量， 但也要看看类别的数量。
+"""
+
+# ╔═╡ bde3b6d2-710b-4923-b51d-5f175101ad78
+str_feats = @select(train, where(is_string)) |> names 
+
+# ╔═╡ 1143968f-f555-475d-ba84-fbd8dc1cb86b
+@chain train begin
+@select(!!str_feats)
+end
+
+# ╔═╡ 462f22ac-dd09-4f90-87c3-00c151b4d5f7
+md"""
+`earliesCreditLine`被识别为字符串，但本质上应该是时间。
+"""
+
+# ╔═╡ 3e1db291-c953-4c9c-bc4c-4e75fd666bf8
+## 其他特征
+oth_feats = @select(train, where(x -> !is_string(x) && !is_number(x))) |> names 
+
+# ╔═╡ 10118f78-9de4-4380-b676-5a391bfa4678
+md"""
+确认一下， 没有遗漏特征了吧。
+"""
+
+# ╔═╡ efddd6f7-b827-4386-94f7-a15300b1aac2
+length(num_feats) + length(str_feats) + length(oth_feats) == size(train)[2]
+
+# ╔═╡ 540000a0-ac62-4167-96ab-cad3e91b7ee2
+md"""
+# 特征分析
+## 文本特征分析
+主要看看文本特征有哪些取值， 分布情况怎么样
+"""
+
+# ╔═╡ dbe477c4-e13b-4799-9d20-2d4159e9ba77
+@count(train, employmentLength)
+
+# ╔═╡ 897afd4b-6b8b-4f31-ae6a-2381333f3027
+@chain train begin 
+	@drop_missing
+	@mutate(isDefault = as_string(isDefault))
+ggplot(_, @aes(y = employmentLength,color=isDefault)) + geom_bar(position="dodge")
+end
+
+# ╔═╡ c02c487c-c519-4146-a859-c73313f9f863
+md"""
+这里，因为isDefault是整数，默认会在画图时当成数值型变量， 转化为字符串，从而可以作为分类变量。
+""" |> aside
+
+# ╔═╡ d93ad6f5-8b34-4964-9864-616bfa8b2573
+@chain train begin 
+	@drop_missing
+	@mutate(isDefault = as_string(isDefault))
+ggplot(_, @aes(y = grade,color=isDefault)) + geom_bar(position="dodge")
+end
+
+# ╔═╡ b155e99a-4666-49bc-98dc-59c07d926df5
+md"""
+如果数据中包含缺失值， 画图会出现问题。因为图形不知道如何处理缺失值， 所以这里采用`drop_missing`。 不过， 也可以在进行了缺失值处理之后，再来画图（ 比如，把缺失值设置为某个值）。
+""" |> aside
+
+# ╔═╡ c0ee1401-8658-4aed-a474-492aa014222d
+md"""
+这两个文本特征， 很明显应该属于有序特征， 但因为其保存为文本，所以无法体现顺序。 不过， 再转化为顺序之前， 我们可以先看看， 顺序是否跟目标存在关系。 
+"""
+
+# ╔═╡ dd09ae38-5d2e-4e7e-a814-9bc306baac70
+md"""
+统计不同grade的欺诈比率
+""" |> question_box
+
+# ╔═╡ 37a32896-b5b9-47a2-ad6f-3364d7361c86
+md"""
+$(@chain train begin
+	@group_by(grade)
+	@summarise(ratio = mean(isDefault))
+	@arrange(ratio)
+end )
+""" |> answer_box
+
+# ╔═╡ 953f5f18-c84a-4998-bd65-0d2408490848
+md"""
+## 数值特征分析
+"""
+
+# ╔═╡ 9dbcdbc6-419f-428e-9c33-8cf2f2d3cecb
+md"""
+### 数值特征中的类别特征
+"""
+
+# ╔═╡ 1e7c3d5b-ace7-484c-8f1e-f118498aac3a
+num_cate_feats
+
+# ╔═╡ 27f2447c-72ff-4753-9cd6-29b346b0e3e2
+@count(train, term)
+
+# ╔═╡ 0e6ac6fb-79c4-4516-8978-a420e85ed56e
+@chain train begin 
+	@drop_missing
+	@mutate(isDefault = as_string(isDefault), term = as_string(term))
+ggplot(_, @aes(y = term,color=isDefault)) + geom_bar(position="dodge")
+end
+
+# ╔═╡ 359f830b-c0c4-4371-a71f-797177826820
+md"""
+### 数值特征中的连续变量
+
+"""
+
+# ╔═╡ 386888a4-7bfd-48b3-b2ef-05a0ebb6cca1
+df = @chain train begin 
+@drop_missing
+@select(!!num_cont_feats)
+@pivot_longer(-id)
+end
+
+# ╔═╡ 6fe079c1-43f5-43be-9917-8263f15313ac
+write_csv(df, "test.csv")
+
+# ╔═╡ 4a597e85-5842-4897-a6c8-cde8828d786c
+ggplot(df, @aes(x=value)) + geom_density() + facet_wrap(facets=:variable)
+
+# ╔═╡ a7a97950-0334-49f7-95d9-e0441707539e
+df.variable
+
+# ╔═╡ 5b844a24-e2a5-48e9-b8a1-4901e1d4c587
+function test( a,b; c,d)
+ return (a,b,c,d)
+end	 
+
+# ╔═╡ 02f8a464-3663-4d78-9a96-92700110f788
+test(c=3,2, d=4, 1)
+
+# ╔═╡ ba89cd1a-f309-484c-a135-6cd25f1a600e
+df_wide = DataFrame(id = [1, 2], A = [1, 3], B = [2, 4])
+
+# ╔═╡ afa6f38a-6e16-49b9-afd3-956f33e786ce
+@pivot_longer(df_wide, A:B, names_to = "letter", values_to = "number")
+
+# ╔═╡ a6370b72-fc88-4a0a-9e26-13b259a4fee2
+d = Dict(:sdf => "ok")
+
+# ╔═╡ 18fb0ab9-5822-470b-aa20-cebc671a8fdf
+@pivot_longer(df_wide, A:B, names_to = letter, values_to = number)
+
+# ╔═╡ 908031d1-2ca0-4438-8917-2f283d5130e6
+@pivot_longer(df_wide, A:B, names_to = "letter")
+
+# ╔═╡ 4a0a127e-5119-493b-a8dd-93501507cd02
+md"""
+因为数据是数值类型， 在画图前， 转化为字符串有利于避免一些画图问题。
+""" |> aside
+
+# ╔═╡ 300ef793-02e1-49f0-8f5f-b55b9e54d940
 begin
 	Temp = @ingredients "../chinese.jl" # provided by PlutoLinks.jl
 	PlutoTeachingTools.register_language!("chinese", Temp.PTTChinese.China())
 	set_language!( PlutoTeachingTools.get_language("chinese") )
 end;
-
-# ╔═╡ 07a14ec5-db26-49b3-969b-665dbb000b00
-TableOfContents()
-
-# ╔═╡ c78e130c-d018-4107-b967-f916c9165270
-md"""
-# 数据读取
-根据提供的文本内容，以下是 `read_csv` 和 `write_csv` 函数的函数原型及其参数含义：
-
-### read_csv 函数
-```julia
-read_csv(file; delim=',', col_names=true, skip=0, n_max=Inf, comment=nothing, missingstring="", col_select=nothing, escape_double=true, col_types=nothing, num_threads=1)
-```
-
-#### 参数含义
-- `file`: 路径或文件路径的向量，或者是指向文件或URL的路径。
-- `delim`: 字段分隔符，默认为 ',' 。
-- `col_names`: 是否使用第一行作为列名。可以是 true、false 或字符串数组，默认为 true。
-- `skip`: 在读取数据前要跳过的行数，默认为 0。
-- `n_max`: 要读取的最大行数，默认为 Inf（读取所有行）。
-- `comment`: 表示要忽略的注释行的字符，默认为 nothing。
-- `missingstring`: 表示缺失值的字符串，默认为 "" 。
-- `col_select`: 可选的符号或字符串向量，用于选择要加载的列，默认为 nothing。
-- `escape_double`: 将连续的双引号解释为单个引号，默认为 true。
-- `col_types`: 可选的列类型说明，默认为 nothing（类型被推断）。
-- `num_threads`: 用于并行执行的线程数，默认为 1。
-
-### write_csv 函数
-```julia
-writecsv(x, file; missingstring="", append=false, colnames=true, eol="\n", num_threads=Threads.nthreads())
-```
-
-#### 参数含义
-- `x`: 要写入的 DataFrame 。
-- `file`: 输出文件的路径。
-- `missingstring`: 表示缺失值的字符串，默认为空字符串。
-- `append`: 是否追加到现有文件，默认为 false。
-- `col_names`: 是否将列名作为第一行写入，默认为 true。
-- `eol`: 行结束字符，默认为 "\n"。
-- `num_threads`: 用于写入的线程数，默认为可用线程数。
-
-这些函数用于读取和写入分隔文件（CSV、TSV或自定义分隔符）到 DataFrame 或从 DataFrame 到文件。
-
-更多其他格式数据的读写，请参考[**这里.**](https://tidierorg.github.io/TidierFiles.jl/latest/)
-"""
-
-# ╔═╡ fd1ab803-27b9-4bba-af52-5c60d0e1232f
-train = read_csv("../data/trainbx.csv")
-
-# ╔═╡ 713b2a77-0b70-4d85-9943-630fc9f59bdc
-@chain train begin
-@glimpse 
-end
-
-# ╔═╡ adadce64-12df-4650-995a-5b0aa8bf8bb6
-names(train)
-
-# ╔═╡ 97e6a277-8968-438f-8b90-ffce9855a5cb
-md"""
-# 数据分析常见操作
-## 0 数据分析**流**
-数据分析常常是多个步骤，先后链接在一起的。 这写步骤当然可以用管道操作符链接到一起。不过， Julia中有一个非常漂亮的宏`@chain`。 `@chain` 是 Julia 语言中 `Chain.jl` 包提供的宏(Tidier.jl中重新导出， 所有可以直接使用。），它允许用户以一种比 Julia 原生管道操作符 `|>` 更为方便的语法来处理数据流。这个宏使得数据可以通过一系列转换表达式进行传递，同时保持代码的清晰和简洁。
-
-### 基本用法
-
-```julia
-@chain df begin
-  @drop_missing
-  @filter(id>6)
-  @group_by(group)
-  @summarize(total_age = sum(age))
-end
-```
-
-
-在这个例子中，`df` 是一个数据框（DataFrame），`@chain` 宏将 `df` 通过一系列 `TidierData.jl` 的函数调用进行处理：
-
-1. `@drop_missing`：去除缺失值。
-2. `@filter(:id => >(6), _)`：过滤出 `id` 大于 6 的行。
-3. `@group_by(group)`：根据 `group` 列的值进行分组。
-4. `@summarize(total_age = sum(age))`：对每个分组的 `age` 列求和，并将结果列命名为 `total_age`。
-
-`@chain`的核心作用就是将后面的表达式拼在一起， begin...end包裹的多个表达式也不例外。然后将上一个表达式计算的结果，放进下一个表达式的第一个参数（所以，通常第一个表达式应该是用于提供数据的变量名）。 比如下面的两个代码是等价的。
-```julia
-@chain a b c d e f
-
-@chain a begin
-    b
-    c
-    d
-end e f
-```
-"""
-
-# ╔═╡ 24c0519e-9ec8-4f11-bdd7-34b7e47b58a3
-md"""
-
-## 1. **选择列（变量）**
-在数据分析中，列操作是至关重要的.在 `TidierData.jl` 中通常使用 `@select` 宏进行列选择。其基本用法如下：
-
-**选择列**
-  - `@select(df, exprs...)`
-  - 参数：`df` (DataFrame), `exprs...` (列选择表达式)
-  - 作用：选择指定的列。
-
-其中， 列选择表达式有多种写法， 以下是一些常见的列选择表达式写法：
-
-
-1. **选择单个列**:
-   ```julia
-   @select(df, a)
-   ```
-其中，a是数据框df中的列名。不需要引号和冒号。以下类似。
-2. **选择多个列**:
-   ```julia
-   @select(df, a, b, c)
-   ```
-
-3. **选择列范围**:
-   ```julia
-   @select(df, 1:3)  # 选择第1到第3列
-   @select(df, a:c)  # 选择从列a到列c
-   ```
-
-4. **排除列**:
-   ```julia
-   @select(df, -a)  # 排除列a
-   @select(df, -(1:2))  # 排除第1和第2列
-   ```
-
-5. **选择列的子集**（使用帮助函数）:
-   ```julia
-   @select(df, starts_with("a"), ends_with("b"))
-   @select(df, contains("c"))
-   @select(df, matches(r"^d"))
-   ```
-
-6. **排除列的子集**（结合 `-` 操作符）:
-   ```julia
-   @select(df, -starts_with("a"))
-   @select(df, -contains("c"))
-   ```
-
-7. **选择所有列**:
-   ```julia
-   @select(df, everything())
-   ```
-
-8. **选择剩余的列**（在已选择某些列之后）:
-   ```julia
-   @select(df, a, everything())
-   ```
-
-9. **条件选择列**（使用 `where` 函数）:
-   ```julia
-   @select(df, where(is_number))
-   ```
-
-10. **使用运算符选择列**:
-    - `+` 运算符用于保留列（相当于列的并集）:
-      ```julia
-      @select(df, a:c, +d:f)
-      ```
-    - `!` 运算符用于排除列（相当于列的差集）:
-      ```julia
-      @select(df, !(a:c))
-      ```
-
-
-
-11. **使用 `across` 函数**对选定的列应用函数:
-    ```julia
-    @select(df, a, across(b:c, sqrt))
-    ```
- 
-12. **重命名列**（在 `@select` 中同时选择和重命名列）: 
-    ```julia
-    @select(df, old_name = new_name)
-    ```
-
-"""
-
-# ╔═╡ 7fcc1672-3a18-4330-92bf-d76b1296a98b
-@chain train begin 
-@select(a = case_when(age > 45 => "o", 
-					   age >30 =>  "m", 
-					   true => "y"))
-end
-
-# ╔═╡ 032ab34f-0553-4c7b-bb85-f190e7ec3d43
-case_when
-
-# ╔═╡ e84759f7-7b85-4ed9-9e14-5c5c5d465dc4
-md"""
-## 2. **过滤行（样本）**
-#### 过滤
-过滤一般针对的是行的操作， 主要是找到想要的样本。其采用的函数是：`@filter(df, exprs...)`， 其中
- 参数：`df` (DataFrame), `exprs...` (过滤条件)。其作用是根据条件过滤行。
-
-以下是 `@filter` 的几种用法和相应的使用案例：
-
-1. **基本过滤**：使用条件表达式来筛选行，仅保留满足条件的行。
-
-```julia
-@chain movies begin
-  @filter(Budget >= mean(skipmissing(Budget)))
-  @select(Title, Budget)
-  @slice(1:5)
-end
-```
-
-在这个例子中，我们筛选了那些预算超过平均预算的电影，并选择了标题和预算两列，最后仅显示前5行。
-
-2. **使用逻辑与（AND）条件**：有三种方式可以指定“与”条件：
-
-   - 使用短路运算符 `&&`，这是首选方法，因为它仅在第一个表达式为真时才评估第二个表达式。
-
-   ```julia
-   @chain movies begin
-     @filter(Votes >= 200 && Rating >= 8)
-     @select(Title, Votes, Rating)
-     @slice(1:5)
-   end
-   ```
-
-   - 使用位运算符 `&`，注意需要用括号包围比较表达式，以确保整体表达式正确评估。
-
-   ```julia
-   @chain movies begin
-     @filter((Votes >= 200) & (Rating >= 8))
-     @select(Title, Votes, Rating)
-     @slice(1:5)
-   end
-   ```
-
-   - 使用逗号分隔表达式，这与 tidyverse 中的 `filter()` 函数的行为类似。
-
-   ```julia
-   @chain movies begin
-     @filter(Votes >= 200, Rating >= 8)
-     @select(Title, Votes, Rating)
-     @slice(1:5)
-   end
-   ```
-
-3. **使用 `in` 运算符**：可以筛选属于特定元组或向量的行。
-
-   - 使用元组：
-
-   ```julia
-   @chain movies begin
-     @filter(Title in ("101 Dalmatians", "102 Dalmatians"))
-     @select(1:5)
-   end
-   ```
-
-   - 使用向量：
-
-   ```julia
-   @chain movies begin
-     @filter(Title in ["101 Dalmatians", "102 Dalmatians"])
-     @select(1:5)
-   end
-   ```
-
-4. **结合 `row_number()` 函数**：可以用来获取前N行数据，类似于 `@slice` 的功能。
-
-```julia
-@chain movies begin
-  @filter(row_number() <= 5)
-  @select(1:5)
-end
-```
-
-在这个例子中，我们使用 `row_number()` 来筛选前5行数据。
-
-
-
-"""
-
-# ╔═╡ 35e94f0e-312a-4c41-9db8-8a3a0aa768f0
-md"""
-如果你需要实现“或（OR）”条件，可以通过逻辑运算符 `||` 来实现, 这类似与`&&`。此外，你可以通过结合使用 Julia 的其他功能来实现“或”逻辑。以下是一个可能的方法：
-
-**使用 `@mutate` 和 `@filter` 结合实现“或”条件**：
-   你可以先使用 `@mutate` 创建一个新列，该列基于你想要测试的“或”条件，然后使用 `@filter` 根据这个新列进行筛选。
-
-例如，假设我们想要筛选出电影评分大于 7 或者投票数超过 1000 的电影：
-
-```julia
-@chain movies begin
-  @mutate(Condition = Rating > 7 || Votes > 1000)
-  @filter(Condition)
-  @select(Title, Rating, Votes)
-end
-```
-
-在这个例子中，`@mutate` 用于创建一个名为 `Condition` 的新列，该列对于每一行都是根据 `Rating > 7 || Votes > 1000` 这个条件计算得到的布尔值。然后，`@filter` 用于筛选出 `Condition` 为 `true` 的行。
-
-这种方法虽然不是直接使用“或”条件，但可以达到类似的效果，并且是在使用 TidierData.jl 进行数据筛选时处理“或”条件的一种有效方式。
-"""
-
-# ╔═╡ 1d89963a-a7f1-4bcb-b802-4d4ca5c41116
-md"""
-#### 排序
-`@arrange` 函数用于对数据框中的行进行排序。它可以接收多个列名作为参数，根据这些列的值对数据进行排序。默认情况下，排序是升序的，但可以通过使用 `desc()` 函数来指定某些列进行降序排序。
-##### @arrange 函数
-
-```julia
-@arrange(data, columns...)
-```
-**参数说明**
-- `data`: 需要排序的数据框（DataFrame）。
-- `columns`: 一个或多个列名，用于指定排序的列。默认情况下，这些列将按照升序排列。如果需要降序排列，可以使用 `desc()` 函数包裹列名。
-
-##### 1. 按多个列升序排序
-```julia
-@chain movies begin
-  @arrange(Year, Rating)
-  @select(1:5)
-  @slice(1:5)
-end
-```
-这个例子中，`@arrange` 函数按照 `Year` 和 `Rating` 列进行升序排序，并选择了排序后的前5行。
-
-##### 2. 混合排序（升序和降序）
-```julia
-@chain movies begin
-  @arrange(Year, desc(Rating))
-  @select(1:5)
-  @slice(1:5)
-end
-```
-在这个例子中，`@arrange` 函数首先按照 `Year` 列升序排序，然后按照 `Rating` 列降序排序。同样，它选择了排序后的前5行。
-
-##### 3. 处理分组数据框
-如果 `@arrange` 应用于一个 `GroupedDataFrame`，它将临时取消分组，执行排序，然后根据原始分组变量重新分组。
-
-```julia
-@chain grouped_data begin
-  @arrange(Year, desc(Rating))
-end
-```
-这个例子中，`@arrange` 函数用于排序一个分组后的数据框，先按 `Year` 升序，然后按 `Rating` 降序。
-
-"""
-
-# ╔═╡ 54c6998d-3ac7-4269-b90d-0f8c6bba2bf4
-md"""
-## 3 **重塑数据**
-
-以下是涉及数据重塑的函数，包括它们的签名、参数含义、作用以及示例：
-
-1. **@pivot_longer**
-   - 签名: `@pivot_longer(df, cols, [names_to], [values_to])`
-   - 参数含义:
-     - `df`: 要重塑的DataFrame。
-     - `cols`: 要转换成长的格式的列。
-     - `names_to`: 新创建的列的名称，用于存储原DataFrame的列名，默认为"variable"。
-     - `values_to`: 新创建的列的名称，用于存储原DataFrame的单元格值，默认为"value"。
-   - 作用: 将DataFrame从宽格式转换为长格式。
-   - 示例:
-     ```julia
-     julia> df_wide = DataFrame(id = [1, 2], A = [1, 3], B = [2, 4]);
-     julia> @pivot_longer(df_wide, A:B)
-     ```
- $(Foldable("为什么",md"The `CSV.read` function has lots of useful optional arguments."))
-2. **@pivot_wider**
-   - 签名: `@pivot_wider(df, names_from, values_from, [values_fill])`
-   - 参数含义:
-     - `df`: 要重塑的DataFrame。
-     - `names_from`: 用于获取输出列名的列名。
-     - `values_from`: 用于获取单元格值的列名。
-     - `values_fill`: 用于替换缺失的名称/值组合的值，默认为缺失值。
-   - 作用: 将DataFrame从长格式转换为宽格式。
-   - 示例:
-     ```julia
-     julia> df_long = DataFrame(id = [1, 1, 2, 2], variable = ["A", "B", "A", "B"], value = [1, 2, 3, 4]);
-     julia> @pivot_wider(df_long, names_from = variable, values_from = value)
-     ```
-
-3. **@unnest_longer**
-   - 签名: `@unnest_longer(df, columns, [indices_include], [keep_empty])`
-   - 参数含义:
-     - `df`: 包含数组列的DataFrame。
-     - `columns`: 要展开的列。
-     - `indices_include`: 是否为每个展开的列添加索引列，默认为false。
-     - `keep_empty`: 是否保留包含空数组的行，默认为false。
-   - 作用: 将DataFrame中的数组列展开成长格式。
-   - 示例:
-     ```julia
-     julia> df = DataFrame(a=[1, 2], b=[[1, 2], [3, 4]], c=[[5, 6], [7, 8]]);
-     julia> @unnest_longer(df, 2)
-     ```
-
-4. **@unnest_wider**
-   - 签名: `@unnest_wider(df, columns, [names_sep])`
-   - 参数含义:
-     - `df`: 包含数组或字典列的DataFrame。
-     - `columns`: 要展开的列。
-     - `names_sep`: 创建新列名时使用的分隔符，默认无分隔符。
-   - 作用: 将DataFrame中的数组或字典列展开为宽格式。
-   - 示例:
-     ```julia
-     julia> df = DataFrame(name = ["Zaki", "Farida"], attributes = [Dict("age" => 25, "city" => "New York"), Dict("age" => 30, "city" => "Los Angeles")]);
-     julia> @unnest_wider(df, attributes)
-     ```
-
-这些函数是TidierData.jl包中用于数据重塑的工具，允许用户通过指定的参数将数据集从一种格式转换到另一种格式，以适应不同的分析需求。
-
-
-"""
-
-# ╔═╡ 671245a6-05b4-43c9-b3c4-265470de1869
-md"""
-长宽转换的理解。
-
-对于一份表格型的数据， 如图所示， 我们可以将蓝色部分字段想象成y坐标， 绿色字段标题可以看成是一个是x坐标。这样， 表格中的所有数据（黄色部分）都可以由这两个坐标定义出来。 当我们做款变长操作时， 相当于将每一个数据写成`(y,x， data)`的形式。
-
-[![pivot.png](https://free2.yunpng.top/2024/09/09/66de762b1a94a.png)](https://free2.yunpng.top/2024/09/09/66de762b1a94a.png)
-"""
-
-# ╔═╡ 023e6abb-2e96-4538-bc85-0b2102611bf2
-md"""
-## **4 计算和转换列**
-计算和转换列是数据处理中的关键步骤，在TidierData.jl中用于计算和转换列的函数是：`@mutate`和`@transmute`。@transmute： 用于更新和选择列，实际上是@select的别名。
-
-"""
-
-# ╔═╡ dc2cbb2d-3331-4e3b-8027-04d6e857d0c7
-md"""
-### @mutate
-在TidierData.jl中，`@mutate`是一个功能强大的宏，用于在数据框（DataFrame）中创建新列或更新现有列。以下是一些常见的`@mutate`用法示例：
-
-1. **添加新列**：
-   ```julia
-   @chain data begin
-     @mutate(New_Column = some_function(existing_column))
-   end
-   ```
-   这里，`New_Column` 是新创建的列，`some_function` 是一个函数，用于对现有的 `existing_column` 进行计算。
-
-2. **更新现有列**：
-   ```julia
-   @chain data begin
-     @mutate(existing_column = existing_column * 2)
-   end
-   ```
-   在这个例子中，`existing_column` 是一个已经存在的列，我们通过将其值乘以2来更新它。
-
-3. **条件更新**：
-   ```julia
-   @chain data begin
-     @mutate(Updated_Column = ifelse(condition, value_if_true, value_if_false))
-   end
-   ```
-   使用条件语句来更新列。如果 `condition` 为真，则 `Updated_Column` 将被设置为 `value_if_true`，否则设置为 `value_if_false`。
-
-4. **使用窗口函数**：
-   ```julia
-   @chain data begin
-     @mutate(Running_Total = cumsum(existing_column))
-   end
-   ```
-   这里使用累积求和（`cumsum`）作为窗口函数来创建一个运行总和列。
-
-5. **结合`group_by`使用**：
-   ```julia
-   @chain data begin
-     @group_by(Group_Column)
-     @mutate(Group_Mean = mean(existing_column))
-   end
-   ```
-   先按 `Group_Column` 进行分组，然后在每个组内计算 `existing_column` 的均值。
-
-6. **使用`row_number`和`n`**：
-   ```julia
-   @chain data begin
-     @mutate(Row_Number = row_number(), Total_Rows = n())
-   end
-   ```
-   创建一个新列 `Row_Number` 来表示每行的行号，以及一个 `Total_Rows` 列来表示数据框的总行数。
-
-7. **转换数据类型**：
-   ```julia
-   @chain data begin
-     @mutate(Converted_Column = as_integer(existing_column))
-   end
-   ```
-   将 `existing_column` 转换为整数类型。类似的转换函数还有`as_string`,`as_float`.
-
-8. **使用`across`进行多列操作**：
-   ```julia
-   @chain data begin
-     @mutate(across((Column1, Column2), (fn1, fn2)))
-   end
-   ```
-   对多个列应用不同的函数。`Column1` 应用 `fn1`，`Column2` 应用 `fn2`。
-
-这些示例展示了`@mutate`在不同场景下的灵活性和强大功能，使其成为数据框操作中不可或缺的工具。
-"""
-
-# ╔═╡ f1ee32d8-9cc8-4463-945a-4d693c780c78
-Foldable("什么是窗口函数？",md"""
-窗口函数（Window Functions）在数据处理和分析中扮演着重要的角色，尤其是在需要对数据进行分区或分组处理时。窗口函数允许你对数据集中的一组行执行计算，而不会将这些行聚合成单个输出行，这与传统的聚合函数（如 `sum`、`mean`、`count` 等）不同。窗口函数在处理时间序列数据、财务数据、排名和比较等场景中特别有用。
-
-窗口函数之所以被称为“窗口”，是因为它们可以看作是在数据集上滑动一个“窗口”，并在这个窗口内对数据进行计算。这个窗口可以是整个数据集，也可以是数据集中的一部分，如基于某些条件划分的子集。窗口函数在计算时会考虑窗口内的所有行，但每个行的计算结果只与该行及其在窗口内的相对位置有关。
-
-
-**窗口函数的作用**
-
-1. **分区计算**：在不改变数据集结构的前提下，对数据的子集进行计算。
-2. **保留数据行**：与传统聚合函数不同，窗口函数不会减少数据行数。
-3. **灵活的计算**：可以对数据进行复杂的计算，如移动平均、累积总和等。
-4. **排名和分区**：可以计算数据在组内的排名或分区。
-
-**常见的窗口函数**
-
-1. **`row_number()`**：
-   - 返回当前行在其分区内的行号。
-
-2. **`ntile(n)`**：
-   - 将分区内的行分为 `n` 个大致相等的组，并为每行分配一个组号。
-
-3. **`lead(column, n)`**：
-   - 返回当前行后面第 `n` 行的 `column` 值。
-
-4. **`lag(column, n)`**：
-   - 返回当前行前面第 `n` 行的 `column` 值。
-
-5. **`cumsum()`**：
-   - 计算从分区开头到当前行的 `column` 的累积总和。
-
-
-6. **`sum()`**：
-    - 计算分区内 `column` 的总和。
-
-7. **`mean()`**：
-    - 计算分区内 `column` 的平均值。
-
-8. **`median()`**：
-    - 计算分区内 `column` 的中位数。
-
-9. **`std()`**：
-    - 计算分区内 `column` 的标准差。
-
-10. **`var()`**：
-    - 计算分区内 `column` 的方差。
-11. **`~ordinalrank`**
-    - 计算分区内 `column` 的ordinal排名（"1234" ranking)）。前面的~表示不要向量化。类似的函数还有，competerank("1224" ranking)、denserank("1223" ranking)。这些函数的使用需要`using StatsBase`
-
-窗口函数是数据分析中非常强大的工具，它们提供了一种在保持数据行结构的同时进行复杂计算的方法。
-""")
-
-# ╔═╡ 25289d9b-79a9-4eff-af74-d6403e2de077
-md"""
-
-## 5. **汇总和聚合**
-数据的汇总（Summarization）和聚合（Aggregation）是指将大量数据中的信息进行简化和概括的过程，以便更容易地理解数据集中的关键信息和趋势。
-
-假设有一个包含成千上万条电影记录的数据集，每条记录包含电影的名称、预算、票房收入、上映年份等信息。通过数据汇总和聚合，我们可以：
-- **计算总票房**：对所有电影的票房收入进行求和。
-- **平均预算**：计算所有电影的平均预算。
-- **按年份分组**：将电影按上映年份分组，并计算每组的总票房和平均票房。
-
-通过这些操作，我们可以快速了解电影行业的整体趋势，如哪些年份的电影票房表现最好，或者电影预算与票房收入之间的关系等。
-
-### 用法：
-- **基本用法**：可以直接使用 `@summarize` 对整个数据集进行汇总，例如计算数据集中电影的数量或平均预算。
-
-```julia
-@chain movies begin
-    @summarize(n = n())
-end
-```
-
-- **计算特定统计量**：可以结合其他函数如 `median`、`mean` 等来计算数据集的中位数、平均值等统计量。
-
-```julia
-@chain movies begin
-  @mutate(Budget = Budget / 1_000_000)
-  @summarize(median_budget = median(skipmissing(Budget)),
-             mean_budget = mean(skipmissing(Budget)))
-end
-```
-
-- **结合 `@group_by` 使用**：可以先使用 `@group_by` 对数据集进行分组，然后使用 `@summarize` 对每个分组进行汇总。
-
-```julia
-@chain movies begin
-  @group_by(Year)
-  @summarise(n = n())
-  @arrange(desc(Year))
-  @slice(1:5)
-end
-```
-
-在这个例子中，首先按年份分组，然后计算每个年份的电影数量，并按年份降序排列，最后选择最近的五年数据。
-
-### 注意事项：
-- **不自动向量化**：与 TidierData.jl 中的其他函数不同，`@summarize` 在使用时不会进行自动向量化。
-- **分组层级变化**：每次使用 `@summarize` 后，会减少一层分组，除非需要额外的分组操作。
-
-
-"""
-
-# ╔═╡ 5c8ec974-8b6a-40bc-aa4e-534f6552a74c
-md"""
-### 统计函数汇总
-#### 标准差函数
-- **std**
-  - **作用**：计算集合的样本标准差。
-  - **计算公式**：$\text{std}(X) = \sqrt{\frac{\sum_{i=1}^{n} (x_i - \bar{x})^2}{n-1}}$
-  - **例子**：`julia> std([1, 2, 3, 4, 5])` 返回样本标准差。
-
-- **stdm**
-  - **作用**：计算已知均数的集合的样本标准差。
-  - **计算公式**：$\text{stdm}(X, \mu) = \sqrt{\frac{\sum_{i=1}^{n} (x_i - \mu)^2}{n-1}}$
-  - **例子**：`julia> stdm([1, 2, 3, 4, 5], mean=3.0)` 返回样本标准差。
-
-#### 方差函数
-- **var**
-  - **作用**：计算集合的样本方差。
-  - **计算公式**：$\text{var}(X) = \frac{\sum_{i=1}^{n} (x_i - \bar{x})^2}{n-1}$
-  - **例子**：`julia> var([1, 2, 3, 4, 5])` 返回样本方差。
-
-- **varm**
-  - **作用**：计算已知均数的集合的样本方差。
-  - **计算公式**：$\text{varm}(X, \mu) = \frac{\sum_{i=1}^{n} (x_i - \mu)^2}{n-1}$
-  - **例子**：`julia> varm([1, 2, 3, 4, 5], mean=3.0)` 返回样本方差。
-
-#### 相关性函数
-- **cor**
-  - **作用**：计算Pearson相关系数或相关矩阵。
-  - **计算公式**：$\text{cor}(X, Y) = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^{n} (x_i - \bar{x})^2} \sqrt{\sum_{i=1}^{n} (y_i - \bar{y})^2}}$
-  - **例子**：`julia> cor([1, 2, 3], [4, 5, 6])` 返回Pearson相关系数。
-
-#### 协方差函数
-- **cov**
-  - **作用**：计算向量或矩阵的协方差。
-  - **计算公式**：$\text{cov}(X, Y) = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{n-1}$
-  - **例子**：`julia> cov([1, 2, 3], [4, 5, 6])` 返回协方差。
-
-#### 均值函数
-- **mean**
-  - **作用**：计算集合的均值。
-  - **计算公式**：$\text{mean}(X) = \frac{\sum_{i=1}^{n} x_i}{n}$
-  - **例子**：`julia> mean([1, 2, 3, 4, 5])` 返回均值。
-
-#### 中位数函数
-- **median**
-  - **作用**：计算集合的中位数。
-  - **计算公式**：$\text{median}(X) = \text{the middle value when X is ordered}$
-  - **例子**：`julia> median([1, 2, 3, 4, 5])` 返回中位数。
-
-#### 中位数计算函数（数值中间值）
-- **middle**
-  - **作用**：计算两个数或数组的中间值。
-  - **计算公式**：$\text{middle}(x, y) = \frac{x + y}{2}$
-  - **例子**：`julia> middle(1, 3)` 返回中间值2。
-
-#### 分位数函数
-- **quantile**
-  - **作用**：计算集合的分位数。
-  - **计算公式**：$\text{quantile}(X, p) = \text{the value such that p proportion of X is less than this value}$
-  - **例子**：`julia> quantile([1, 2, 3, 4, 5], 0.5)` 返回中位数（0.5分位数）。
-
-"""
-
-# ╔═╡ d01ac4f8-6903-41ff-bbc2-1210b588f16a
-md"""
-## **6. 数据转换**
-### 数据类型转换
-
-数据类型检查和数据转换也是数据分析常见的操作。以下是在TidierData.jl中，一些相关的函数：
-
-1. **is_float**
-   - **函数签名**：`is_float(column::AbstractVector)`
-   - **参数解释**：
-     - `column::AbstractVector`: 需要检查数据类型的列。
-   - **作用**：确定给定的列是否包含浮点数。
-
-2. **is_integer**
-   - **函数签名**：`is_integer(column::AbstractVector)`
-   - **参数解释**：
-     - `column::AbstractVector`: 需要检查数据类型的列。
-   - **作用**：确定给定的列是否包含整数。
-
-3. **is_string**
-   - **函数签名**：`is_string(column::AbstractVector)`
-   - **参数解释**：
-     - `column::AbstractVector`: 需要检查数据类型的列。
-   - **作用**：确定给定的列是否包含字符串。
-
-4. **as_float**
-   - **函数签名**：`as_float(value)`
-   - **参数解释**：
-     - `value`: 需要转换的值，可以是字符串、数字或缺失值。
-   - **作用**：将数字或字符串转换为`Float64`数据类型。如果值为缺失，则保持为缺失。
-
-5. **as_integer**
-   - **函数签名**：`as_integer(value)`
-   - **参数解释**：
-     - `value`: 需要转换的值，可以是字符串、数字或缺失值。
-   - **作用**：将数字或字符串转换为`Int64`数据类型，小数点后的数值会被移除。如果值为缺失，则保持为缺失。
-
-6. **as_string**
-   - **函数签名**：`as_string(value)`
-   - **参数解释**：
-     - `value`: 需要转换的值，可以是数字、字符串或缺失值。
-   - **作用**：将数字或字符串转换为字符串类型。如果值为缺失，则保持为缺失。
-
-这些函数提供了对数据类型进行检查和转换的能力，使得在数据处理过程中能够更灵活地处理不同类型的数据。
-
-
-"""
-
-# ╔═╡ bf8d9758-fb7f-46d3-8230-df362e9362e9
-md"""
-连续变量的离散化是指将连续变量的值域分割成若干个区间，并把原来连续的数值转换为这些区间的表示。离散化通常用于数据分析和机器学习中，以下是离散化的一些原因和方法：
-
-1. **简化问题**：在某些情况下，连续变量的离散化可以简化问题，使得问题更容易理解和处理。
-2. **改善模型性能**：对于某些模型，如决策树，离散化可以提高模型的解释性和性能。
-3. **减少噪声**：离散化可以减少数据中的噪声，提高模型的稳定性。
-4. **满足算法要求**：某些算法，如某些聚类算法，可能需要离散化的数据作为输入。
-5. **数据可视化**：离散化后的数据更容易进行可视化，如直方图等。
-
-离散化是一个数据预处理步骤，需要根据具体的数据和分析目标来选择合适的方法。在实际操作中，可能需要尝试多种方法，以找到最适合当前问题的离散化策略。
-"""
-
-# ╔═╡ 75b22bfe-7f51-4e89-952b-dd88bcf17fc0
-md"""
-### 连续变量离散化
-在 Julia 语言的 TidierData.jl 包中，可以使用 `cut` 函数来实现连续变量的离散化（cut函数来自CategoricalArray.jl包， 不过这个包中的所有函数都被Tidier包重导出了，所以在加载了Tidier.jl包后直接使）。`cut` 函数可以将连续变量分割成不同的类别或分组，通常用于将数值变量转换为因子（categorical）变量。
-
-以下是一些使用 TidierData.jl 中 `cut` 函数进行离散化的示例：
-
-#### 1. 等宽离散化
-假设你有一个连续变量 `age`，你想将其分为几个等宽的区间：
-
-```julia
-using TidierData
-
-df = DataFrame(age = [22, 34, 45, 56, 78])
-
-# 将年龄分为 18-35, 36-55, 56-75, 76+ 四个区间
-df = @chain df begin
-    @mutate(age_group = cut(age, [18, 35, 55, 75, Inf], 
-                            labels = ["18-35", "36-55", "56-75", "76+"]))
-end
-```
-
-#### 2. 等频离散化
-如果你想将数据分为包含大致相同数量数据点的区间，可以使用 `ntile` 函数：
-
-```julia
-using TidierData
-
-df = DataFrame(age = [22, 34, 45, 56, 78])
-
-# 将年龄分为四个等频区间
-df = @chain df begin
-    @mutate(age_group = ntile(age, 4))
-end
-```
-
-#### 3. 基于特定条件的离散化
-你可以使用 `case_when` 函数来根据特定条件创建离散化分组：
-
-```julia
-using TidierData
-
-df = DataFrame(age = [22, 34, 45, 56, 78])
-
-df = @chain df begin
-    @mutate(age_group = case_when(age < 30 => "Young",
-                                   age < 50 => "Middle-aged",
-                                   age >= 50 => "Senior"))
-end
-```
-
-#### 4. 使用分位数离散化
-如果你想根据数据的分布将变量分为几个区间，可以使用分位数来定义区间：
-
-```julia
-using TidierData
-
-df = DataFrame(income = [25000, 50000, 75000, 100000, 150000])
-
-# 使用四分位数来离散化收入
-quantiles = quantile(df.income, [0.25, 0.5, 0.75, 1.0])
-
-df = @chain df begin
-    @mutate(income_group = cut(income, quantiles, 
-                               labels = ["Q1", "Q2", "Q3", "Q4"]))
-end
-```
-
-这些方法提供了灵活的方式来离散化连续变量，可以根据具体的数据和分析需求选择合适的方法。在 TidierData.jl 中，这些操作可以通过链式调用（chaining）来实现，使得代码更加简洁和易于阅读。
-"""
-
-# ╔═╡ 643b045f-ac18-40d1-a699-c6535ecaff99
-
-
-# ╔═╡ 22304fe0-cc4b-44bf-8829-28a26e2000e0
-df = DataFrame(x1 = ['a','b','c','a','b'], x2 = 1:5, x3 = 11:15)
-
-# ╔═╡ 4d6bac3d-a985-47a6-989e-a0124b978c9b
-@pivot_longer(df, x2:x3)
-
-# ╔═╡ 5baf6249-68b8-41bc-97bd-c395550ccd92
-md"""
-下面是使用 `TidierData.jl` 包中的函数重写的 `@chain` 宏的例子：
-
-
-### 嵌套链
-
-使用 `TidierData.jl` 的函数，嵌套链的示例可以写成：
-
-```julia
-@chain df begin
-  @drop_missing
-  @filter(r -> r.weight < 6, _)
-  @aside begin
-    @chain _ begin
-      @select(:group)
-      CSV.write("filtered_groups.csv", _)
-    end
-  end
-  @group_by(:group)
-  @summarize(total_weight = sum(:weight))
-end
-```
-
-在这个例子中，内部的 `@chain` 链用于处理过滤后的分组数据，并将其写入 CSV 文件。注意，`CSV.write` 并不是 `TidierData.jl` 的函数，因此这个步骤可能需要使用 Julia 的其他包，如 `CSV.jl` 来实现。同时，`@aside` 也不是 `TidierData.jl` 的标准用法，这里只是为了说明 `@chain` 宏的嵌套用法。
-
-请注意，`TidierData.jl` 中可能没有直接对应于 `dropmissing`、`filter` 等函数的宏或函数，因此上述代码更多是为了展示如何在概念上将 `@chain` 宏的用法转换为 `TidierData.jl` 的风格。实际使用时，需要根据 `TidierData.jl` 的具体函数和语法进行调整。
-"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1231,14 +817,14 @@ uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
 version = "2.4.2"
 
 [[deps.ConstructionBase]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "a33b7ced222c6165f624a3f2b55945fac5a598d9"
+git-tree-sha1 = "76219f1ed5771adbb096743bff43fb5fdd4c1157"
 uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-version = "1.5.7"
-weakdeps = ["IntervalSets", "StaticArrays"]
+version = "1.5.8"
+weakdeps = ["IntervalSets", "LinearAlgebra", "StaticArrays"]
 
     [deps.ConstructionBase.extensions]
     ConstructionBaseIntervalSetsExt = "IntervalSets"
+    ConstructionBaseLinearAlgebraExt = "LinearAlgebra"
     ConstructionBaseStaticArraysExt = "StaticArrays"
 
 [[deps.Contour]]
@@ -1466,9 +1052,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "fd0002c0b5362d7eb952450ad5eb742443340d6e"
+git-tree-sha1 = "6a70198746448456524cb442b8af316927ff3e1a"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "1.12.0"
+version = "1.13.0"
 weakdeps = ["PDMats", "SparseArrays", "Statistics"]
 
     [deps.FillArrays.extensions]
@@ -1539,11 +1125,16 @@ git-tree-sha1 = "0085ccd5ec327c077ec5b91a5f937b759810ba62"
 uuid = "92fee26a-97fe-5a0c-ad85-20a5f3185b63"
 version = "0.6.2"
 
+[[deps.GeoFormatTypes]]
+git-tree-sha1 = "59107c179a586f0fe667024c5eb7033e81333271"
+uuid = "68eda718-8dee-11e9-39e7-89f7f65f511f"
+version = "0.4.2"
+
 [[deps.GeoInterface]]
-deps = ["Extents"]
-git-tree-sha1 = "9fff8990361d5127b770e3454488360443019bb3"
+deps = ["Extents", "GeoFormatTypes"]
+git-tree-sha1 = "5921fc0704e40c024571eca551800c699f86ceb4"
 uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
-version = "1.3.5"
+version = "1.3.6"
 
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "Extents", "GeoInterface", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
@@ -1731,10 +1322,10 @@ weakdeps = ["ArrowTypes", "Parsers"]
     ParsersExt = "Parsers"
 
 [[deps.IntelOpenMP_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "14eb2b542e748570b56446f4c50fbfb2306ebc45"
+deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
+git-tree-sha1 = "10bd689145d2c3b2a9844005d01087cc1194e79e"
 uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2024.2.0+0"
+version = "2024.2.1+0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -1821,9 +1412,9 @@ version = "1.0.0"
 
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
-git-tree-sha1 = "7e5d6779a1e09a36db2a7b6cff50942a0a7d0fca"
+git-tree-sha1 = "f389674c99bfcde17dc57454011aa44d5a260a40"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
-version = "1.5.0"
+version = "1.6.0"
 
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
@@ -2038,9 +1629,9 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[deps.Loess]]
 deps = ["Distances", "LinearAlgebra", "Statistics", "StatsAPI"]
-git-tree-sha1 = "a113a8be4c6d0c64e217b472fb6e61c760eb4022"
+git-tree-sha1 = "f749e7351f120b3566e5923fefdf8e52ba5ec7f9"
 uuid = "4345ca2d-374a-55d4-8d30-97f9976e7612"
-version = "0.6.3"
+version = "0.6.4"
 
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]
@@ -2428,9 +2019,9 @@ uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.10.2"
 
 [[deps.PtrArrays]]
-git-tree-sha1 = "f011fbb92c4d401059b2212c05c0601b70f8b759"
+git-tree-sha1 = "77a42d78b6a92df47ab37e177b2deac405e1c88f"
 uuid = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
-version = "1.2.0"
+version = "1.2.1"
 
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
@@ -2440,9 +2031,15 @@ version = "1.0.0"
 
 [[deps.QuadGK]]
 deps = ["DataStructures", "LinearAlgebra"]
-git-tree-sha1 = "e237232771fdafbae3db5c31275303e056afaa9f"
+git-tree-sha1 = "1d587203cf851a51bf1ea31ad7ff89eff8d625ea"
 uuid = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
-version = "2.10.1"
+version = "2.11.0"
+
+    [deps.QuadGK.extensions]
+    QuadGKEnzymeExt = "Enzyme"
+
+    [deps.QuadGK.weakdeps]
+    Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
 
 [[deps.RData]]
 deps = ["CategoricalArrays", "CodecZlib", "DataAPI", "DataFrames", "Dates", "FileIO", "Requires", "TimeZones", "Unicode"]
@@ -2759,9 +2356,9 @@ version = "0.6.18"
 
 [[deps.StructTypes]]
 deps = ["Dates", "UUIDs"]
-git-tree-sha1 = "ca4bccb03acf9faaf4137a9abc1881ed1841aa70"
+git-tree-sha1 = "159331b30e94d7b11379037feeb9b690950cace8"
 uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
-version = "1.10.0"
+version = "1.11.0"
 
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
@@ -3184,33 +2781,73 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═bff5f244-66de-11ef-1248-cf917f18d161
-# ╠═d213aa7d-abff-4948-8ad8-52409716b1c7
-# ╠═07a14ec5-db26-49b3-969b-665dbb000b00
-# ╟─c78e130c-d018-4107-b967-f916c9165270
-# ╠═fd1ab803-27b9-4bba-af52-5c60d0e1232f
-# ╠═713b2a77-0b70-4d85-9943-630fc9f59bdc
-# ╠═adadce64-12df-4650-995a-5b0aa8bf8bb6
-# ╟─97e6a277-8968-438f-8b90-ffce9855a5cb
-# ╟─24c0519e-9ec8-4f11-bdd7-34b7e47b58a3
-# ╠═7fcc1672-3a18-4330-92bf-d76b1296a98b
-# ╠═032ab34f-0553-4c7b-bb85-f190e7ec3d43
-# ╟─e84759f7-7b85-4ed9-9e14-5c5c5d465dc4
-# ╟─35e94f0e-312a-4c41-9db8-8a3a0aa768f0
-# ╟─1d89963a-a7f1-4bcb-b802-4d4ca5c41116
-# ╟─54c6998d-3ac7-4269-b90d-0f8c6bba2bf4
-# ╟─671245a6-05b4-43c9-b3c4-265470de1869
-# ╟─023e6abb-2e96-4538-bc85-0b2102611bf2
-# ╟─dc2cbb2d-3331-4e3b-8027-04d6e857d0c7
-# ╟─f1ee32d8-9cc8-4463-945a-4d693c780c78
-# ╟─25289d9b-79a9-4eff-af74-d6403e2de077
-# ╟─5c8ec974-8b6a-40bc-aa4e-534f6552a74c
-# ╟─d01ac4f8-6903-41ff-bbc2-1210b588f16a
-# ╟─bf8d9758-fb7f-46d3-8230-df362e9362e9
-# ╟─75b22bfe-7f51-4e89-952b-dd88bcf17fc0
-# ╠═643b045f-ac18-40d1-a699-c6535ecaff99
-# ╠═22304fe0-cc4b-44bf-8829-28a26e2000e0
-# ╠═4d6bac3d-a985-47a6-989e-a0124b978c9b
-# ╟─5baf6249-68b8-41bc-97bd-c395550ccd92
+# ╠═a6682dc0-501e-4a1a-aa26-2f4ff59cc8cb
+# ╠═71a16c11-c1e4-45f2-9e39-35632757f443
+# ╠═2a640a85-5c23-438d-b262-4287ab372d7c
+# ╟─74ece9db-0a67-4b5c-9693-482c1bca0ba0
+# ╟─245a7c5f-fd01-4386-93c9-e39a4b6c26ab
+# ╠═b93c8356-1125-4c78-96d6-d65d008824cf
+# ╟─b4b21281-2ee7-4b91-b33d-1e1138215f66
+# ╟─9e29a561-bda1-46c2-a66f-4bde0b91731a
+# ╠═0e783777-c3bd-41c2-b130-48eba04c2758
+# ╟─6fd78a3a-63ea-4832-800f-dfc4a718fade
+# ╠═3e6e4a80-4931-4efa-9a2d-cb070b708ae7
+# ╟─13678a02-3664-4a52-83b3-7bf93b2f34bd
+# ╠═8fa82962-7e00-4551-be97-9c7e883cd420
+# ╟─a89e1f03-b9bf-468e-ba42-2983405dd5f7
+# ╟─bd89c6b8-6af6-4660-bbdb-a48aef9191f6
+# ╠═d67ee67a-ebc1-4a49-9bb0-59b59c210428
+# ╟─e7e24ee0-cd32-46cf-a8b9-cade27de9d8c
+# ╟─cdb4e909-5f17-42a7-91f0-f10fc05d36a2
+# ╠═dcd068bc-e09a-49c3-9ab0-ffbd7304c0dc
+# ╟─2142e85a-8a0d-49c3-ac20-6fb92fb99026
+# ╠═8b6e2a66-358d-4903-a3cc-a627cf76c421
+# ╟─71872557-459a-4f17-8865-ed5b22a0715c
+# ╟─a63ad11b-d2d5-4dba-8856-532130b6eeb7
+# ╟─a9a8705e-de36-4175-af86-4c064a108b69
+# ╟─824eca64-ff9a-48af-99dc-a832196313e0
+# ╠═3b9e3dc1-bf16-49b8-bf94-a9af8d808993
+# ╠═45e168f6-1b2b-4560-b33d-c66999456a41
+# ╟─2c4dbc16-4b22-4ae7-9ba0-26ffba47c9cb
+# ╟─ab80de21-15c0-48a6-b286-e2dbf1b9ead3
+# ╟─84a645f6-8c85-45b9-8e03-3b381e26511e
+# ╠═ba548abf-44f3-41ad-a2a2-28286a3efeb2
+# ╠═677003c9-7911-4ba2-8f3d-baabf2bf7341
+# ╠═dfc21c69-5fba-4f28-91fe-fa445be7abd8
+# ╟─733e3e89-338c-4153-ba6d-fbda29d6fd72
+# ╠═bde3b6d2-710b-4923-b51d-5f175101ad78
+# ╠═1143968f-f555-475d-ba84-fbd8dc1cb86b
+# ╟─462f22ac-dd09-4f90-87c3-00c151b4d5f7
+# ╠═3e1db291-c953-4c9c-bc4c-4e75fd666bf8
+# ╟─10118f78-9de4-4380-b676-5a391bfa4678
+# ╠═efddd6f7-b827-4386-94f7-a15300b1aac2
+# ╟─540000a0-ac62-4167-96ab-cad3e91b7ee2
+# ╠═dbe477c4-e13b-4799-9d20-2d4159e9ba77
+# ╠═897afd4b-6b8b-4f31-ae6a-2381333f3027
+# ╟─c02c487c-c519-4146-a859-c73313f9f863
+# ╠═d93ad6f5-8b34-4964-9864-616bfa8b2573
+# ╟─b155e99a-4666-49bc-98dc-59c07d926df5
+# ╟─c0ee1401-8658-4aed-a474-492aa014222d
+# ╟─dd09ae38-5d2e-4e7e-a814-9bc306baac70
+# ╟─37a32896-b5b9-47a2-ad6f-3364d7361c86
+# ╟─953f5f18-c84a-4998-bd65-0d2408490848
+# ╟─9dbcdbc6-419f-428e-9c33-8cf2f2d3cecb
+# ╟─1e7c3d5b-ace7-484c-8f1e-f118498aac3a
+# ╠═27f2447c-72ff-4753-9cd6-29b346b0e3e2
+# ╠═0e6ac6fb-79c4-4516-8978-a420e85ed56e
+# ╟─359f830b-c0c4-4371-a71f-797177826820
+# ╠═386888a4-7bfd-48b3-b2ef-05a0ebb6cca1
+# ╠═6fe079c1-43f5-43be-9917-8263f15313ac
+# ╠═4a597e85-5842-4897-a6c8-cde8828d786c
+# ╠═a7a97950-0334-49f7-95d9-e0441707539e
+# ╠═5b844a24-e2a5-48e9-b8a1-4901e1d4c587
+# ╠═02f8a464-3663-4d78-9a96-92700110f788
+# ╠═ba89cd1a-f309-484c-a135-6cd25f1a600e
+# ╠═afa6f38a-6e16-49b9-afd3-956f33e786ce
+# ╠═a6370b72-fc88-4a0a-9e26-13b259a4fee2
+# ╠═18fb0ab9-5822-470b-aa20-cebc671a8fdf
+# ╠═908031d1-2ca0-4438-8917-2f283d5130e6
+# ╟─4a0a127e-5119-493b-a8dd-93501507cd02
+# ╠═300ef793-02e1-49f0-8f5f-b55b9e54d940
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
