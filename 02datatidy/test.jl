@@ -4,457 +4,50 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ a6682dc0-501e-4a1a-aa26-2f4ff59cc8cb
-begin
-using PlutoUI,PlutoTeachingTools
-end;
+# ╔═╡ 7fa8c9a0-6d87-11ef-2ff2-3d63d24ca3c7
+using TidierPlots,TidierData
 
-# ╔═╡ 71a16c11-c1e4-45f2-9e39-35632757f443
+# ╔═╡ 2dc39a58-4900-42c5-a4e2-72c02560c20b
 using Tidier
 
-# ╔═╡ 2a640a85-5c23-438d-b262-4287ab372d7c
-TableOfContents(title="目录")
+# ╔═╡ 17fdf53a-2864-4fc4-a0c0-2174ce034834
+load = read_csv("../data/load.csv")
 
-# ╔═╡ 74ece9db-0a67-4b5c-9693-482c1bca0ba0
-present_button()
+# ╔═╡ a5945f0a-48f4-4341-b0be-160b7401c770
+train1w=@slice_sample(load, n=10000)
 
-# ╔═╡ 245a7c5f-fd01-4386-93c9-e39a4b6c26ab
-html"""
-	<p style="font-weight:bold; font-size: 60px;text-align:center">
-		Julia数据分析与挖掘
-	</p>
-	<div style="text-align:center">
-		<p style="font-weight:bold; font-size: 35px; font-variant: small-caps; margin: 0px">
-			数据分析案例
-		</p>
-		<p style="font-size: 30px; font-variant: small-caps; margin: 0px">
-			Weili Chen
-		</p>
-		<p style="font-size: 20px;">
-			GDUFS
-		</p>
-	</div>
-"""
+# ╔═╡ a8a07175-04b9-4ed4-9a33-5e0941199b40
+write_csv(train1w, "../data/train1w.csv")
 
-# ╔═╡ b93c8356-1125-4c78-96d6-d65d008824cf
-train = read_csv("../data/load.csv")
+# ╔═╡ ced59cc1-ff8f-48b0-a81a-c9c0dde6a11b
+df = DataFrame(id=1:120, variable=repeat('a':'c',40 ), value=rand(120)) 
 
-# ╔═╡ ee92efc3-8e0b-4c2c-a85f-40b4f5c2f07d
-testA = read_csv("../data/testA.csv")
+# ╔═╡ 8ca4f3e2-ec1a-4004-8f39-f41554afdd4d
+ggplot(df, @aes(x=value)) + geom_density() 
 
-# ╔═╡ 07cd2249-cd8b-49e0-a97d-1ea0b346efea
-setdiff(Set(names(train)) , Set(names(testA)))
+# ╔═╡ 4667a72d-db0d-404f-ba2b-4988406ab8fb
+ggplot(df, @aes(x=value)) + geom_density() + facet_wrap(variable)
 
-# ╔═╡ b4b21281-2ee7-4b91-b33d-1e1138215f66
-md"""
-## 字段含义
-了解字段含义含义是简单的， 可以直接从文档中去了解， 我将其罗列如下：
+# ╔═╡ 261bd2f4-cbec-49ea-b37e-30033c0e764f
+ggplot(df, @aes(x=value)) + geom_density() + facet_wrap(:variable)
 
-以下是您提供的内容转化为Markdown表格的格式：
+# ╔═╡ 27a350a0-c11f-445f-be88-70c6e78b84ae
+ggplot(df, @aes(x=value)) + geom_density() + facet_wrap(facets="variable")
 
-| Field | Description |
-| --- | --- |
-| id | 为贷款清单分配的唯一信用证标识 |
-| loanAmnt | 贷款金额 |
-| term | 贷款期限（年） |
-| interestRate | 贷款利率 |
-| installment | 分期付款金额 |
-| grade | 贷款等级 |
-| subGrade | 贷款等级之子级 |
-| employmentTitle | 就业职称 |
-| employmentLength | 就业年限（年） |
-| homeOwnership | 借款人在登记时提供的房屋所有权状况 |
-| annualIncome | 年收入 |
-| verificationStatus | 验证状态 |
-| issueDate | 贷款发放的月份 |
-| purpose | 借款人在贷款申请时的贷款用途类别 |
-| postCode | 借款人在贷款申请中提供的邮政编码的前3位数字 |
-| regionCode | 地区编码 |
-| dti | 债务收入比 |
-| delinquency_2years | 借款人过去2年信用档案中逾期30天以上的违约事件数 |
-| ficoRangeLow | 借款人在贷款发放时的fico所属的下限范围 |
-| ficoRangeHigh | 借款人在贷款发放时的fico所属的上限范围 |
-| openAcc | 借款人信用档案中未结信用额度的数量 |
-| pubRec | 贬损公共记录的数量 |
-| pubRecBankruptcies | 公开记录清除的数量 |
-| revolBal | 信贷周转余额合计 |
-| revolUtil | 循环额度利用率，或借款人使用的相对于所有可用循环信贷的信贷金额 |
-| totalAcc | 借款人信用档案中当前的信用额度总数 |
-| initialListStatus | 贷款的初始列表状态 |
-| applicationType | 表明贷款是个人申请还是与两个共同借款人的联合申请 |
-| earliestCreditLine | 借款人最早报告的信用额度开立的月份 |
-| title | 借款人提供的贷款名称 |
-| policyCode | 公开可用的策略_代码=1新产品不公开可用的策略_代码=2 |
-| n系列匿名特征 | 匿名特征n0-n14，为一些贷款人行为计数特征的处理 |
+# ╔═╡ b0da984f-2f25-464d-9a85-7ad9aefa3e2d
 
-
-请注意，表格中的 "n系列匿名特征" 描述可能需要进一步明确化，因为它提到了 "n0-n14" 但并未详细说明每个特征。如果需要为每个特征提供单独的行，请提供更多具体信息。
-
-"""
-
-# ╔═╡ 9e29a561-bda1-46c2-a66f-4bde0b91731a
-md"""
-# 总结了解数据
-## 查看数据的行列数
-"""
-
-# ╔═╡ 0e783777-c3bd-41c2-b130-48eba04c2758
-size(train)
-
-# ╔═╡ 6fd78a3a-63ea-4832-800f-dfc4a718fade
-md"""
-## 查看列名
-"""
-
-# ╔═╡ 3e6e4a80-4931-4efa-9a2d-cb070b708ae7
-names(train)
-
-# ╔═╡ 13678a02-3664-4a52-83b3-7bf93b2f34bd
-md"""
-## 偷瞄数据
-"""
-
-# ╔═╡ 8fa82962-7e00-4551-be97-9c7e883cd420
-@glimpse(train)
-
-# ╔═╡ a89e1f03-b9bf-468e-ba42-2983405dd5f7
-md"""
-在across环境中，所有的函数都不会被向量化。 所以， 在上面的匿名函数中， `ismissing`后面有一个`点号`， 以确保缺失值判断施加到向量的每一个元素上， 最后统计一下为`true`的数量。
-""" |> danger |> aside
-
-# ╔═╡ bd89c6b8-6af6-4660-bbdb-a48aef9191f6
-md"""
-## 谁有缺失值？
-下面的代码统计了一下每一列的缺失值数量， 你可以转化为比例。
-"""
-
-# ╔═╡ d67ee67a-ebc1-4a49-9bb0-59b59c210428
-@chain train begin
-	@summarise(across(everything(), x->count(ismissing.(x))))
-	@pivot_longer(everything())
-	@arrange(desc(value))
-	@filter(value>0) #只要有缺失值的
-end
-
-# ╔═╡ e7e24ee0-cd32-46cf-a8b9-cade27de9d8c
-md"""
-## 唯一值情况
-下面是每一列的唯一值情况
-"""
-
-# ╔═╡ cdb4e909-5f17-42a7-91f0-f10fc05d36a2
-md"""
-通常， 一个字段如何唯一值太多（大多数样本都不一样），或者唯一值太少（大部分样本都相同）都是不理想的。 请计算每一个数字和字符列中有多少唯一值?将结果按升序排列。
-""" |> question_box
-
-# ╔═╡ dcd068bc-e09a-49c3-9ab0-ffbd7304c0dc
-@chain train begin 
-	@summarise(across(everything(),(length ∘ unique )))
-	@pivot_longer(everything())
-	@arrange(value)
-	@filter(value <10) 
-end
-
-# ╔═╡ 2142e85a-8a0d-49c3-ac20-6fb92fb99026
-md"""
-## 找出唯一值较少的列名
-"""
-
-# ╔═╡ 8b6e2a66-358d-4903-a3cc-a627cf76c421
-@select(train, where(x -> is_number(x) && length(unique(x)) < 10)) |> names
-
-# ╔═╡ 71872557-459a-4f17-8865-ed5b22a0715c
-md"""
-# 数据的属性
-数据的属性通常指的是数据所具有的特征和性质，它们定义了数据的类型、格式以及如何被处理和分析。 数据可以按具体的特征和性质分为如下4类。
-
-1. **名义属性（Nominal Attributes）**：
-   - 描述：没有固定顺序的定性属性。
-   - 例子：性别（男、女），国家（中国、美国、加拿大）。
-
-2. **序数属性（Ordinal Attributes）**：
-   - 描述：定性属性值之间存在逻辑顺序或等级。
-   - 例子：教育水平（高中、学士、硕士、博士），满意度评分（不满意、一般、满意、非常满意）。
-
-3. **区间属性（Interval Attributes）**：
-   - 描述：定量属性，其中值之间的差异是重要的，但没有真正的零点。
-   - 例子：年份（2021、2022、2023），温度（摄氏或华氏）。
-
-4. **比率属性（Ratio Attributes）**：
-   - 描述：定量属性，存在真正的零点，可以进行比率和百分比计算。
-   - 例子：身高（160厘米），体重（50公斤）。
-
-了解数据的属性对于选择合适的数据分析方法和数据预处理技术至关重要。例如，连续属性可能需要归一化处理， 区间属性通常需要被分割成不同的区间或桶（binning），以便进行分类或分组分析。而序数和名义属性可能需要编码转换才能被机器学习算法有效处理。
-
-
-从存储的角度看： 名义属性和序数属性是类别变量， 可能以整数或字符串的形式存在，但在建模中，一般要转化为整数。 区间属性和比率属性一般以数值形式存在（可能是整数也可能是浮点数）。
-
-
-"""
-
-# ╔═╡ a63ad11b-d2d5-4dba-8856-532130b6eeb7
-md"""
-分析上面数据的类型？
-""" |> question_box
-
-# ╔═╡ a9a8705e-de36-4175-af86-4c064a108b69
-md"""
-以下是一个参考分类。 
-
-| 字段              | 描述                               | 类别       | 理由                                                         |
-|-------------------|-----------------------------------|------------|--------------------------------------------------------------|
-| id                | 唯一信用证标识                     | 名义属性   | 标识符通常作为分类标签使用                                   |
-| loanAmnt          | 贷款金额                           | 比率属性   | 具体的金额数值，存在绝对的零点                              |
-| term              | 贷款期限（年）                     | 序数属性   | 表示时间跨度的顺序，但每个单位并非等距                       |
-| interestRate       | 贷款利率                           | 区间属性   | 利率之间的差异有意义，但没有绝对的零点                       |
-| installment        | 分期付款金额                       | 比率属性   | 具体的付款金额，存在绝对的零点                              |
-| grade             | 贷款等级                           | 名义属性   | 贷款等级作为分类标识                                        |
-| subGrade          | 贷款等级之子级                     | 名义属性   | 子等级作为进一步的分类标识                                  |
-| employmentTitle   | 就业职称                            | 名义属性   | 职称作为职业的分类标识                                      |
-| employmentLength  | 就业年限（年）                     | 序数属性   | 表示就业经验的顺序，但年数不等距                              |
-| homeOwnership      | 房屋所有权状况                     | 名义属性   | 表示所有权的分类                                             |
-| annualIncome      | 年收入                             | 比率属性   | 具体的收入数值，存在绝对的零点                              |
-| verificationStatus | 验证状态                         | 名义属性   | 表示验证的分类                                               |
-| issueDate         | 贷款发放的月份                     | 名义属性   | 发放月份作为时间标识                                        |
-| purpose           | 贷款用途类别                     | 名义属性   | 用途类别作为分类标识                                        |
-| postCode          | 邮政编码的前3位数字               | 名义属性   | 编码作为地区分类标识                                        |
-| regionCode        | 地区编码                           | 名义属性   | 编码作为地区分类标识                                        |
-| dti               | 债务收入比                         | 比率属性   | 比率，存在绝对的零点                                        |
-| delinquency_2years| 逾期30天以上的违约事件数           | 比率属性   | 表示违约频率，存在绝对的零点                              |
-| ficoRangeLow      | FICO得分下限范围                 | 区间属性   | 得分范围，没有绝对的零点                                   |
-| ficoRangeHigh     | FICO得分上限范围                 | 区间属性   | 得分范围，没有绝对的零点                                   |
-| openAcc           | 未结信用额度的数量                | 比率属性   | 具体的信用额度数量，存在绝对的零点                         |
-| pubRec            | 贬损公共记录的数量                | 比率属性   | 记录的数量，存在绝对的零点                                |
-| pubRecBankruptcies | 公开记录清除的数量              | 比率属性   | 清除记录的数量，存在绝对的零点                            |
-| revolBal          | 信贷周转余额合计                  | 比率属性   | 具体的余额数值，存在绝对的零点                            |
-| revolUtil         | 循环额度利用率                     | 比率属性   | 利用率，存在绝对的零点                                    |
-| totalAcc          | 信用档案中当前的信用额度总数      | 比率属性   | 具体的信用额度数量，存在绝对的零点                         |
-| initialListStatus  | 贷款的初始列表状态                | 名义属性   | 状态作为分类标识                                          |
-| applicationType    | 贷款申请类型                       | 名义属性   | 申请类型作为分类标识                                      |
-| earliestCreditLine | 信用额度开立的月份            | 名义属性   | 开立月份作为时间标识                                      |
-| title             | 贷款名称                           | 名义属性   | 名称用作标识                                               |
-| policyCode        | 策略代码                           | 名义属性   | 代码用作策略的分类标识                                      |
-| n系列匿名特征     | 贷款人行为计数特征                | 比率属性   | 通常为数值特征，存在绝对的零点                            |
-
-
-这个表格提供了每个字段的分类和理由，帮助理解为什么每个字段被归入特定的数据类型类别。
-
-""" |> answer_box
-
-# ╔═╡ 824eca64-ff9a-48af-99dc-a832196313e0
-md"""
-## 存储结构分析
-一般字段会存储为数值（number）或字符串（string）， 可以通过函数`is_number`， `is_string`找到所有的相应的列。
-
-比如下面的代码找到了所有的文本列
-"""
-
-# ╔═╡ 3b9e3dc1-bf16-49b8-bf94-a9af8d808993
-@select(train, where(is_string)) |> names
-
-# ╔═╡ 45e168f6-1b2b-4560-b33d-c66999456a41
-@select(train, where(is_number)) |> names
-
-# ╔═╡ 2c4dbc16-4b22-4ae7-9ba0-26ffba47c9cb
-md"""
-那么， 除了数字和文本外， 数据集中还有其他类型的字段吗？ 下面的代码告诉我们，还有一列日期数据。
-"""
-
-# ╔═╡ ab80de21-15c0-48a6-b286-e2dbf1b9ead3
-md"""
-## 特征分类
-"""
-
-# ╔═╡ 84a645f6-8c85-45b9-8e03-3b381e26511e
-md"""
-### 数值特征
-被存储为数据的特征， 其中，如果唯一值比10个都少， 那么将当成是被存储为数字的类别特征。
-"""
-
-# ╔═╡ ba548abf-44f3-41ad-a2a2-28286a3efeb2
-num_feats = @select(train, where(is_number)) |> names # 数值特征
-
-# ╔═╡ 677003c9-7911-4ba2-8f3d-baabf2bf7341
-num_cate_feats = @select(train, where(x-> is_number(x) && length(unique(x)) <= 10)) |> names 
-
-# ╔═╡ dfc21c69-5fba-4f28-91fe-fa445be7abd8
-num_cont_feats = @select(train, where(x-> is_number(x) && length(unique(x)) > 10)) |> names 
-
-# ╔═╡ 733e3e89-338c-4153-ba6d-fbda29d6fd72
-md"""
-### 文本特征
-文本特征一般当成类别变量， 但也要看看类别的数量。
-"""
-
-# ╔═╡ bde3b6d2-710b-4923-b51d-5f175101ad78
-str_feats = @select(train, where(is_string)) |> names 
-
-# ╔═╡ 1143968f-f555-475d-ba84-fbd8dc1cb86b
-@chain train begin
-@select(!!str_feats)
-end
-
-# ╔═╡ 462f22ac-dd09-4f90-87c3-00c151b4d5f7
-md"""
-`earliesCreditLine`被识别为字符串，但本质上应该是时间。
-"""
-
-# ╔═╡ 3e1db291-c953-4c9c-bc4c-4e75fd666bf8
-## 其他特征
-oth_feats = @select(train, where(x -> !is_string(x) && !is_number(x))) |> names 
-
-# ╔═╡ 10118f78-9de4-4380-b676-5a391bfa4678
-md"""
-确认一下， 没有遗漏特征了吧。
-"""
-
-# ╔═╡ efddd6f7-b827-4386-94f7-a15300b1aac2
-length(num_feats) + length(str_feats) + length(oth_feats) == size(train)[2]
-
-# ╔═╡ 540000a0-ac62-4167-96ab-cad3e91b7ee2
-md"""
-# 特征分析
-## 文本特征分析
-主要看看文本特征有哪些取值， 分布情况怎么样
-"""
-
-# ╔═╡ dbe477c4-e13b-4799-9d20-2d4159e9ba77
-@count(train, employmentLength)
-
-# ╔═╡ 897afd4b-6b8b-4f31-ae6a-2381333f3027
-@chain train begin 
-	@drop_missing
-	@mutate(isDefault = as_string(isDefault))
-ggplot(_, @aes(y = employmentLength,color=isDefault)) + geom_bar(position="dodge")
-end
-
-# ╔═╡ c02c487c-c519-4146-a859-c73313f9f863
-md"""
-这里，因为isDefault是整数，默认会在画图时当成数值型变量， 转化为字符串，从而可以作为分类变量。
-""" |> aside
-
-# ╔═╡ d93ad6f5-8b34-4964-9864-616bfa8b2573
-@chain train begin 
-	@drop_missing
-	@mutate(isDefault = as_string(isDefault))
-ggplot(_, @aes(y = grade,color=isDefault)) + geom_bar(position="dodge")
-end
-
-# ╔═╡ b155e99a-4666-49bc-98dc-59c07d926df5
-md"""
-如果数据中包含缺失值， 画图会出现问题。因为图形不知道如何处理缺失值， 所以这里采用`drop_missing`。 不过， 也可以在进行了缺失值处理之后，再来画图（ 比如，把缺失值设置为某个值）。
-""" |> aside
-
-# ╔═╡ c0ee1401-8658-4aed-a474-492aa014222d
-md"""
-这两个文本特征， 很明显应该属于有序特征， 但因为其保存为文本，所以无法体现顺序。 不过， 再转化为顺序之前， 我们可以先看看， 顺序是否跟目标存在关系。 
-"""
-
-# ╔═╡ dd09ae38-5d2e-4e7e-a814-9bc306baac70
-md"""
-统计不同grade的欺诈比率
-""" |> question_box
-
-# ╔═╡ 37a32896-b5b9-47a2-ad6f-3364d7361c86
-md"""
-$(@chain train begin
-	@group_by(grade)
-	@summarise(ratio = mean(isDefault))
-	@arrange(ratio)
-end )
-""" |> answer_box
-
-# ╔═╡ 953f5f18-c84a-4998-bd65-0d2408490848
-md"""
-## 数值特征分析
-"""
-
-# ╔═╡ 9dbcdbc6-419f-428e-9c33-8cf2f2d3cecb
-md"""
-### 数值特征中的类别特征
-"""
-
-# ╔═╡ 1e7c3d5b-ace7-484c-8f1e-f118498aac3a
-num_cate_feats
-
-# ╔═╡ 27f2447c-72ff-4753-9cd6-29b346b0e3e2
-@count(train, term)
-
-# ╔═╡ 0e6ac6fb-79c4-4516-8978-a420e85ed56e
-@chain train begin 
-	@drop_missing
-	@mutate(isDefault = as_string(isDefault), term = as_string(term))
-ggplot(_, @aes(y = term,color=isDefault)) + geom_bar(position="dodge")
-end
-
-# ╔═╡ 359f830b-c0c4-4371-a71f-797177826820
-md"""
-### 数值特征中的连续变量
-
-"""
-
-# ╔═╡ 386888a4-7bfd-48b3-b2ef-05a0ebb6cca1
-df = @chain train begin 
-@drop_missing
-@select(!!num_cont_feats)
-@pivot_longer(-id)
-end
-
-# ╔═╡ 6fe079c1-43f5-43be-9917-8263f15313ac
-write_csv(df, "test.csv")
-
-# ╔═╡ 4a597e85-5842-4897-a6c8-cde8828d786c
-ggplot(df, @aes(x=value)) + geom_density() + facet_wrap(facets=:variable)
-
-# ╔═╡ a7a97950-0334-49f7-95d9-e0441707539e
-df.variable
-
-# ╔═╡ 5b844a24-e2a5-48e9-b8a1-4901e1d4c587
-function test( a,b; c,d)
- return (a,b,c,d)
-end	 
-
-# ╔═╡ 02f8a464-3663-4d78-9a96-92700110f788
-test(c=3,2, d=4, 1)
-
-# ╔═╡ ba89cd1a-f309-484c-a135-6cd25f1a600e
-df_wide = DataFrame(id = [1, 2], A = [1, 3], B = [2, 4])
-
-# ╔═╡ afa6f38a-6e16-49b9-afd3-956f33e786ce
-@pivot_longer(df_wide, A:B, names_to = "letter", values_to = "number")
-
-# ╔═╡ a6370b72-fc88-4a0a-9e26-13b259a4fee2
-d = Dict(:sdf => "ok")
-
-# ╔═╡ 18fb0ab9-5822-470b-aa20-cebc671a8fdf
-@pivot_longer(df_wide, A:B, names_to = letter, values_to = number)
-
-# ╔═╡ 908031d1-2ca0-4438-8917-2f283d5130e6
-@pivot_longer(df_wide, A:B, names_to = "letter")
-
-# ╔═╡ 4a0a127e-5119-493b-a8dd-93501507cd02
-md"""
-因为数据是数值类型， 在画图前， 转化为字符串有利于避免一些画图问题。
-""" |> aside
-
-# ╔═╡ 300ef793-02e1-49f0-8f5f-b55b9e54d940
-begin
-	Temp = @ingredients "../chinese.jl" # provided by PlutoLinks.jl
-	PlutoTeachingTools.register_language!("chinese", Temp.PTTChinese.China())
-	set_language!( PlutoTeachingTools.get_language("chinese") )
-end;
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
-PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Tidier = "f0413319-3358-4bb0-8e7c-0c83523a93bd"
+TidierData = "fe2206b3-d496-4ee9-a338-6a095c4ece80"
+TidierPlots = "337ecbd1-5042-4e2a-ae6f-ca776f97570a"
 
 [compat]
-PlutoTeachingTools = "~0.2.15"
-PlutoUI = "~0.7.60"
 Tidier = "~1.4.0"
+TidierData = "~0.15.2"
+TidierPlots = "~0.7.8"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -463,7 +56,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "e6816821b3fbe4583a749141b049a11aa5b54d62"
+project_hash = "4d87db3490d5efe2eb5bae75a19b1be03b63cda5"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -486,12 +79,6 @@ weakdeps = ["ChainRulesCore", "Test"]
     [deps.AbstractFFTs.extensions]
     AbstractFFTsChainRulesCoreExt = "ChainRulesCore"
     AbstractFFTsTestExt = "Test"
-
-[[deps.AbstractPlutoDingetjes]]
-deps = ["Pkg"]
-git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
-uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.3.2"
 
 [[deps.AbstractTrees]]
 git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
@@ -567,9 +154,9 @@ weakdeps = ["SparseArrays"]
 
 [[deps.Arrow]]
 deps = ["ArrowTypes", "BitIntegers", "CodecLz4", "CodecZstd", "ConcurrentUtilities", "DataAPI", "Dates", "EnumX", "LoggingExtras", "Mmap", "PooledArrays", "SentinelArrays", "Tables", "TimeZones", "TranscodingStreams", "UUIDs"]
-git-tree-sha1 = "f8d411d1b45459368567dc51f683ed78a919d795"
+git-tree-sha1 = "4ece4573f169d64b1508b0c8dd38c7919ae7a907"
 uuid = "69666777-d1a9-59fb-9406-91d4454c9d45"
-version = "2.7.2"
+version = "2.7.3"
 
 [[deps.ArrowTypes]]
 deps = ["Sockets", "UUIDs"]
@@ -678,9 +265,9 @@ version = "1.1.0"
 
 [[deps.CairoMakie]]
 deps = ["CRC32c", "Cairo", "Cairo_jll", "Colors", "FileIO", "FreeType", "GeometryBasics", "LinearAlgebra", "Makie", "PrecompileTools"]
-git-tree-sha1 = "d3d4e823e2d7ccac4f1360beeea58597e93210a3"
+git-tree-sha1 = "361dec06290d76b6d70d0c7dc888038eec9df63a"
 uuid = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
-version = "0.12.8"
+version = "0.12.9"
 
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
@@ -733,12 +320,6 @@ deps = ["CategoricalArrays", "CodecLz4", "DataFrames", "Dates", "DecFP", "Progre
 git-tree-sha1 = "8157605bfa30b90814079b7e5a6f4db559cfdf12"
 uuid = "82f2e89e-b495-11e9-1d9d-fb40d7cf2130"
 version = "0.2.3"
-
-[[deps.CodeTracking]]
-deps = ["InteractiveUtils", "UUIDs"]
-git-tree-sha1 = "7eee164f122511d3e4e1ebadb7956939ea7e1c77"
-uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
-version = "1.3.6"
 
 [[deps.CodecLz4]]
 deps = ["Lz4_jll", "TranscodingStreams"]
@@ -898,9 +479,9 @@ version = "0.1.2"
 
 [[deps.DelaunayTriangulation]]
 deps = ["AdaptivePredicates", "EnumX", "ExactPredicates", "Random"]
-git-tree-sha1 = "b5f1c6532d2ea71e99b74231b0a3d53fba846ced"
+git-tree-sha1 = "46f12daa85e5acc0ea5d5f9f8c3f1fc679e0f7e5"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
-version = "1.1.3"
+version = "1.2.0"
 
 [[deps.Distances]]
 deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
@@ -1237,18 +818,6 @@ git-tree-sha1 = "7c4195be1649ae622304031ed46a2f4df989f1eb"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
 version = "0.3.24"
 
-[[deps.Hyperscript]]
-deps = ["Test"]
-git-tree-sha1 = "179267cfa5e712760cd43dcae385d7ea90cc25a4"
-uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
-version = "0.0.5"
-
-[[deps.HypertextLiteral]]
-deps = ["Tricks"]
-git-tree-sha1 = "7134810b1afce04bbc1045ca1985fbe81ce17653"
-uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
-version = "0.9.5"
-
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
 git-tree-sha1 = "b6d6bfdd7ce25b0f9b2f6b3dd56b2673a66c8770"
@@ -1450,12 +1019,6 @@ git-tree-sha1 = "c84a835e1a09b289ffcd2271bf2a337bbdda6637"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "3.0.3+0"
 
-[[deps.JuliaInterpreter]]
-deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
-git-tree-sha1 = "4b415b6cccb9ab61fec78a621572c82ac7fa5776"
-uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
-version = "0.9.35"
-
 [[deps.Kerberos_krb5_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "60274b4ab38e8d1248216fe6b6ace75ae09b0502"
@@ -1496,22 +1059,6 @@ deps = ["InteractiveUtils", "JSON", "RelocatableFolders"]
 git-tree-sha1 = "0cf92ba8402f94c9f4db0ec156888ee8d299fcb8"
 uuid = "8ef0a80b-9436-5d2c-a485-80b904378c43"
 version = "0.4.6"
-
-[[deps.Latexify]]
-deps = ["Format", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Requires"]
-git-tree-sha1 = "ce5f5621cac23a86011836badfedf664a612cee4"
-uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-version = "0.16.5"
-
-    [deps.Latexify.extensions]
-    DataFramesExt = "DataFrames"
-    SparseArraysExt = "SparseArrays"
-    SymEngineExt = "SymEngine"
-
-    [deps.Latexify.weakdeps]
-    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-    SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
 
 [[deps.LayerDicts]]
 git-tree-sha1 = "6087ad3521d6278ebe5c27ae55e7bbb15ca312cb"
@@ -1664,22 +1211,11 @@ git-tree-sha1 = "c1dd6d7978c12545b4179fb6153b9250c96b0075"
 uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 version = "1.0.3"
 
-[[deps.LoweredCodeUtils]]
-deps = ["JuliaInterpreter"]
-git-tree-sha1 = "1ce1834f9644a8f7c011eb0592b7fd6c42c90653"
-uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
-version = "3.0.1"
-
 [[deps.Lz4_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "7f26c8fc5229e68484e0b3447312c98e16207d11"
 uuid = "5ced341a-0733-55b8-9ab6-a4889d929147"
 version = "1.10.0+0"
-
-[[deps.MIMEs]]
-git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
-uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
-version = "0.1.4"
 
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
@@ -1695,9 +1231,9 @@ version = "0.5.13"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "77d98de758529d79aa7e2d95812f3a5ebdb8db43"
+git-tree-sha1 = "204f06860af9008fa08b3a4842f48116e1209a2c"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.21.8"
+version = "0.21.9"
 
 [[deps.MakieCore]]
 deps = ["ColorTypes", "GeometryBasics", "IntervalSets", "Observables"]
@@ -1961,30 +1497,6 @@ git-tree-sha1 = "7b1a9df27f072ac4c9c7cbe5efb198489258d1f5"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.1"
 
-[[deps.PlutoHooks]]
-deps = ["InteractiveUtils", "Markdown", "UUIDs"]
-git-tree-sha1 = "072cdf20c9b0507fdd977d7d246d90030609674b"
-uuid = "0ff47ea0-7a50-410d-8455-4348d5de0774"
-version = "0.0.5"
-
-[[deps.PlutoLinks]]
-deps = ["FileWatching", "InteractiveUtils", "Markdown", "PlutoHooks", "Revise", "UUIDs"]
-git-tree-sha1 = "8f5fa7056e6dcfb23ac5211de38e6c03f6367794"
-uuid = "0ff47ea0-7a50-410d-8455-4348d5de0420"
-version = "0.1.6"
-
-[[deps.PlutoTeachingTools]]
-deps = ["Downloads", "HypertextLiteral", "LaTeXStrings", "Latexify", "Markdown", "PlutoLinks", "PlutoUI", "Random"]
-git-tree-sha1 = "5d9ab1a4faf25a62bb9d07ef0003396ac258ef1c"
-uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
-version = "0.2.15"
-
-[[deps.PlutoUI]]
-deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "eba4810d5e6a01f612b948c9fa94f905b49087b0"
-uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.60"
-
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
@@ -2117,12 +1629,6 @@ git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
 
-[[deps.Revise]]
-deps = ["CodeTracking", "Distributed", "FileWatching", "JuliaInterpreter", "LibGit2", "LoweredCodeUtils", "OrderedCollections", "REPL", "Requires", "UUIDs", "Unicode"]
-git-tree-sha1 = "7b7850bb94f75762d567834d7e9802fc22d62f9c"
-uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
-version = "3.5.18"
-
 [[deps.Rmath]]
 deps = ["Random", "Rmath_jll"]
 git-tree-sha1 = "f65dcb5fa46aee0cf9ed6274ccbd597adc49aa7b"
@@ -2234,9 +1740,9 @@ version = "0.1.3"
 
 [[deps.Snappy]]
 deps = ["CEnum", "snappy_jll"]
-git-tree-sha1 = "72bae53c0691f4b6fd259587dab8821ae0e025f6"
+git-tree-sha1 = "098adf970792fd9404788f4558e94958473f7d57"
 uuid = "59d4ed8c-697a-5b28-a4c7-fe95c22820f9"
-version = "0.4.2"
+version = "0.4.3"
 
 [[deps.Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
@@ -2502,13 +2008,9 @@ weakdeps = ["RecipesBase"]
     TimeZonesRecipesBaseExt = "RecipesBase"
 
 [[deps.TranscodingStreams]]
-git-tree-sha1 = "d73336d81cafdc277ff45558bb7eaa2b04a8e472"
+git-tree-sha1 = "e84b3a11b9bece70d14cce63406bbc79ed3464d2"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.10.10"
-weakdeps = ["Random", "Test"]
-
-    [deps.TranscodingStreams.extensions]
-    TestExt = ["Test", "Random"]
+version = "0.11.2"
 
 [[deps.Transducers]]
 deps = ["Accessors", "Adapt", "ArgCheck", "BangBang", "Baselet", "CompositionsBase", "ConstructionBase", "DefineSingletons", "Distributed", "InitialValues", "Logging", "Markdown", "MicroCollections", "Requires", "SplittablesBase", "Tables"]
@@ -2529,11 +2031,6 @@ version = "0.4.82"
     LazyArrays = "5078a376-72f3-5289-bfd5-ec5146d43c02"
     OnlineStatsBase = "925886fa-5bf2-5e8e-b522-a9147a512338"
     Referenceables = "42d2dcc6-99eb-4e98-b66c-637b7d73030e"
-
-[[deps.Tricks]]
-git-tree-sha1 = "7822b97e99a1672bfb1b49b668a6d46d58d8cbcb"
-uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
-version = "0.1.9"
 
 [[deps.TriplotBase]]
 git-tree-sha1 = "4d4ed7f294cda19382ff7de4c137d24d16adc89b"
@@ -2599,9 +2096,9 @@ version = "1.6.1"
 
 [[deps.XLSX]]
 deps = ["Artifacts", "Dates", "EzXML", "Printf", "Tables", "ZipFile"]
-git-tree-sha1 = "319b05e790046f18f12b8eae542546518ef1a88f"
+git-tree-sha1 = "074aebfa44514e5b560a64c8dcf0577f43e0a909"
 uuid = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
-version = "0.10.1"
+version = "0.10.2"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
@@ -2787,75 +2284,16 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═a6682dc0-501e-4a1a-aa26-2f4ff59cc8cb
-# ╠═71a16c11-c1e4-45f2-9e39-35632757f443
-# ╠═2a640a85-5c23-438d-b262-4287ab372d7c
-# ╟─74ece9db-0a67-4b5c-9693-482c1bca0ba0
-# ╟─245a7c5f-fd01-4386-93c9-e39a4b6c26ab
-# ╠═b93c8356-1125-4c78-96d6-d65d008824cf
-# ╠═ee92efc3-8e0b-4c2c-a85f-40b4f5c2f07d
-# ╠═07cd2249-cd8b-49e0-a97d-1ea0b346efea
-# ╟─b4b21281-2ee7-4b91-b33d-1e1138215f66
-# ╟─9e29a561-bda1-46c2-a66f-4bde0b91731a
-# ╠═0e783777-c3bd-41c2-b130-48eba04c2758
-# ╟─6fd78a3a-63ea-4832-800f-dfc4a718fade
-# ╠═3e6e4a80-4931-4efa-9a2d-cb070b708ae7
-# ╟─13678a02-3664-4a52-83b3-7bf93b2f34bd
-# ╠═8fa82962-7e00-4551-be97-9c7e883cd420
-# ╟─a89e1f03-b9bf-468e-ba42-2983405dd5f7
-# ╟─bd89c6b8-6af6-4660-bbdb-a48aef9191f6
-# ╠═d67ee67a-ebc1-4a49-9bb0-59b59c210428
-# ╟─e7e24ee0-cd32-46cf-a8b9-cade27de9d8c
-# ╟─cdb4e909-5f17-42a7-91f0-f10fc05d36a2
-# ╠═dcd068bc-e09a-49c3-9ab0-ffbd7304c0dc
-# ╟─2142e85a-8a0d-49c3-ac20-6fb92fb99026
-# ╠═8b6e2a66-358d-4903-a3cc-a627cf76c421
-# ╟─71872557-459a-4f17-8865-ed5b22a0715c
-# ╟─a63ad11b-d2d5-4dba-8856-532130b6eeb7
-# ╟─a9a8705e-de36-4175-af86-4c064a108b69
-# ╟─824eca64-ff9a-48af-99dc-a832196313e0
-# ╠═3b9e3dc1-bf16-49b8-bf94-a9af8d808993
-# ╠═45e168f6-1b2b-4560-b33d-c66999456a41
-# ╟─2c4dbc16-4b22-4ae7-9ba0-26ffba47c9cb
-# ╟─ab80de21-15c0-48a6-b286-e2dbf1b9ead3
-# ╟─84a645f6-8c85-45b9-8e03-3b381e26511e
-# ╠═ba548abf-44f3-41ad-a2a2-28286a3efeb2
-# ╠═677003c9-7911-4ba2-8f3d-baabf2bf7341
-# ╠═dfc21c69-5fba-4f28-91fe-fa445be7abd8
-# ╟─733e3e89-338c-4153-ba6d-fbda29d6fd72
-# ╠═bde3b6d2-710b-4923-b51d-5f175101ad78
-# ╠═1143968f-f555-475d-ba84-fbd8dc1cb86b
-# ╟─462f22ac-dd09-4f90-87c3-00c151b4d5f7
-# ╠═3e1db291-c953-4c9c-bc4c-4e75fd666bf8
-# ╟─10118f78-9de4-4380-b676-5a391bfa4678
-# ╠═efddd6f7-b827-4386-94f7-a15300b1aac2
-# ╟─540000a0-ac62-4167-96ab-cad3e91b7ee2
-# ╠═dbe477c4-e13b-4799-9d20-2d4159e9ba77
-# ╠═897afd4b-6b8b-4f31-ae6a-2381333f3027
-# ╟─c02c487c-c519-4146-a859-c73313f9f863
-# ╠═d93ad6f5-8b34-4964-9864-616bfa8b2573
-# ╟─b155e99a-4666-49bc-98dc-59c07d926df5
-# ╟─c0ee1401-8658-4aed-a474-492aa014222d
-# ╟─dd09ae38-5d2e-4e7e-a814-9bc306baac70
-# ╟─37a32896-b5b9-47a2-ad6f-3364d7361c86
-# ╟─953f5f18-c84a-4998-bd65-0d2408490848
-# ╟─9dbcdbc6-419f-428e-9c33-8cf2f2d3cecb
-# ╟─1e7c3d5b-ace7-484c-8f1e-f118498aac3a
-# ╠═27f2447c-72ff-4753-9cd6-29b346b0e3e2
-# ╠═0e6ac6fb-79c4-4516-8978-a420e85ed56e
-# ╟─359f830b-c0c4-4371-a71f-797177826820
-# ╠═386888a4-7bfd-48b3-b2ef-05a0ebb6cca1
-# ╠═6fe079c1-43f5-43be-9917-8263f15313ac
-# ╠═4a597e85-5842-4897-a6c8-cde8828d786c
-# ╠═a7a97950-0334-49f7-95d9-e0441707539e
-# ╠═5b844a24-e2a5-48e9-b8a1-4901e1d4c587
-# ╠═02f8a464-3663-4d78-9a96-92700110f788
-# ╠═ba89cd1a-f309-484c-a135-6cd25f1a600e
-# ╠═afa6f38a-6e16-49b9-afd3-956f33e786ce
-# ╠═a6370b72-fc88-4a0a-9e26-13b259a4fee2
-# ╠═18fb0ab9-5822-470b-aa20-cebc671a8fdf
-# ╠═908031d1-2ca0-4438-8917-2f283d5130e6
-# ╟─4a0a127e-5119-493b-a8dd-93501507cd02
-# ╠═300ef793-02e1-49f0-8f5f-b55b9e54d940
+# ╠═7fa8c9a0-6d87-11ef-2ff2-3d63d24ca3c7
+# ╠═2dc39a58-4900-42c5-a4e2-72c02560c20b
+# ╠═17fdf53a-2864-4fc4-a0c0-2174ce034834
+# ╠═a5945f0a-48f4-4341-b0be-160b7401c770
+# ╠═a8a07175-04b9-4ed4-9a33-5e0941199b40
+# ╠═ced59cc1-ff8f-48b0-a81a-c9c0dde6a11b
+# ╠═8ca4f3e2-ec1a-4004-8f39-f41554afdd4d
+# ╠═4667a72d-db0d-404f-ba2b-4988406ab8fb
+# ╠═261bd2f4-cbec-49ea-b37e-30033c0e764f
+# ╠═27a350a0-c11f-445f-be88-70c6e78b84ae
+# ╠═b0da984f-2f25-464d-9a85-7ad9aefa3e2d
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
