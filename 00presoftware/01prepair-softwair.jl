@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.46
+# v0.19.41
 
 using Markdown
 using InteractiveUtils
@@ -72,7 +72,17 @@ REPL环境有四种模式： 第一种模式就是**代码（Julian）模式**�
 # ╔═╡ 20de8e05-edb4-43aa-a14e-5fd24e290ecd
 md"""
 !!! warn "设置包安装路径"
-	不管你安装Julia的时候选择的路径是什么， 后续Julia都会将你安装的包之类的资料放到全局变量`DEPOT_PATH`指定的路径下， 你可以在REPL中输入这个变量名看看路径是什么， 通常是当前用户的家目录下的`.julia`目录（`~/.julia`）。对Windows系统而言， 这个目录通常在C盘。随着Julia的使用， 安装的包等各类资源可能会越来越多， 这个目录下的文件可能会越来越多， 为了避免C盘空间不足， 建议在安装任何第三方包之前先修改这个路径。修改的方式有很多， 推荐最省事的一种。定义一个环境变量， `JULIA_DEPOT_PATH`, 其值为你想要设置的路径， 比如设置为""D:/.julia"。这样，以后所有的包都会默认安装在D盘， 不会影响C盘的空间。
+	不管你安装Julia的时候选择的路径是什么， 后续Julia都会将你安装的包之类的资料放到全局变量`DEPOT_PATH`指定的路径下， 你可以在REPL中输入这个变量名看看路径是什么， 通常是当前用户的家目录下的`.julia`目录（`~/.julia`）。对Windows系统而言， 这个目录通常在C盘。随着Julia的使用， 安装的包等各类资源可能会越来越多， 这个目录下的文件可能会越来越多， 为了避免C盘空间不足， 建议在安装任何第三方包之前先修改这个路径。修改的方式有很多， 推荐最省事的一种。定义一个环境变量， `JULIA_DEPOT_PATH`, 其值为你想要设置的路径， 比如设置为"D:/.julia"。这样，以后所有的包都会默认安装在D盘， 不会影响C盘的空间。
+"""
+
+# ╔═╡ 59202139-b43b-4936-8abc-f95fad9cb940
+md"""
+!!! warn "增加一个注册中心"
+	在设置完`JULIA_DEPOT_PATH`之后， 请增加一个包注册中心。 这个注册中心是为了方便后面使用自己编写的包而设置的。 实现很简单， 在代码模式下， 输入如下语句即可。
+	```julia
+	import Pkg
+	Pkg.Registry.add(RegistrySpec(url = "https://gitee.com/mathutopia/dplusreg.git"))
+	```
 """
 
 # ╔═╡ 4dfeadb7-ca9b-45ac-a332-5bb621a133aa
@@ -105,6 +115,22 @@ md"""
 整个过程结束后的界面应该是下面的图片的样子。 注意这个网址， http://localhost:1235/?secret=auGzZKwc, 如果系统没有自动打开浏览器的话，你可以将该网址复制进你喜欢的浏览器，接下来就可以用Pluto写代码了。Pluto启动，每次的网址都会不同。
 
 [![pluto-started.png](https://free2.yunpng.top/2024/09/03/66d72614ba33a.png)](https://free2.yunpng.top/2024/09/03/66d72614ba33a.png)
+"""
+
+# ╔═╡ 26fea049-9a99-4796-ba94-16eb0586c544
+md"""
+!!! warn "安装常用的包"
+	虽然我们大部分时候使用Pluto, 不需要自己安装包。不过， 包一些包安装在本地， 可以方便在REPL中使用Julia。 以下几个包， 课程常用可以安装。 在代码模式下， 进入包模式， 安装即可。
+	```julia
+	] add Plots # 用于绘图
+	] add Tidier # 用于数据处理与分析
+	] add Clustering # 用于聚类分析
+	] add MLJ # 用于分类计算
+	] add RuleMiner # 关联规则挖掘
+	] add OutlierDetection # 异常检测  
+	] add StatisticalMeasures # 评估模型，
+	] add DataFrame # 用于表格数据分析
+	```
 """
 
 # ╔═╡ 28760fc8-bce3-4927-b05d-daa0d70e2874
@@ -220,6 +246,31 @@ md'''
 - Pluto文件中， 每一个变量名只能定义一次（这是一个跟写Jupyer Notebook 有显著差异的地方）。
 """
 
+# ╔═╡ c93fe6cb-7d09-49ec-be54-e01f9d55bacc
+md"""
+# 关于环境
+环境（Environment）在编程和软件开发中是一个重要的概念，特别是在使用包管理和版本控制系统的语言中，如Julia。以下是关于环境的一些基础知识：
+
+### 什么是环境？
+环境是一个包含特定版本软件包（pakckages）、依赖项（dependencies）和配置的隔离空间。在Julia中，环境通常指的是一组相互兼容的包和它们的确切版本，这些包和版本被记录在`Project.toml`和`Manifest.toml`文件中。在启动Julia后， 进入package模式， 前面的提示符`(@v1.10 pkg)>`显示的就是当前的环境， 你对包所做的所有操作， 影响的都是这个环境。 这个环境是Julia的默认环境， 如果你一直使用这个默认环境， 随着包安装也来越多， 可能包之间会存在冲突。 所以， 安全情况下， 我们会为每一个项目创建一个环境。 所以， 你只要看到`Project.toml`和`Manifest.toml`文件， 就表明这个目录有一个环境。`Project.toml`中记录了这个环境中安装的所有包。（你通过 add 增加的包会记录在这个文件中）
+
+### 如何创建环境？
+在Julia中，可以使用包管理器Pkg来创建和管理环境。以下是创建环境的步骤：
+1. **创建新环境**：通过`Pkg.activate`命令激活一个新的环境。例如，`Pkg.activate("MyProject")`(或者`] activate MyProject`)会在当前目录下创建一个新的环境。 `] activate .`是将当前工作路径设置为一个Project。 如果只是`] activate `， 表明激活的是全局环境。
+
+2. **添加包**：使用`Pkg.add`命令向环境中添加包。例如，`Pkg.add("Example")`会将Example包添加到当前激活的环境中，并更新`Project.toml`和`Manifest.toml`文件。
+
+
+"""
+
+# ╔═╡ 21956996-6ee7-4ca2-9c28-4db3cd120c44
+md"""
+### 使用别人的环境
+如果你拿到别的一个环境， 也就是Project.toml和Manifest.toml文件。 你可以将这两个文件放置在某个文件夹下， 然后直接激活这个环境，就可以复现别人的代码了。 
+
+不过， 有时候， 你可能只有Project.toml一个文件， 也就是拿到别的项目依赖了哪些包， 而不知道这些包之间的依赖关系（Manifest.toml文件给出）， 这时候， 你可以在包模式下输入`instantiate`或者代码模式下`] instantiate`
+"""
+
 # ╔═╡ d51befa8-8455-4016-b1d7-4eeb93d691e0
 begin
 	Temp = @ingredients "../chinese.jl" # provided by PlutoLinks.jl
@@ -242,7 +293,7 @@ PlutoUI = "~0.7.55"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.4"
+julia_version = "1.10.3"
 manifest_format = "2.0"
 project_hash = "44388d43beadf718b003fd34942ad0d1d5e94eb5"
 
@@ -604,10 +655,12 @@ version = "17.4.0+2"
 # ╟─46613937-81af-41dc-a1a0-d43acfa3e6f5
 # ╟─4ca8ac78-fbc6-427c-9555-2a81cad221e2
 # ╟─20de8e05-edb4-43aa-a14e-5fd24e290ecd
+# ╟─59202139-b43b-4936-8abc-f95fad9cb940
 # ╟─4dfeadb7-ca9b-45ac-a332-5bb621a133aa
 # ╟─5111c260-d62e-42c2-ad96-4e724d36bc8c
 # ╟─938c5d8b-fffb-4d05-a470-4b56755e7459
 # ╟─094e337e-46f0-4161-b192-b97b9be0da6b
+# ╟─26fea049-9a99-4796-ba94-16eb0586c544
 # ╟─28760fc8-bce3-4927-b05d-daa0d70e2874
 # ╟─c376ce27-cdd1-409e-9158-d304213f5197
 # ╟─4459b362-f2d4-4270-93aa-a515886cf2ef
@@ -623,6 +676,8 @@ version = "17.4.0+2"
 # ╟─357f5116-3a19-4591-a5c5-6efc1165b63a
 # ╠═7fe6300f-72c4-4ce3-ac1e-6c2cf2e9579f
 # ╟─2f91e247-0ecd-411c-852f-ba1bbc229813
+# ╟─c93fe6cb-7d09-49ec-be54-e01f9d55bacc
+# ╟─21956996-6ee7-4ca2-9c28-4db3cd120c44
 # ╠═d51befa8-8455-4016-b1d7-4eeb93d691e0
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
