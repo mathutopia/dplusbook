@@ -392,24 +392,9 @@ df = @chain train begin
 @drop_missing
 @select(!!num_cont_feats)
 @pivot_longer(-id)
+	ggplot(_, @aes(y=variable, x=value)) + geom_violin()
+
 end
-
-# ╔═╡ 6fe079c1-43f5-43be-9917-8263f15313ac
-write_csv(df, "test.csv")
-
-# ╔═╡ 4a597e85-5842-4897-a6c8-cde8828d786c
-ggplot(df, @aes(x=value)) + geom_density() + facet_wrap(facets=:variable)
-
-# ╔═╡ a7a97950-0334-49f7-95d9-e0441707539e
-df.variable
-
-# ╔═╡ 5b844a24-e2a5-48e9-b8a1-4901e1d4c587
-function test( a,b; c,d)
- return (a,b,c,d)
-end	 
-
-# ╔═╡ 02f8a464-3663-4d78-9a96-92700110f788
-test(c=3,2, d=4, 1)
 
 # ╔═╡ ba89cd1a-f309-484c-a135-6cd25f1a600e
 df_wide = DataFrame(id = [1, 2], A = [1, 3], B = [2, 4])
@@ -2837,11 +2822,6 @@ version = "3.5.0+0"
 # ╠═0e6ac6fb-79c4-4516-8978-a420e85ed56e
 # ╟─359f830b-c0c4-4371-a71f-797177826820
 # ╠═386888a4-7bfd-48b3-b2ef-05a0ebb6cca1
-# ╠═6fe079c1-43f5-43be-9917-8263f15313ac
-# ╠═4a597e85-5842-4897-a6c8-cde8828d786c
-# ╠═a7a97950-0334-49f7-95d9-e0441707539e
-# ╠═5b844a24-e2a5-48e9-b8a1-4901e1d4c587
-# ╠═02f8a464-3663-4d78-9a96-92700110f788
 # ╠═ba89cd1a-f309-484c-a135-6cd25f1a600e
 # ╠═afa6f38a-6e16-49b9-afd3-956f33e786ce
 # ╠═a6370b72-fc88-4a0a-9e26-13b259a4fee2

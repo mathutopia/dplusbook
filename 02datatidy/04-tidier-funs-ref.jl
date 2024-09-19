@@ -641,6 +641,238 @@ md"""
 
 """
 
+# ╔═╡ b93f73d1-e0f3-462f-81b5-9116f1b9edf7
+md"""
+### TidierCats.jl 函数详细总结
+
+- **as_categorical**
+  - **作用**：将输入的普通数组或类似数组结构转换为分类数组（CategoricalArray），这有助于在数据处理中更有效地处理具有有限唯一值的变量。
+  - **例子**：
+    ```julia
+    julia> arr = ["A", "B", "C", "A", "B", "B", "D", "E", missing]
+    9-element Vector{Union{Missing, String}}:
+     "A"
+     "B"
+     "C"
+     "A"
+     "B"
+     "B"
+     "D"
+     "E"
+     missing
+
+    julia> as_categorical(arr)
+    9-element CategoricalArrays.CategoricalArray{Union{Missing, String},1,UInt32}:
+     "A"
+     "B"
+     "C"
+     "A"
+     "B"
+     "B"
+     "D"
+     "E"
+     missing
+    ```
+
+- **cat_collapse**
+  - **作用**：在分类数组中，根据提供的映射字典折叠某些类别级别。这通常用于将多个类别合并为一个，以简化数据或进行数据的聚合分析。
+  - **例子**：
+    ```julia
+    julia> cat_array = CategoricalArray(["A", "B", "C", "D", "E"], ordered=true)
+    5-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "B"
+     "C"
+     "D"
+     "E"
+
+    julia> levels_map = Dict("A" => "A", "B" => "A", "C" => "C", "D" => "C", "E" => "E")
+    Dict{String,String} with 4 entries:
+     "C" => "C"
+     "B" => "A"
+     "D" => "C"
+     "E" => "E"
+
+    julia> cat_collapse(cat_array, levels_map)
+    5-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "A"
+     "C"
+     "C"
+     "E"
+    ```
+
+- **cat_infreq**
+  - **作用**：根据出现频率对分类数组的类别级别进行排序，将最不常见的类别放在前面。这有助于在数据探索和可视化中突出显示更频繁的类别。
+  - **例子**：
+    ```julia
+    julia> cat_array = CategoricalArray(["A", "B", "B", "C", "A", "B", "A"], ordered=true)
+    7-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "B"
+     "B"
+     "C"
+     "A"
+     "B"
+     "A"
+
+    julia> cat_infreq(cat_array)
+    7-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "C"
+     "A"
+     "B"
+     "A"
+     "B"
+     "B"
+     "A"
+    ```
+
+- **cat_lump**
+  - **作用**：根据频率将分类数组中的不常见类别合并为一个“其他”类别。通过指定要保留的类别数量，可以简化数据并减少类别的复杂性。
+  - **例子**：
+    ```julia
+    julia> cat_array = CategoricalArray(["A", "B", "C", "A", "B", "B", "D", "E", "F"], ordered=true)
+    9-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "B"
+     "C"
+     "A"
+     "B"
+     "B"
+     "D"
+     "E"
+     "F"
+
+    julia> cat_lump(cat_array, 3)
+    9-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "B"
+     "Other"
+     "A"
+     "B"
+     "B"
+     "Other"
+     "Other"
+     "Other"
+    ```
+
+- **cat_lump_min**
+  - **作用**：基于最小计数阈值，将低于此阈值的类别合并为一个“其他”类别。这有助于处理具有许多稀有类别的数据集，通过减少类别数量来简化分析。
+  - **例子**：
+    ```julia
+    julia> cat_array = CategoricalArray(["A", "B", "B", "C", "C", "D"], ordered=true)
+    6-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "B"
+     "B"
+     "C"
+     "C"
+     "D"
+
+    julia> cat_lump_min(cat_array, 2)
+    6-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "B"
+     "B"
+     "C"
+     "C"
+     "Other"
+    ```
+
+- **cat_lump_prop**
+  - **作用**：基于比例阈值，将低于此比例的类别合并为一个“其他”类别。这有助于在类别众多且分布不均的数据集中突出显示主要类别。
+  - **例子**：
+    ```julia
+    julia> cat_array = CategoricalArray(["A", "B", "B", "C", "C", "D"], ordered=true)
+    6-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "B"
+     "B"
+     "C"
+     "C"
+     "D"
+
+    julia> cat_lump_prop(cat_array, 0.3)
+    6-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "B"
+     "B"
+     "C"
+     "C"
+     "Other"
+    ```
+
+- **cat_other**
+  - **作用**：将分类数组中的所有类别替换为指定的“其他”类别。这在需要隐藏或泛化数据以保护隐私或简化分析时非常有用。
+  - **例子**：
+    ```julia
+    julia> cat_array = CategoricalArray(["A", "B", "C", "D", "E"])
+    5-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "B"
+     "C"
+     "D"
+     "E"
+
+    julia> cat_other(cat_array, "Other")
+    5-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "Other"
+     "Other"
+     "Other"
+     "Other"
+     "Other"
+    ```
+
+- **cat_recode**
+  - **作用**：根据提供的映射重新编码分类数组的类别。这允许将某些类别名称更改为新的名称或合并多个类别。
+  - **例子**：
+    ```julia
+    julia> x = CategoricalArray(["apple", "tomato", "banana", "dear"])
+    4-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "apple"
+     "tomato"
+     "banana"
+     "dear"
+
+    julia> cat_recode(x, fruit = ["apple", "banana"], nothing = ["tomato"])
+    4-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "fruit"
+     "nothing"
+     "fruit"
+     "dear"
+    ```
+
+- **cat_relevel**
+  - **作用**：根据提供的顺序重新排序分类数组的类别级别。这有助于在数据展示中按照特定的顺序显示类别。
+  - **例子**：
+    ```julia
+    julia> cat_array = CategoricalArray(["A", "B", "C", "A", "B", "B"], ordered=true)
+    6-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "A"
+     "B"
+     "C"
+     "A"
+     "B"
+     "B"
+
+    julia> cat_relevel(cat_array, ["B", "A", "C"])
+    6-element CategoricalArrays.CategoricalArray{String,1,UInt32}:
+     "B"
+     "A"
+     "C"
+     "B"
+     "A"
+     "B"
+    ```
+
+- **cat_reorder**
+  - **作用**：根据另一个变量的汇总统计量（如平均值或中位数）重新排序分类变量列的类别。这有助于在数据分析中根据数值变量的统计特性对类别进行排序。
+  - **例子**：
+    ```julia
+    julia> cat_var = CategoricalArray(["A", "B", "A", "B", "A", "B", "C", "C", "C"])
+    9-element CategoricalArrays.Categorical
+"""
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -2927,5 +3159,6 @@ version = "3.5.0+0"
 # ╟─c392d0d7-9292-4980-8b97-3376cb602b1f
 # ╟─8516d0d7-2251-4b92-b9d6-cb2344181f51
 # ╟─454bce36-8e5d-4ed3-aa7c-6226156e35c7
+# ╟─b93f73d1-e0f3-462f-81b5-9116f1b9edf7
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
