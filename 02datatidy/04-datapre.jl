@@ -4,20 +4,17 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ bff5f244-66de-11ef-1248-cf917f18d161
-using PlutoTeachingTools, PlutoUI, TidierFiles,TidierData
+# ╔═╡ 4e990588-7996-11ef-3e42-b7ef9af1902b
+using TidierFiles, TidierData, PlutoUI,ScientificTypes, StatsBase,TidierCats, PlutoTeachingTools,TidierDates
 
-# ╔═╡ 07a14ec5-db26-49b3-969b-665dbb000b00
-TableOfContents()
-
-# ╔═╡ 055f8e68-b697-4c0f-af54-640a92e4ec7b
+# ╔═╡ ee4f0462-80d7-468c-930a-bc06f5c9ad80
 html"""
 	<p style="font-weight:bold; font-size: 60px;text-align:center">
 		Julia数据分析与挖掘
 	</p>
 	<div style="text-align:center">
 		<p style="font-weight:bold; font-size: 35px; font-variant: small-caps; margin: 0px">
-			数据分析简介，基于TidierData
+			数据准备
 		</p>
 		<p style="font-size: 30px; font-variant: small-caps; margin: 0px">
 			Weili Chen
@@ -28,685 +25,306 @@ html"""
 	</div>
 """
 
-# ╔═╡ fd1ab803-27b9-4bba-af52-5c60d0e1232f
-train = read_csv("../data/trainbx.csv")
+# ╔═╡ 5684e8e0-bcd9-4e7b-9084-2b577d33626c
+TableOfContents(title="目录")
 
-# ╔═╡ 713b2a77-0b70-4d85-9943-630fc9f59bdc
-@chain train begin
-@glimpse 
-end
-
-# ╔═╡ adadce64-12df-4650-995a-5b0aa8bf8bb6
-names(train)
-
-# ╔═╡ bf10eba6-ec5c-441e-9b09-e89c81bfe8b3
-size(train)
-
-# ╔═╡ d2be92cd-28cf-4846-b122-427ae1312708
+# ╔═╡ 8d89baef-db4b-4dc4-a1ee-6370e9881097
 md"""
-这里介绍的TidierData， 是属于Tidier家族的一个数据处理的包， 这个家族是模仿R语言的tidyverse， 家族里还有很多相关的包。需要读者自己去了解。 请阅读[**官方文档**](https://tidierorg.github.io/Tidier.jl/dev/).
+# 缺失值处理
+一般， 缺失值是无法进行建模的。 需要事先处理一下。缺失值处理有两种方式：1）直接删除有缺失值的行； 2）填充缺失值。
 """
 
-# ╔═╡ 97e6a277-8968-438f-8b90-ffce9855a5cb
+# ╔═╡ f2cf4a45-6436-4085-8f80-6efe75ff4a38
+train = read_csv("../data/train1w.csv")
+
+# ╔═╡ 629a395f-7295-4c6e-8e10-8f4c120b7df3
 md"""
-# 数据分析常见操作
-## 0 数据分析**流**
-数据分析常常是多个步骤，先后链接在一起的。 这写步骤当然可以用管道操作符链接到一起。不过， Julia中有一个非常漂亮的宏`@chain`。 `@chain` 是 Julia 语言中 `Chain.jl` 包提供的宏(Tidier.jl中重新导出， 所有可以直接使用。），它允许用户以一种比 Julia 原生管道操作符 `|>` 更为方便的语法来处理数据流。这个宏使得数据可以通过一系列转换表达式进行传递，同时保持代码的清晰和简洁。
+先将相关数据处理一下， 造成缺失值。
+"""
 
-### 基本用法
+# ╔═╡ 15906c0d-78b5-45da-a4ad-090322438b7a
+df = @chain train begin 
+@select(employmentLength = categorical(case_when(	
+	employmentLength=="< 1 year" => 0,
+	employmentLength=="1 year" => 1,
+	employmentLength=="2 years" => 2,
+	employmentLength=="3 years" => 3,
+	employmentLength=="4 years" => 4,
+	employmentLength=="5 years" => 5,
+	employmentLength=="6 years" => 6,
+	employmentLength=="7 years" => 7,
+	employmentLength=="8 years" => 8,
+	employmentLength=="9 years" => 9,
+	employmentLength=="10+ years" => 10,
+	employmentLength=="NA" => missing,
+),levels=[0,1,2,3,4,5,6,7,8,9,10], ordered=true), 
+revolUtil = as_float(revolUtil))
+end
 
-```julia
+# ╔═╡ 8c932f04-d53e-4299-86a6-6b43219d36a2
+md"""
+## 删除缺失值
+"""
+
+# ╔═╡ b196e5f7-b099-4fa8-93e8-8096cc0afdd0
 @chain df begin
-  @drop_missing
-  @filter(id>6)
-  @group_by(group)
-  @summarize(total_age = sum(age))
+	@summarise(across(everything(), x->count(ismissing.(x))))
+	@pivot_longer(everything())
+	@arrange(desc(value))
+	@filter(value>0) #只要有缺失值的
+end
+
+# ╔═╡ bb8005c9-eb1c-47fe-a24b-03973e23c69a
+@chain df begin 
+@drop_missing
+end
+
+# ╔═╡ 6907fe4a-2c85-4b58-8eae-3f2d06e5816c
+md"""
+##  用固定值填充
+对于数值属性， 可以使用均值或其他值填充.
+"""
+
+# ╔═╡ 8338af69-9125-4697-aac4-1df8594bcfbf
+@chain df begin
+	@mutate(employmentLength = replace_missing(employmentLength, 0))
+end
+
+# ╔═╡ f21f3963-b21d-4ee3-b58c-c937a4cac9d8
+md"""
+这里我们用一个固定值0去填充了一个类别变量的缺失值。请注意返回结果中， 字段的值的类型不再是categoricalvalue， 这说明， 我们破坏了数据的类型。这通常不是一个好事。一个合理的方法是，应该用一个categoricalvalue 去填充。 因此， 可以使用CategoricalValue构造一个。
+
+为了保持数据类型不变，你填充的值应是所有可能水平中的一个。如果不是， 会报错。
+"""
+
+# ╔═╡ ffda3098-51c7-42de-8f47-360bdec0ce56
+@chain df begin
+	@aside mc = CategoricalValue(0, _.employmentLength )
+	@mutate(employmentLength = replace_missing(employmentLength, !!mc))
+end
+
+# ╔═╡ 47585b8e-e1c3-40e9-9da3-1896b39230ce
+CategoricalValue(10,df.employmentLength )
+
+# ╔═╡ df3c6a0a-2c25-45e6-9977-5b666dab35d2
+md"""
+## 用统计量填充
+
+"""
+
+# ╔═╡ d89653f2-be96-4b8c-91a2-2b12b71e9ac8
+@chain df begin
+	@aside m = mode(_.employmentLength) ## 计算一下统计值, 这里是众数
+	@mutate(employmentLength = replace_missing(employmentLength, !!m))#！！表示插入一个外部变量
+end
+
+# ╔═╡ d52e5642-a76d-44be-944f-8a9d77669f88
+@chain df begin
+	@mutate(revolUtil = replace_missing(revolUtil, mean(skipmissing(revolUtil))))
+end
+
+# ╔═╡ 96a8c00c-22e7-49b0-a7e1-5de6362089da
+md"""
+!!! warn "注意"
+	注意， 由于字段revolUtil中包含缺失值， 而mean不过自动过滤缺失值， 所以用skipmissing包裹可能起到过滤缺失值再求均值的效果
+"""
+
+# ╔═╡ 1f0465b4-e311-445c-8978-bd66842a6af6
+@chain df begin
+	@aside mt = mode(_.employmentLength) ## 计算一下统计值, 这里是众数
+	@select(employmentLength = replace_missing(employmentLength, !!mt),
+	revolUtil = replace_missing(revolUtil, mean(skipmissing(revolUtil))))
+end
+
+# ╔═╡ 78b64499-b65d-4499-a916-7970d8ceda92
+md"""
+# 连续变量离散化
+"""
+
+# ╔═╡ 59bbfb01-a2ed-481b-95fa-da5578b7e9dc
+
+md"""
+连续变量的离散化是指将连续变量的值域分割成若干个区间，并把原来连续的数值转换为这些区间的表示。离散化通常用于数据分析和机器学习中，离散化可以带来很多好处：
+
+1. **简化问题**：在某些情况下，连续变量的离散化可以简化问题，使得问题更容易理解和处理。
+2. **改善模型性能**：对于某些模型，如决策树，离散化可以提高模型的解释性和性能。
+3. **减少噪声**：离散化可以减少数据中的噪声，提高模型的稳定性。
+4. **满足算法要求**：某些算法，如某些聚类算法，可能需要离散化的数据作为输入。
+5. **数据可视化**：离散化后的数据更容易进行可视化，如直方图等。
+
+离散化是一个数据预处理步骤，需要根据具体的数据和分析目标来选择合适的方法。在实际操作中，可能需要尝试多种方法，以找到最适合当前问题的离散化策略。
+
+
+在 Julia 语言的 TidierData.jl 包中，可以使用 `cut` 函数来实现连续变量的离散化（cut函数来自CategoricalArray.jl包， 不过这个包中的所有函数都被Tidier包重导出了，所以在加载了TidierData.jl包后直接使）。`cut` 函数可以将连续变量分割成不同的类别或分组，通常用于将数值变量转换为因子（categorical）变量。
+
+以下是一些使用 TidierData.jl 中 `cut` 函数进行离散化的示例：
+
+#### 1. 等宽离散化
+假设你有一个连续变量 `age`，你想将其分为几个等宽的区间：
+
+```julia
+using TidierData
+
+df = DataFrame(age = [22, 34, 45, 56, 78])
+
+# 将年龄分为 18-35, 36-55, 56-75, 76+ 四个区间
+df = @chain df begin
+    @mutate(age_group = cut(age, [18, 35, 55, 75, Inf], 
+                            labels = ["18-35", "36-55", "56-75", "76+"]))
 end
 ```
 
+!!! info "cut函数"
+	有时候， 我们希望将数值泛化为一个类别变量， 这可以用`CategoricalArrays.jl`包中的`cut`函数实现, 其使用方典型法如下：
 
-在这个例子中，`df` 是一个数据框（DataFrame），`@chain` 宏将 `df` 通过一系列 `TidierData.jl` 的函数调用进行处理：
+	```julia  
+	cut(x::AbstractArray, breaks::AbstractVector; labels::Union{AbstractVector,Function})
+	
+	cut(x::AbstractArray, ngroups::Integer; labels::Union{AbstractVector,Function})
+	```
+	简单来说， 在对一个数据进行划分时， 我们可以通过向量指定划分区间（breaks）， 也可以直接指定要划分的类别（ngroups）的数量。 与此同时， 我们可以指定每一个类别的标签(labels)。
 
-1. `@drop_missing`：去除缺失值。
-2. `@filter(:id => >(6), _)`：过滤出 `id` 大于 6 的行。
-3. `@group_by(group)`：根据 `group` 列的值进行分组。
-4. `@summarize(total_age = sum(age))`：对每个分组的 `age` 列求和，并将结果列命名为 `total_age`。
-
-`@chain`的核心作用就是将后面的表达式拼在一起， begin...end包裹的多个表达式也不例外。然后将上一个表达式计算的结果，放进下一个表达式的第一个参数（所以，通常第一个表达式应该是用于提供数据的变量名）。 比如下面的两个代码是等价的。
-```julia
-@chain a b c d e f
-
-@chain a begin
-    b
-    c
-    d
-end e f
-```
-这里只是这个宏的基本知识， 如果你想了解更多有趣的应用， 看一下 [**这个页面.**](https://github.com/jkrumbiegel/Chain.jl)
-"""
-
-# ╔═╡ 24c0519e-9ec8-4f11-bdd7-34b7e47b58a3
-md"""
-
-## 1. **选择列（变量）**
-在数据分析中，列操作是至关重要的.在 `TidierData.jl` 中通常使用 `@select` 宏进行列选择。其基本用法如下：
-
-**选择列**
-  - `@select(df, exprs...)`
-  - 参数：`df` (DataFrame), `exprs...` (列选择表达式)
-  - 作用：选择指定的列。
-
-其中， 列选择表达式有多种写法， 以下是一些常见的列选择表达式写法：
-
-
-1. **选择单个列**:
-   ```julia
-   @select(df, a)
-   ```
-其中，a是数据框df中的列名。不需要引号和冒号。以下类似。
-2. **选择多个列**:
-   ```julia
-   @select(df, a, b, c)
-   ```
-
-3. **选择列范围**:
-   ```julia
-   @select(df, 1:3)  # 选择第1到第3列
-   @select(df, a:c)  # 选择从列a到列c
-   ```
-
-4. **排除列**:
-   ```julia
-   @select(df, -a)  # 排除列a
-   @select(df, -(1:2))  # 排除第1和第2列
-   ```
-
-5. **选择列的子集**（使用帮助函数）:
-   ```julia
-   @select(df, starts_with("a"), ends_with("b"))
-   @select(df, contains("c"))
-   @select(df, matches(r"^d"))
-   ```
-
-6. **排除列的子集**（结合 `-` 操作符）:
-   ```julia
-   @select(df, -starts_with("a"))
-   @select(df, -contains("c"))
-   ```
-
-7. **选择所有列**:
-   ```julia
-   @select(df, everything())
-   ```
-
-8. **选择剩余的列**（在已选择某些列之后）:
-   ```julia
-   @select(df, a, everything())
-   ```
-
-9. **条件选择列**（使用 `where` 函数）:
-   ```julia
-   @select(df, where(is_number))
-   ```
-
-10. **使用运算符选择列**:
-    - `+` 运算符用于保留列（相当于列的并集）:
-      ```julia
-      @select(df, a:c, +d:f)
-      ```
-    - `!` 运算符用于排除列（相当于列的差集）:
-      ```julia
-      @select(df, !(a:c))
-      ```
-
-
-
-11. **使用 `across` 函数**对选定的列应用函数:
-    ```julia
-    @select(df, a, across(b:c, sqrt))
-    ```
- 
-12. **重命名列**（在 `@select` 中同时选择和重命名列）: 
-    ```julia
-    @select(df, old_name = new_name)
-    ```
-
-"""
-
-# ╔═╡ 7fcc1672-3a18-4330-92bf-d76b1296a98b
-@chain train begin 
-@select(a = case_when(age > 45 => "o", 
-					   age >30 =>  "m", 
-					   true => "y"))
-end
-
-# ╔═╡ 032ab34f-0553-4c7b-bb85-f190e7ec3d43
-case_when
-
-# ╔═╡ e84759f7-7b85-4ed9-9e14-5c5c5d465dc4
-md"""
-## 2. **过滤行（样本）**
-#### 过滤
-过滤一般针对的是行的操作， 主要是找到想要的样本。其采用的函数是：`@filter(df, exprs...)`， 其中
- 参数：`df` (DataFrame), `exprs...` (过滤条件)。其作用是根据条件过滤行。
-
-以下是 `@filter` 的几种用法和相应的使用案例：
-
-1. **基本过滤**：使用条件表达式来筛选行，仅保留满足条件的行。
+#### 2. 等频离散化
+如果你想将数据分为包含大致相同数量数据点的区间，可以使用 `ntile` 函数：
 
 ```julia
-@chain movies begin
-  @filter(Budget >= mean(skipmissing(Budget)))
-  @select(Title, Budget)
-  @slice(1:5)
+using TidierData
+
+df = DataFrame(age = [22, 34, 45, 56, 78])
+
+# 将年龄分为四个等频区间
+df = @chain df begin
+    @mutate(age_group = ntile(age, 4))
 end
 ```
 
-在这个例子中，我们筛选了那些预算超过平均预算的电影，并选择了标题和预算两列，最后仅显示前5行。
-
-2. **使用逻辑与（AND）条件**：有三种方式可以指定“与”条件：
-
-   - 使用短路运算符 `&&`，这是首选方法，因为它仅在第一个表达式为真时才评估第二个表达式。
-
-   ```julia
-   @chain movies begin
-     @filter(Votes >= 200 && Rating >= 8)
-     @select(Title, Votes, Rating)
-     @slice(1:5)
-   end
-   ```
-
-   - 使用位运算符 `&`，注意需要用括号包围比较表达式，以确保整体表达式正确评估。
-
-   ```julia
-   @chain movies begin
-     @filter((Votes >= 200) & (Rating >= 8))
-     @select(Title, Votes, Rating)
-     @slice(1:5)
-   end
-   ```
-
-   - 使用逗号分隔表达式，这与 tidyverse 中的 `filter()` 函数的行为类似。
-
-   ```julia
-   @chain movies begin
-     @filter(Votes >= 200, Rating >= 8)
-     @select(Title, Votes, Rating)
-     @slice(1:5)
-   end
-   ```
-
-3. **使用 `in` 运算符**：可以筛选属于特定元组或向量的行。
-
-   - 使用元组：
-
-   ```julia
-   @chain movies begin
-     @filter(Title in ("101 Dalmatians", "102 Dalmatians"))
-     @select(1:5)
-   end
-   ```
-
-   - 使用向量：
-
-   ```julia
-   @chain movies begin
-     @filter(Title in ["101 Dalmatians", "102 Dalmatians"])
-     @select(1:5)
-   end
-   ```
-
-4. **结合 `row_number()` 函数**：可以用来获取前N行数据，类似于 `@slice` 的功能。
+#### 3. 基于特定条件的离散化
+你可以使用 `case_when` 函数来根据特定条件创建离散化分组：
 
 ```julia
-@chain movies begin
-  @filter(row_number() <= 5)
-  @select(1:5)
+using TidierData
+
+df = DataFrame(age = [22, 34, 45, 56, 78])
+
+df = @chain df begin
+    @mutate(age_group = case_when(age < 30 => "Young",
+                                   age < 50 => "Middle-aged",
+                                   age >= 50 => "Senior"))
 end
 ```
 
-在这个例子中，我们使用 `row_number()` 来筛选前5行数据。
-
-
-
-"""
-
-# ╔═╡ 35e94f0e-312a-4c41-9db8-8a3a0aa768f0
-md"""
-如果你需要实现“或（OR）”条件，可以通过逻辑运算符 `||` 来实现, 这类似与`&&`。此外，你可以通过结合使用 Julia 的其他功能来实现“或”逻辑。以下是一个可能的方法：
-
-**使用 `@mutate` 和 `@filter` 结合实现“或”条件**：
-   你可以先使用 `@mutate` 创建一个新列，该列基于你想要测试的“或”条件，然后使用 `@filter` 根据这个新列进行筛选。
-
-例如，假设我们想要筛选出电影评分大于 7 或者投票数超过 1000 的电影：
+#### 4. 使用分位数离散化
+如果你想根据数据的分布将变量分为几个区间，可以使用分位数来定义区间：
 
 ```julia
-@chain movies begin
-  @mutate(Condition = Rating > 7 || Votes > 1000)
-  @filter(Condition)
-  @select(Title, Rating, Votes)
+using TidierData
+
+df = DataFrame(income = [25000, 50000, 75000, 100000, 150000])
+
+# 使用四分位数来离散化收入
+quantiles = quantile(df.income, [0.25, 0.5, 0.75, 1.0])
+
+df = @chain df begin
+    @mutate(income_group = cut(income, quantiles, 
+                               labels = ["Q1", "Q2", "Q3", "Q4"]))
 end
 ```
 
-在这个例子中，`@mutate` 用于创建一个名为 `Condition` 的新列，该列对于每一行都是根据 `Rating > 7 || Votes > 1000` 这个条件计算得到的布尔值。然后，`@filter` 用于筛选出 `Condition` 为 `true` 的行。
+这些方法提供了灵活的方式来离散化连续变量，可以根据具体的数据和分析需求选择合适的方法。在 TidierData.jl 中，这些操作可以通过链式调用（chaining）来实现，使得代码更加简洁和易于阅读。
 
-这种方法虽然不是直接使用“或”条件，但可以达到类似的效果，并且是在使用 TidierData.jl 进行数据筛选时处理“或”条件的一种有效方式。
 """
 
-# ╔═╡ 1d89963a-a7f1-4bcb-b802-4d4ca5c41116
-md"""
-#### 排序
-`@arrange` 函数用于对数据框中的行进行排序。它可以接收多个列名作为参数，根据这些列的值对数据进行排序。默认情况下，排序是升序的，但可以通过使用 `desc()` 函数来指定某些列进行降序排序。
-##### @arrange 函数
 
-```julia
-@arrange(data, columns...)
-```
-**参数说明**
-- `data`: 需要排序的数据框（DataFrame）。
-- `columns`: 一个或多个列名，用于指定排序的列。默认情况下，这些列将按照升序排列。如果需要降序排列，可以使用 `desc()` 函数包裹列名。
-
-##### 1. 按多个列升序排序
-```julia
-@chain movies begin
-  @arrange(Year, Rating)
-  @select(1:5)
-  @slice(1:5)
+# ╔═╡ 8a25c72c-4ba5-4bc7-85fe-0fd517f35e54
+@chain train begin
+@select(loantype = ~cut(loanAmnt,4))
 end
-```
-这个例子中，`@arrange` 函数按照 `Year` 和 `Rating` 列进行升序排序，并选择了排序后的前5行。
 
-##### 2. 混合排序（升序和降序）
-```julia
-@chain movies begin
-  @arrange(Year, desc(Rating))
-  @select(1:5)
-  @slice(1:5)
+# ╔═╡ 05706ab6-a819-410a-8dc9-5c033ec68335
+md"""
+!!! warn "请注意"
+	上面cut函数前的~号， 因为在Tidier中， 默认运算都是向量化的。 为了不让一个函数向量化， 需要在这个函数名前面加个波浪号。
+""" 
+
+# ╔═╡ a59fa567-5a9b-46b9-b104-5d0c077efa3a
+@chain train begin
+@select(loantype = ~cut(loanAmnt,4))
+countmap(_.loantype)
 end
-```
-在这个例子中，`@arrange` 函数首先按照 `Year` 列升序排序，然后按照 `Rating` 列降序排序。同样，它选择了排序后的前5行。
 
-##### 3. 处理分组数据框
-如果 `@arrange` 应用于一个 `GroupedDataFrame`，它将临时取消分组，执行排序，然后根据原始分组变量重新分组。
+# ╔═╡ 9e919c6d-8086-4668-b33d-e77c68ab8885
+md"""
+默认情况下， cut成多个值，对应的分割点是分位数。
+"""
 
-```julia
-@chain grouped_data begin
-  @arrange(Year, desc(Rating))
+# ╔═╡ 53b76e80-afa3-4d9f-86a2-a226b7550280
+quantile(train.loanAmnt, [0.25,0.5, 0.75])
+
+# ╔═╡ 573b7e38-73de-4743-94bd-1fe667f31b07
+md"""
+!!! warn "请注意"
+	你可能已经注意到， 虽然， 我们是按照分位数划分的， 但每个区间的样本量似乎并不相等， 这主要原因是有很多值都是一样的，导致某些区间的样本要多一些。 如果你想要每个区间大致相同的样本。应该用ntile函数。这个函数确保每个区间具有几乎相同的样本。不过它的返回值是一个整数，用于表示样本是第几个区间。
+""" 
+
+# ╔═╡ 969a2cb0-fb13-4e2a-b664-21f392a800ab
+@chain train begin
+@select(loantype = ntile(loanAmnt,4))
 end
-```
-这个例子中，`@arrange` 函数用于排序一个分组后的数据框，先按 `Year` 升序，然后按 `Rating` 降序。
 
-"""
-
-# ╔═╡ 54c6998d-3ac7-4269-b90d-0f8c6bba2bf4
-md"""
-## 3 **重塑数据**
-
-以下是涉及数据重塑的函数，包括它们的签名、参数含义、作用以及示例：
-
-1. **@pivot_longer**
-   - 签名: `@pivot_longer(df, cols, [names_to], [values_to])`
-   - 参数含义:
-     - `df`: 要重塑的DataFrame。
-     - `cols`: 要转换成长的格式的列。
-     - `names_to`: 新创建的列的名称，用于存储原DataFrame的列名，默认为"variable"。
-     - `values_to`: 新创建的列的名称，用于存储原DataFrame的单元格值，默认为"value"。
-   - 作用: 将DataFrame从宽格式转换为长格式。
-   - 示例:
-     ```julia
-     julia> df_wide = DataFrame(id = [1, 2], A = [1, 3], B = [2, 4]);
-     julia> @pivot_longer(df_wide, A:B)
-     ```
- 
-2. **@pivot_wider**
-   - 签名: `@pivot_wider(df, names_from, values_from, [values_fill])`
-   - 参数含义:
-     - `df`: 要重塑的DataFrame。
-     - `names_from`: 用于获取输出列名的列名。
-     - `values_from`: 用于获取单元格值的列名。
-     - `values_fill`: 用于替换缺失的名称/值组合的值，默认为缺失值。
-   - 作用: 将DataFrame从长格式转换为宽格式。
-   - 示例:
-     ```julia
-     julia> df_long = DataFrame(id = [1, 1, 2, 2], variable = ["A", "B", "A", "B"], value = [1, 2, 3, 4]);
-     julia> @pivot_wider(df_long, names_from = variable, values_from = value)
-     ```
-
-这些函数是TidierData.jl包中用于数据重塑的工具，允许用户通过指定的参数将数据集从一种格式转换到另一种格式，以适应不同的分析需求。
-
-
-"""
-
-# ╔═╡ 671245a6-05b4-43c9-b3c4-265470de1869
-md"""
-重塑数据也叫长宽格式转换。 下面稍微多解释一下。
-
-对于一份表格型的数据， 如图所示， 我们可以将蓝色部分字段想象成y坐标， 绿色字段标题可以看成是一个是x坐标。这样， 表格中的所有数据（黄色部分）都可以由这两个坐标定义出来。 当我们做宽变长操作时， 相当于将每一个数据写成`(y,x， data)`的形式。
-
-[![pivot.png](https://free2.yunpng.top/2024/09/09/66de762b1a94a.png)](https://free2.yunpng.top/2024/09/09/66de762b1a94a.png)
-
-当我们需要一次性分析多个变量的时候， 宽变长很有用。
-"""
-
-# ╔═╡ 023e6abb-2e96-4538-bc85-0b2102611bf2
-md"""
-## **4 计算和转换列**
-计算和转换列是数据处理中的关键步骤，在TidierData.jl中用于计算和转换列的函数是：`@mutate`和`@transmute`。@transmute： 用于更新和选择列，实际上是@select的别名。
-
-"""
-
-# ╔═╡ dc2cbb2d-3331-4e3b-8027-04d6e857d0c7
-md"""
-### @mutate
-在TidierData.jl中，`@mutate`是一个功能强大的宏，用于在数据框（DataFrame）中创建新列或更新现有列。以下是一些常见的`@mutate`用法示例：
-
-1. **添加新列**：
-   ```julia
-   @chain data begin
-     @mutate(New_Column = some_function(existing_column))
-   end
-   ```
-   这里，`New_Column` 是新创建的列，`some_function` 是一个函数，用于对现有的 `existing_column` 进行计算。
-
-2. **更新现有列**：
-   ```julia
-   @chain data begin
-     @mutate(existing_column = existing_column * 2)
-   end
-   ```
-   在这个例子中，`existing_column` 是一个已经存在的列，我们通过将其值乘以2来更新它。
-
-3. **条件更新**：
-   ```julia
-   @chain data begin
-     @mutate(Updated_Column = ifelse(condition, value_if_true, value_if_false))
-   end
-   ```
-   使用条件语句来更新列。如果 `condition` 为真，则 `Updated_Column` 将被设置为 `value_if_true`，否则设置为 `value_if_false`。
-
-4. **使用窗口函数**：
-   ```julia
-   @chain data begin
-     @mutate(Running_Total = cumsum(existing_column))
-   end
-   ```
-   这里使用累积求和（`cumsum`）作为窗口函数来创建一个运行总和列。
-
-5. **结合`group_by`使用**：
-   ```julia
-   @chain data begin
-     @group_by(Group_Column)
-     @mutate(Group_Mean = mean(existing_column))
-   end
-   ```
-   先按 `Group_Column` 进行分组，然后在每个组内计算 `existing_column` 的均值。
-
-6. **使用`row_number`和`n`**：
-   ```julia
-   @chain data begin
-     @mutate(Row_Number = row_number(), Total_Rows = n())
-   end
-   ```
-   创建一个新列 `Row_Number` 来表示每行的行号，以及一个 `Total_Rows` 列来表示数据框的总行数。
-
-7. **转换数据类型**：
-   ```julia
-   @chain data begin
-     @mutate(Converted_Column = as_integer(existing_column))
-   end
-   ```
-   将 `existing_column` 转换为整数类型。类似的转换函数还有`as_string`,`as_float`.
-
-8. **使用`across`进行多列操作**：
-   ```julia
-   @chain data begin
-     @mutate(across((Column1, Column2), (fn1, fn2)))
-   end
-   ```
-   对多个列应用不同的函数。`Column1` 应用 `fn1`，`Column2` 应用 `fn2`。
-
-这些示例展示了`@mutate`在不同场景下的灵活性和强大功能，使其成为数据框操作中不可或缺的工具。
-"""
-
-# ╔═╡ f1ee32d8-9cc8-4463-945a-4d693c780c78
-Foldable("什么是窗口函数？",md"""
-窗口函数（Window Functions）在数据处理和分析中扮演着重要的角色，尤其是在需要对数据进行分区或分组处理时。窗口函数允许你对数据集中的一组行执行计算，而不会将这些行聚合成单个输出行，这与传统的聚合函数（如 `sum`、`mean`、`count` 等）不同。窗口函数在处理时间序列数据、财务数据、排名和比较等场景中特别有用。
-
-窗口函数之所以被称为“窗口”，是因为它们可以看作是在数据集上滑动一个“窗口”，并在这个窗口内对数据进行计算。这个窗口可以是整个数据集，也可以是数据集中的一部分，如基于某些条件划分的子集。窗口函数在计算时会考虑窗口内的所有行，但每个行的计算结果只与该行及其在窗口内的相对位置有关。
-
-
-**窗口函数的作用**
-
-1. **分区计算**：在不改变数据集结构的前提下，对数据的子集进行计算。
-2. **保留数据行**：与传统聚合函数不同，窗口函数不会减少数据行数。
-3. **灵活的计算**：可以对数据进行复杂的计算，如移动平均、累积总和等。
-4. **排名和分区**：可以计算数据在组内的排名或分区。
-
-**常见的窗口函数**
-
-1. **`row_number()`**：
-   - 返回当前行在其分区内的行号。
-
-2. **`ntile(n)`**：
-   - 将分区内的行分为 `n` 个大致相等的组，并为每行分配一个组号。
-
-3. **`lead(column, n)`**：
-   - 返回当前行后面第 `n` 行的 `column` 值。
-
-4. **`lag(column, n)`**：
-   - 返回当前行前面第 `n` 行的 `column` 值。
-
-5. **`cumsum()`**：
-   - 计算从分区开头到当前行的 `column` 的累积总和。
-
-
-6. **`sum()`**：
-    - 计算分区内 `column` 的总和。
-
-7. **`mean()`**：
-    - 计算分区内 `column` 的平均值。
-
-8. **`median()`**：
-    - 计算分区内 `column` 的中位数。
-
-9. **`std()`**：
-    - 计算分区内 `column` 的标准差。
-
-10. **`var()`**：
-    - 计算分区内 `column` 的方差。
-11. **`~ordinalrank`**
-    - 计算分区内 `column` 的ordinal排名（"1234" ranking)）。前面的~表示不要向量化。类似的函数还有，competerank("1224" ranking)、denserank("1223" ranking)。这些函数的使用需要`using StatsBase`
-
-窗口函数是数据分析中非常强大的工具，它们提供了一种在保持数据行结构的同时进行复杂计算的方法。
-""")
-
-# ╔═╡ 25289d9b-79a9-4eff-af74-d6403e2de077
-md"""
-
-## 5. **汇总和聚合**
-数据的汇总（Summarization）和聚合（Aggregation）是指将大量数据中的信息进行简化和概括的过程，以便更容易地理解数据集中的关键信息和趋势。
-
-假设有一个包含成千上万条电影记录的数据集，每条记录包含电影的名称、预算、票房收入、上映年份等信息。通过数据汇总和聚合，我们可以：
-- **计算总票房**：对所有电影的票房收入进行求和。
-- **平均预算**：计算所有电影的平均预算。
-- **按年份分组**：将电影按上映年份分组，并计算每组的总票房和平均票房。
-
-通过这些操作，我们可以快速了解电影行业的整体趋势，如哪些年份的电影票房表现最好，或者电影预算与票房收入之间的关系等。
-
-### 用法：
-- **基本用法**：可以直接使用 `@summarize` 对整个数据集进行汇总，例如计算数据集中电影的数量或平均预算。
-
-```julia
-@chain movies begin
-    @summarize(n = n())
+# ╔═╡ 5e6c2fef-7716-467b-9196-266e3dcf2f2d
+@chain train begin
+@select(loantype = ntile(loanAmnt,4))
+countmap(_.loantype)
 end
-```
 
-- **计算特定统计量**：可以结合其他函数如 `median`、`mean` 等来计算数据集的中位数、平均值等统计量。
+# ╔═╡ 0a176514-1a79-44f5-b3b6-915b394888e2
+md"""
+当然，你也可以手动调整分隔区间。 比如， 我们可能认为[0,10)是低利率， [10, 20)算中等， [20以上就是高利率了。 那么可以这么去转化利率那一列。
+"""
 
-```julia
-@chain movies begin
-  @mutate(Budget = Budget / 1_000_000)
-  @summarize(median_budget = median(skipmissing(Budget)),
-             mean_budget = mean(skipmissing(Budget)))
+# ╔═╡ 8aa6e9a9-3b4d-4af0-80bb-76d5911338ad
+@chain train begin
+@select(ratetype = ~cut(interestRate, [0, 10, 20, 50],labels = ["low", "middle", "high"]))
+#countmap(_.ratetype)
 end
-```
 
-- **结合 `@group_by` 使用**：可以先使用 `@group_by` 对数据集进行分组，然后使用 `@summarize` 对每个分组进行汇总。
+# ╔═╡ ab32f86e-e7c3-4b69-a34e-4a62c71e3bac
+md"""
+不过这种写法在你不知道最大值和最小值的情况下， 不是很方便，建议用下面的写法。
+"""
 
-```julia
-@chain movies begin
-  @group_by(Year)
-  @summarise(n = n())
-  @arrange(desc(Year))
-  @slice(1:5)
+# ╔═╡ 3bafd92c-3625-4f4c-b8d1-14d947a7fa75
+@chain train begin
+@select(ratetype = case_when(
+	interestRate<10  => "low", 
+	interestRate<20  => "middle",
+	interestRate>=20 => "high"))
 end
-```
 
-在这个例子中，首先按年份分组，然后计算每个年份的电影数量，并按年份降序排列，最后选择最近的五年数据。
-
-### 注意事项：
-- **不自动向量化**：与 TidierData.jl 中的其他函数不同，`@summarize` 在使用时不会进行自动向量化。
-- **分组层级变化**：每次使用 `@summarize` 后，会减少一层分组，除非需要额外的分组操作。
-
-
+# ╔═╡ c67f8567-3665-433d-9e4c-9fa745ff6eed
+md"""
+case_when会返回第一个条件为true所对应的（=>）值。
 """
 
-# ╔═╡ 5c8ec974-8b6a-40bc-aa4e-534f6552a74c
+# ╔═╡ 1be53c3a-b550-4710-b725-d73aa0a36db1
 md"""
-### 统计函数汇总
-#### 标准差函数
-- **std**
-  - **作用**：计算集合的样本标准差。
-  - **计算公式**：$\text{std}(X) = \sqrt{\frac{\sum_{i=1}^{n} (x_i - \bar{x})^2}{n-1}}$
-  - **例子**：`julia> std([1, 2, 3, 4, 5])` 返回样本标准差。
-
-- **stdm**
-  - **作用**：计算已知均数的集合的样本标准差。
-  - **计算公式**：$\text{stdm}(X, \mu) = \sqrt{\frac{\sum_{i=1}^{n} (x_i - \mu)^2}{n-1}}$
-  - **例子**：`julia> stdm([1, 2, 3, 4, 5], mean=3.0)` 返回样本标准差。
-
-#### 方差函数
-- **var**
-  - **作用**：计算集合的样本方差。
-  - **计算公式**：$\text{var}(X) = \frac{\sum_{i=1}^{n} (x_i - \bar{x})^2}{n-1}$
-  - **例子**：`julia> var([1, 2, 3, 4, 5])` 返回样本方差。
-
-- **varm**
-  - **作用**：计算已知均数的集合的样本方差。
-  - **计算公式**：$\text{varm}(X, \mu) = \frac{\sum_{i=1}^{n} (x_i - \mu)^2}{n-1}$
-  - **例子**：`julia> varm([1, 2, 3, 4, 5], mean=3.0)` 返回样本方差。
-
-#### 相关性函数
-- **cor**
-  - **作用**：计算Pearson相关系数或相关矩阵。
-  - **计算公式**：$\text{cor}(X, Y) = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^{n} (x_i - \bar{x})^2} \sqrt{\sum_{i=1}^{n} (y_i - \bar{y})^2}}$
-  - **例子**：`julia> cor([1, 2, 3], [4, 5, 6])` 返回Pearson相关系数。
-
-#### 协方差函数
-- **cov**
-  - **作用**：计算向量或矩阵的协方差。
-  - **计算公式**：$\text{cov}(X, Y) = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{n-1}$
-  - **例子**：`julia> cov([1, 2, 3], [4, 5, 6])` 返回协方差。
-
-#### 均值函数
-- **mean**
-  - **作用**：计算集合的均值。
-  - **计算公式**：$\text{mean}(X) = \frac{\sum_{i=1}^{n} x_i}{n}$
-  - **例子**：`julia> mean([1, 2, 3, 4, 5])` 返回均值。
-
-#### 中位数函数
-- **median**
-  - **作用**：计算集合的中位数。
-  - **计算公式**：$\text{median}(X) = \text{the middle value when X is ordered}$
-  - **例子**：`julia> median([1, 2, 3, 4, 5])` 返回中位数。
-
-#### 中位数计算函数（数值中间值）
-- **middle**
-  - **作用**：计算两个数或数组的中间值。
-  - **计算公式**：$\text{middle}(x, y) = \frac{x + y}{2}$
-  - **例子**：`julia> middle(1, 3)` 返回中间值2。
-
-#### 分位数函数
-- **quantile**
-  - **作用**：计算集合的分位数。
-  - **计算公式**：$\text{quantile}(X, p) = \text{the value such that p proportion of X is less than this value}$
-  - **例子**：`julia> quantile([1, 2, 3, 4, 5], 0.5)` 返回中位数（0.5分位数）。
-
+# 数据规范化
+一般我们可能会用到最大最小规范化， z-score规范化。 后面建模过程中， 我们可以用更一般的方法。这里我们可以自己写函数去对数据做转化。
 """
 
-# ╔═╡ f2dccd3c-8f9f-43cf-bd2e-cc2c56860d8c
+# ╔═╡ 13390088-033f-4c8d-a530-3ace1e6984b2
+function minmax_norm(x)
+	min = minimum(skipmissing(x)) # 过滤掉缺失值， 
+	max = maximum(skipmissing(x))
+	(x .- min)./(max - min)
+end
+
+# ╔═╡ 005a87a3-203d-4a09-886b-cc9e909c9506
+@select(df, revolUtil = ~minmax_norm(revolUtil)) # ~的作用是取消掉向量化运算
+
+# ╔═╡ 681fc603-62e4-4418-8c6a-31994cfda2cd
 md"""
-### 其他统计函数
-下面的函数主要来自于[StatsBase.jl](https://juliastats.org/StatsBase.jl/stable/)包。 想要使用的化需要`using StatsBase`   
-
-
-下表列出了常见的统计量名称、作用和相应的Julia函数。这里对统计量作用的描述并非严谨的数学定义， 只是为了方便理解和记忆而粗略的给出， 严谨的定义请参考有关书籍。
-
-|统计量名称| 作用 | Julia函数 |
-|----|---|---|
-|计数 |统计给定的区间中（默认为：min~max）某个值出现的次数  | countmap|
-|众数 |出现次数最多的数 | mode|
-|最大值|向量元素的最大值| maximum|
-|最小值|向量元素的最小值| minimum|
-|p-分位数|p%的观测的最小上界；使用最多的是四分位数（p=.25, .5, .75）|quantile|
-|均值|平均值|mean|
-|中值|近似0.5分位数|median|
-|极值|计算极大值、极小值|extrema|
-|方差|计算方差， 默认是修正的| var|
-|标准差|标准差|std|
-|偏度|统计数据分布偏斜方向和程度|skewness|
-|峰度|分布的尖锐程度， 正态分布，峰度为0|kurtosis|
-|截断|去掉最大、最小的部分值（基于截断后的数据做统计被称为截断统计或鲁棒统计）|trim|
-
-"""
-
-# ╔═╡ d01ac4f8-6903-41ff-bbc2-1210b588f16a
-md"""
-## **6. 数据转换**
-### 数据类型转换
-
-数据类型检查和数据转换也是数据分析常见的操作。以下是在TidierData.jl中，一些相关的函数：
-
-1. **is_float**
-   - **函数签名**：`is_float(column::AbstractVector)`
-   - **参数解释**：
-     - `column::AbstractVector`: 需要检查数据类型的列。
-   - **作用**：确定给定的列是否包含浮点数。
-
-2. **is_integer**
-   - **函数签名**：`is_integer(column::AbstractVector)`
-   - **参数解释**：
-     - `column::AbstractVector`: 需要检查数据类型的列。
-   - **作用**：确定给定的列是否包含整数。
-
-3. **is_string**
-   - **函数签名**：`is_string(column::AbstractVector)`
-   - **参数解释**：
-     - `column::AbstractVector`: 需要检查数据类型的列。
-   - **作用**：确定给定的列是否包含字符串。
-
-4. **as_float**
-   - **函数签名**：`as_float(value)`
-   - **参数解释**：
-     - `value`: 需要转换的值，可以是字符串、数字或缺失值。
-   - **作用**：将数字或字符串转换为`Float64`数据类型。如果值为缺失，则保持为缺失。
-
-5. **as_integer**
-   - **函数签名**：`as_integer(value)`
-   - **参数解释**：
-     - `value`: 需要转换的值，可以是字符串、数字或缺失值。
-   - **作用**：将数字或字符串转换为`Int64`数据类型，小数点后的数值会被移除。如果值为缺失，则保持为缺失。
-
-6. **as_string**
-   - **函数签名**：`as_string(value)`
-   - **参数解释**：
-     - `value`: 需要转换的值，可以是数字、字符串或缺失值。
-   - **作用**：将数字或字符串转换为字符串类型。如果值为缺失，则保持为缺失。
-
-这些函数提供了对数据类型进行检查和转换的能力，使得在数据处理过程中能够更灵活地处理不同类型的数据。
-
-
+作为练习， 读者可以自己写一下zscore规范化的函数。
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -714,13 +332,21 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+ScientificTypes = "321657f4-b219-11e9-178b-2701a2544e81"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+TidierCats = "79ddc9fe-4dbf-4a56-a832-df41fb326d23"
 TidierData = "fe2206b3-d496-4ee9-a338-6a095c4ece80"
+TidierDates = "20186a3f-b5d3-468e-823e-77aae96fe2d8"
 TidierFiles = "8ae5e7a9-bdd3-4c93-9cc3-9df4d5d947db"
 
 [compat]
 PlutoTeachingTools = "~0.3.0"
 PlutoUI = "~0.7.60"
+ScientificTypes = "~3.0.2"
+StatsBase = "~0.34.3"
+TidierCats = "~0.1.2"
 TidierData = "~0.16.2"
+TidierDates = "~0.2.6"
 TidierFiles = "~0.1.5"
 """
 
@@ -730,7 +356,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "400886cee0ae4ea0244bc702b83478ccaa0a4908"
+project_hash = "be8816d4c1bbd08900f908861042f9a5627073fe"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -777,6 +403,12 @@ weakdeps = ["StaticArrays"]
 
     [deps.Adapt.extensions]
     AdaptStaticArraysExt = "StaticArrays"
+
+[[deps.AliasTables]]
+deps = ["PtrArrays", "Random"]
+git-tree-sha1 = "9876e1e164b144ca45e9e3198d0b689cadfed9ff"
+uuid = "66dad0bd-aa9a-41b7-9441-69ab47430ed8"
+version = "1.1.3"
 
 [[deps.ArgCheck]]
 git-tree-sha1 = "a3a402a35a2f7e0b87828ccabbd5ebfbebe356b4"
@@ -1026,6 +658,22 @@ version = "0.1.2"
 deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
+[[deps.Distributions]]
+deps = ["AliasTables", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SpecialFunctions", "Statistics", "StatsAPI", "StatsBase", "StatsFuns"]
+git-tree-sha1 = "e6c693a0e4394f8fda0e51a5bdf5aef26f8235e9"
+uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
+version = "0.25.111"
+
+    [deps.Distributions.extensions]
+    DistributionsChainRulesCoreExt = "ChainRulesCore"
+    DistributionsDensityInterfaceExt = "DensityInterface"
+    DistributionsTestExt = "Test"
+
+    [deps.Distributions.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    DensityInterface = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
+    Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
 git-tree-sha1 = "2fb1e02f2b635d0845df5d7c167fec4dd739b00d"
@@ -1089,16 +737,12 @@ deps = ["LinearAlgebra"]
 git-tree-sha1 = "6a70198746448456524cb442b8af316927ff3e1a"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
 version = "1.13.0"
+weakdeps = ["PDMats", "SparseArrays", "Statistics"]
 
     [deps.FillArrays.extensions]
     FillArraysPDMatsExt = "PDMats"
     FillArraysSparseArraysExt = "SparseArrays"
     FillArraysStatisticsExt = "Statistics"
-
-    [deps.FillArrays.weakdeps]
-    PDMats = "90014a1f-27ba-587c-ab20-58faa44d9150"
-    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-    Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -1120,6 +764,12 @@ deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapp
 git-tree-sha1 = "d1d712be3164d61d1fb98e7ce9bcbc6cc06b45ed"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 version = "1.10.8"
+
+[[deps.HypergeometricFunctions]]
+deps = ["LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
+git-tree-sha1 = "7c4195be1649ae622304031ed46a2f4df989f1eb"
+uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
+version = "0.3.24"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -1432,6 +1082,12 @@ git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.6.3"
 
+[[deps.PDMats]]
+deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
+git-tree-sha1 = "949347156c25054de2db3b166c52ac4728cbad65"
+uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
+version = "0.11.31"
+
 [[deps.Parquet2]]
 deps = ["AbstractTrees", "BitIntegers", "CodecLz4", "CodecZlib", "CodecZstd", "DataAPI", "Dates", "DecFP", "FilePathsBase", "FillArrays", "JSON3", "LazyArrays", "LightBSON", "Mmap", "OrderedCollections", "PooledArrays", "PrecompileTools", "SentinelArrays", "Snappy", "StaticArrays", "TableOperations", "Tables", "Thrift2", "Transducers", "UUIDs", "WeakRefStrings"]
 git-tree-sha1 = "58036936efa67e864e7fe640c6156add60f15e94"
@@ -1501,6 +1157,23 @@ version = "2.3.2"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
+[[deps.PtrArrays]]
+git-tree-sha1 = "77a42d78b6a92df47ab37e177b2deac405e1c88f"
+uuid = "43287f4e-b6f4-7ad1-bb20-aadabca52c3d"
+version = "1.2.1"
+
+[[deps.QuadGK]]
+deps = ["DataStructures", "LinearAlgebra"]
+git-tree-sha1 = "cda3b045cf9ef07a08ad46731f5a3165e56cf3da"
+uuid = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
+version = "2.11.1"
+
+    [deps.QuadGK.extensions]
+    QuadGKEnzymeExt = "Enzyme"
+
+    [deps.QuadGK.weakdeps]
+    Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
+
 [[deps.RData]]
 deps = ["CategoricalArrays", "CodecZlib", "DataAPI", "DataFrames", "Dates", "FileIO", "Requires", "TimeZones", "Unicode"]
 git-tree-sha1 = "9a6220c8f59c38ddf6217638042ae6788973f617"
@@ -1544,9 +1217,32 @@ git-tree-sha1 = "7b7850bb94f75762d567834d7e9802fc22d62f9c"
 uuid = "295af30f-e4ad-537b-8983-00126c2a3abe"
 version = "3.5.18"
 
+[[deps.Rmath]]
+deps = ["Random", "Rmath_jll"]
+git-tree-sha1 = "852bd0f55565a9e973fcfee83a84413270224dc4"
+uuid = "79098fc4-a85e-5d69-aa6a-4863f24498fa"
+version = "0.8.0"
+
+[[deps.Rmath_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "58cdd8fb2201a6267e1db87ff148dd6c1dbd8ad8"
+uuid = "f50d1b31-88e8-58de-be2c-1cc44531875f"
+version = "0.5.1+0"
+
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
+
+[[deps.ScientificTypes]]
+deps = ["CategoricalArrays", "ColorTypes", "Dates", "Distributions", "PrettyTables", "Reexport", "ScientificTypesBase", "StatisticalTraits", "Tables"]
+git-tree-sha1 = "75ccd10ca65b939dab03b812994e571bf1e3e1da"
+uuid = "321657f4-b219-11e9-178b-2701a2544e81"
+version = "3.0.2"
+
+[[deps.ScientificTypesBase]]
+git-tree-sha1 = "a8e18eb383b5ecf1b5e6fc237eb39255044fd92b"
+uuid = "30f210dd-8aff-4c5f-94ba-8e64358c1161"
+version = "3.0.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -1636,6 +1332,12 @@ git-tree-sha1 = "192954ef1208c7019899fbf8049e717f92959682"
 uuid = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
 version = "1.4.3"
 
+[[deps.StatisticalTraits]]
+deps = ["ScientificTypesBase"]
+git-tree-sha1 = "542d979f6e756f13f862aa00b224f04f9e445f11"
+uuid = "64bff920-2084-43da-a3e6-9bb72801c0c9"
+version = "3.4.0"
+
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
@@ -1652,6 +1354,20 @@ deps = ["DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missin
 git-tree-sha1 = "5cf7606d6cef84b543b483848d4ae08ad9832b21"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 version = "0.34.3"
+
+[[deps.StatsFuns]]
+deps = ["HypergeometricFunctions", "IrrationalConstants", "LogExpFunctions", "Reexport", "Rmath", "SpecialFunctions"]
+git-tree-sha1 = "b423576adc27097764a90e163157bcfc9acf0f46"
+uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
+version = "1.3.2"
+
+    [deps.StatsFuns.extensions]
+    StatsFunsChainRulesCoreExt = "ChainRulesCore"
+    StatsFunsInverseFunctionsExt = "InverseFunctions"
+
+    [deps.StatsFuns.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
 
 [[deps.StringManipulation]]
 deps = ["PrecompileTools"]
@@ -1682,6 +1398,10 @@ deps = ["Dates", "UUIDs"]
 git-tree-sha1 = "159331b30e94d7b11379037feeb9b690950cace8"
 uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
 version = "1.11.0"
+
+[[deps.SuiteSparse]]
+deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
+uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[deps.SuiteSparse_jll]]
 deps = ["Artifacts", "Libdl", "libblastrampoline_jll"]
@@ -1732,11 +1452,23 @@ git-tree-sha1 = "9610f626cf80cf28468edb20ec2dc007f72aacfa"
 uuid = "9be31aac-5446-47db-bfeb-416acd2e4415"
 version = "0.2.1"
 
+[[deps.TidierCats]]
+deps = ["CategoricalArrays", "DataFrames", "Reexport", "Statistics"]
+git-tree-sha1 = "bf7843c4477d1c3f9e430388f7ece546b9382bef"
+uuid = "79ddc9fe-4dbf-4a56-a832-df41fb326d23"
+version = "0.1.2"
+
 [[deps.TidierData]]
 deps = ["Chain", "Cleaner", "DataFrames", "MacroTools", "Reexport", "ShiftedArrays", "Statistics", "StatsBase"]
 git-tree-sha1 = "2649cad958374080016511376e647c15942825dc"
 uuid = "fe2206b3-d496-4ee9-a338-6a095c4ece80"
 version = "0.16.2"
+
+[[deps.TidierDates]]
+deps = ["Dates", "Reexport", "TimeZones"]
+git-tree-sha1 = "680193b3912c5a337ec5e6b5c7a513e39418172d"
+uuid = "20186a3f-b5d3-468e-823e-77aae96fe2d8"
+version = "0.2.6"
 
 [[deps.TidierFiles]]
 deps = ["Arrow", "CSV", "DataFrames", "Dates", "HTTP", "Parquet2", "RData", "ReadStatTables", "Reexport", "XLSX"]
@@ -1876,29 +1608,44 @@ version = "1.2.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═bff5f244-66de-11ef-1248-cf917f18d161
-# ╠═07a14ec5-db26-49b3-969b-665dbb000b00
-# ╟─055f8e68-b697-4c0f-af54-640a92e4ec7b
-# ╠═fd1ab803-27b9-4bba-af52-5c60d0e1232f
-# ╠═713b2a77-0b70-4d85-9943-630fc9f59bdc
-# ╠═adadce64-12df-4650-995a-5b0aa8bf8bb6
-# ╠═bf10eba6-ec5c-441e-9b09-e89c81bfe8b3
-# ╟─d2be92cd-28cf-4846-b122-427ae1312708
-# ╟─97e6a277-8968-438f-8b90-ffce9855a5cb
-# ╟─24c0519e-9ec8-4f11-bdd7-34b7e47b58a3
-# ╠═7fcc1672-3a18-4330-92bf-d76b1296a98b
-# ╠═032ab34f-0553-4c7b-bb85-f190e7ec3d43
-# ╟─e84759f7-7b85-4ed9-9e14-5c5c5d465dc4
-# ╟─35e94f0e-312a-4c41-9db8-8a3a0aa768f0
-# ╟─1d89963a-a7f1-4bcb-b802-4d4ca5c41116
-# ╟─54c6998d-3ac7-4269-b90d-0f8c6bba2bf4
-# ╟─671245a6-05b4-43c9-b3c4-265470de1869
-# ╟─023e6abb-2e96-4538-bc85-0b2102611bf2
-# ╟─dc2cbb2d-3331-4e3b-8027-04d6e857d0c7
-# ╟─f1ee32d8-9cc8-4463-945a-4d693c780c78
-# ╟─25289d9b-79a9-4eff-af74-d6403e2de077
-# ╟─5c8ec974-8b6a-40bc-aa4e-534f6552a74c
-# ╟─f2dccd3c-8f9f-43cf-bd2e-cc2c56860d8c
-# ╟─d01ac4f8-6903-41ff-bbc2-1210b588f16a
+# ╠═4e990588-7996-11ef-3e42-b7ef9af1902b
+# ╟─ee4f0462-80d7-468c-930a-bc06f5c9ad80
+# ╠═5684e8e0-bcd9-4e7b-9084-2b577d33626c
+# ╟─8d89baef-db4b-4dc4-a1ee-6370e9881097
+# ╠═f2cf4a45-6436-4085-8f80-6efe75ff4a38
+# ╟─629a395f-7295-4c6e-8e10-8f4c120b7df3
+# ╠═15906c0d-78b5-45da-a4ad-090322438b7a
+# ╟─8c932f04-d53e-4299-86a6-6b43219d36a2
+# ╠═b196e5f7-b099-4fa8-93e8-8096cc0afdd0
+# ╠═bb8005c9-eb1c-47fe-a24b-03973e23c69a
+# ╟─6907fe4a-2c85-4b58-8eae-3f2d06e5816c
+# ╠═8338af69-9125-4697-aac4-1df8594bcfbf
+# ╟─f21f3963-b21d-4ee3-b58c-c937a4cac9d8
+# ╠═ffda3098-51c7-42de-8f47-360bdec0ce56
+# ╠═47585b8e-e1c3-40e9-9da3-1896b39230ce
+# ╟─df3c6a0a-2c25-45e6-9977-5b666dab35d2
+# ╠═d89653f2-be96-4b8c-91a2-2b12b71e9ac8
+# ╠═d52e5642-a76d-44be-944f-8a9d77669f88
+# ╟─96a8c00c-22e7-49b0-a7e1-5de6362089da
+# ╠═1f0465b4-e311-445c-8978-bd66842a6af6
+# ╟─78b64499-b65d-4499-a916-7970d8ceda92
+# ╟─59bbfb01-a2ed-481b-95fa-da5578b7e9dc
+# ╠═8a25c72c-4ba5-4bc7-85fe-0fd517f35e54
+# ╟─05706ab6-a819-410a-8dc9-5c033ec68335
+# ╠═a59fa567-5a9b-46b9-b104-5d0c077efa3a
+# ╟─9e919c6d-8086-4668-b33d-e77c68ab8885
+# ╠═53b76e80-afa3-4d9f-86a2-a226b7550280
+# ╟─573b7e38-73de-4743-94bd-1fe667f31b07
+# ╠═969a2cb0-fb13-4e2a-b664-21f392a800ab
+# ╠═5e6c2fef-7716-467b-9196-266e3dcf2f2d
+# ╟─0a176514-1a79-44f5-b3b6-915b394888e2
+# ╟─8aa6e9a9-3b4d-4af0-80bb-76d5911338ad
+# ╟─ab32f86e-e7c3-4b69-a34e-4a62c71e3bac
+# ╠═3bafd92c-3625-4f4c-b8d1-14d947a7fa75
+# ╟─c67f8567-3665-433d-9e4c-9fa745ff6eed
+# ╟─1be53c3a-b550-4710-b725-d73aa0a36db1
+# ╠═13390088-033f-4c8d-a530-3ace1e6984b2
+# ╠═005a87a3-203d-4a09-886b-cc9e909c9506
+# ╟─681fc603-62e4-4418-8c6a-31994cfda2cd
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
