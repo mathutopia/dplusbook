@@ -1,11 +1,14 @@
 ### A Pluto.jl notebook ###
-# v0.19.45
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
 
 # ╔═╡ 54d48980-e50b-11ee-01ff-833f16130cde
 using TidierFiles, TidierData, PlutoUI,ScientificTypes, StatsBase,TidierCats, PlutoTeachingTools,TidierDates
+
+# ╔═╡ aec56a53-fb02-4fd9-a30d-603fe4583a47
+using MultivariateStats
 
 # ╔═╡ be3b73ca-f440-4273-a268-77f5a7780bae
 html"""
@@ -655,6 +658,7 @@ y =predict(M, Matrix(trainint)')
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+MultivariateStats = "6f286f6a-111f-5878-ab1e-185364afe411"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 ScientificTypes = "321657f4-b219-11e9-178b-2701a2544e81"
@@ -665,6 +669,7 @@ TidierDates = "20186a3f-b5d3-468e-823e-77aae96fe2d8"
 TidierFiles = "8ae5e7a9-bdd3-4c93-9cc3-9df4d5d947db"
 
 [compat]
+MultivariateStats = "~0.10.3"
 PlutoTeachingTools = "~0.3.0"
 PlutoUI = "~0.7.60"
 ScientificTypes = "~3.0.2"
@@ -679,9 +684,9 @@ TidierFiles = "~0.1.5"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.4"
+julia_version = "1.10.5"
 manifest_format = "2.0"
-project_hash = "be8816d4c1bbd08900f908861042f9a5627073fe"
+project_hash = "5b960f6ea43365d44e609eecdbf6061bfe8427bd"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -743,6 +748,18 @@ version = "2.3.0"
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.1"
+
+[[deps.Arpack]]
+deps = ["Arpack_jll", "Libdl", "LinearAlgebra", "Logging"]
+git-tree-sha1 = "9b9b347613394885fd1c8c7729bfc60528faa436"
+uuid = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
+version = "0.5.4"
+
+[[deps.Arpack_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "OpenBLAS_jll", "Pkg"]
+git-tree-sha1 = "5ba6c757e8feccf03a1554dfaf3e26b3cfc7fd5e"
+uuid = "68821587-b530-5797-8361-c406ea357684"
+version = "3.5.1+1"
 
 [[deps.ArrayLayouts]]
 deps = ["FillArrays", "LinearAlgebra"]
@@ -1370,6 +1387,12 @@ version = "0.8.1"
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2023.1.10"
 
+[[deps.MultivariateStats]]
+deps = ["Arpack", "Distributions", "LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI", "StatsBase"]
+git-tree-sha1 = "816620e3aac93e5b5359e4fdaf23ca4525b00ddf"
+uuid = "6f286f6a-111f-5878-ab1e-185364afe411"
+version = "0.10.3"
+
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.2.0"
@@ -1913,7 +1936,7 @@ version = "1.5.6+0"
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.8.0+1"
+version = "5.11.0+0"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -2010,6 +2033,7 @@ version = "1.2.0+0"
 # ╟─7eb215ae-8f20-4b9b-9d7b-aa05051400b7
 # ╟─fab8836c-13a4-46ba-9562-92d6d9934f1f
 # ╟─2ea15c1d-4f44-46bf-a5cf-bb5d4b428ba2
+# ╠═aec56a53-fb02-4fd9-a30d-603fe4583a47
 # ╠═c6ffa379-0851-4e3b-8493-7d2d167f935a
 # ╠═a2ff70a1-1565-4fb3-805d-d306a4126627
 # ╠═d16a5e17-bbe7-4aa1-8665-fc2e4588e42c

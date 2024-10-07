@@ -33,7 +33,7 @@ TableOfContents(title="目录")
 
 # ╔═╡ 0618cc0e-989b-4a5f-84ca-35a1dbb2440e
 md"""
-# 数据读取
+## 函数简介
 由于在数据挖掘中， 经常见到的是csv格式的数据， 所以这里我们只介绍csv格式的数据的读写。在Julia生态中， 有一个专门用于csv格式数据读写的包CSV.jl。 不过， 下面要介绍的函数来自于TidierFiles.jl， 这个包集中了多种数据格式读取的方法， 并提供了相对一致的接口， 使用更加方便。 因此， 我们这里介绍的函数来自TidierFilles.jl包， 当然， 其功能来自于CSV.jl包。
 
 
@@ -76,6 +76,11 @@ writecsv(x, file; missingstring="", append=false, colnames=true, eol="\n", num_t
 这些函数用于读取和写入分隔文件（CSV、TSV或自定义分隔符）到 DataFrame 或从 DataFrame 到文件。
 
 更多其他格式数据的读写，请参考[**这里.**](https://tidierorg.github.io/TidierFiles.jl/latest/)。
+"""
+
+# ╔═╡ d6a92215-9b3e-4565-a303-b65da2cf3518
+md"""
+## 数据读取
 """
 
 # ╔═╡ c7f8779b-6a0f-44ee-b0bb-396ece1a49b8
@@ -1224,6 +1229,7 @@ version = "1.2.0+0"
 # ╠═54d48980-e50b-11ee-01ff-833f16130cde
 # ╠═f67e2900-c720-44cb-8988-800f6b8e5389
 # ╟─0618cc0e-989b-4a5f-84ca-35a1dbb2440e
+# ╟─d6a92215-9b3e-4565-a303-b65da2cf3518
 # ╠═c7f8779b-6a0f-44ee-b0bb-396ece1a49b8
 # ╟─3c941825-3e87-4aaa-b856-db028b6aa139
 # ╠═371af7ac-1748-47fd-aa2c-ae523a4a54d4

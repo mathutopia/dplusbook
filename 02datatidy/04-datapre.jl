@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.45
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -103,8 +103,13 @@ md"""
 	@mutate(employmentLength = replace_missing(employmentLength, !!mc))
 end
 
+# ╔═╡ 3a0bdc72-3b07-4318-88b0-5b28c906a95e
+md"""
+注意， 在构造CategoricalValue时， 第一个参数是你的值， 第二个参数是这个值所在的水平池(pool)， 通常可以用一个Categorical的数组或值来表示。
+"""
+
 # ╔═╡ 47585b8e-e1c3-40e9-9da3-1896b39230ce
-CategoricalValue(10,df.employmentLength )
+CategoricalValue(10, df.employmentLength)
 
 # ╔═╡ df3c6a0a-2c25-45e6-9977-5b666dab35d2
 md"""
@@ -354,7 +359,7 @@ TidierFiles = "~0.1.5"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.4"
+julia_version = "1.10.5"
 manifest_format = "2.0"
 project_hash = "be8816d4c1bbd08900f908861042f9a5627073fe"
 
@@ -1588,7 +1593,7 @@ version = "1.5.6+0"
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
-version = "5.8.0+1"
+version = "5.11.0+0"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1622,6 +1627,7 @@ version = "1.2.0+0"
 # ╠═8338af69-9125-4697-aac4-1df8594bcfbf
 # ╟─f21f3963-b21d-4ee3-b58c-c937a4cac9d8
 # ╠═ffda3098-51c7-42de-8f47-360bdec0ce56
+# ╟─3a0bdc72-3b07-4318-88b0-5b28c906a95e
 # ╠═47585b8e-e1c3-40e9-9da3-1896b39230ce
 # ╟─df3c6a0a-2c25-45e6-9977-5b666dab35d2
 # ╠═d89653f2-be96-4b8c-91a2-2b12b71e9ac8
