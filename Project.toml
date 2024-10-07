@@ -1,0 +1,4 @@
+[deps]
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
+StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
+Tidier = "f0413319-3358-4bb0-8e7c-0c83523a93bd"
