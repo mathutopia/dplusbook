@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.41
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -81,7 +81,7 @@ md"""
 	在设置完`JULIA_DEPOT_PATH`之后， 请增加一个包注册中心。 这个注册中心是为了方便后面使用自己编写的包而设置的。 实现很简单， 在代码模式下， 输入如下语句即可。
 	```julia
 	import Pkg
-	Pkg.Registry.add(RegistrySpec(url = "https://gitee.com/mathutopia/dplusreg.git"))
+	Pkg.Registry.add(Pkg.RegistrySpec(url = "https://gitee.com/mathutopia/dplusreg.git"))
 	```
 """
 
